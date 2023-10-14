@@ -34,21 +34,12 @@ const positionInfo = computed(() => ({
 const ghostPositionInfo = computed(() => ({
   left: `${boardPos.x}px`,
   top: `${boardPos.y}px`,
+  transform: `rotate(${tapped.value ? '90deg' : '0deg'})`,
 }));
 
 function clampToBounds(rect: DOMRect, parentRect: DOMRect) {
-  if (props.card.zone === ZONES.hand.id) {
-    const handCards = board.cards[ZONES.hand.id].length;
-    const index = board.cards[ZONES.hand.id].findIndex(c => c.key === props.card.key);
-    const totalHandWidth = rect.width * handCards;
-    const cardXPos = parentRect.left + rect.width * index + (parentRect.width - totalHandWidth) / 2;
-    imagePos.x = cardXPos;
-    imagePos.y = parentRect.top;
-  }
-  else {
-    imagePos.x = Math.max(parentRect.left, Math.min(imagePos.x, parentRect.left + parentRect.width - rect.width));
-    imagePos.y = Math.max(parentRect.top, Math.min(imagePos.y, parentRect.top + parentRect.height - rect.height));
-  }
+  imagePos.x = Math.max(parentRect.left, Math.min(imagePos.x, parentRect.left + parentRect.width - rect.width));
+  imagePos.y = Math.max(parentRect.top, Math.min(imagePos.y, parentRect.top + parentRect.height - rect.height));
 
   boardPos.x = imagePos.x;
   boardPos.y = imagePos.y;
@@ -77,13 +68,18 @@ function onMouseUp(e: MouseEvent) {
 
     if (otherZone !== null && otherZone.id !== props.card.zone) {
       // move this card to that zone
-      const newPos = board.pointInZone(otherZone.id, e.clientX, e.clientY);
+      const rect = image.value!.getBoundingClientRect();
+      const newPos = board.pointInZone(otherZone.id, imagePos.x + rect.width / 2, imagePos.y + rect.height / 2);
       emit('move-zone', otherZone.id, newPos.x, newPos.y);
     }
     else {
       const centerPos = stopMoving();
       // emit the position as a percentage of the board
       emit('move', centerPos.x, centerPos.y);
+      // cards in hand should always snap back to their defined position
+      if (props.card.zone === ZONES.hand.id) {
+        updatePositionFromVirtualCoords();
+      }
     }
   }
 }
@@ -91,9 +87,8 @@ function onMouseUp(e: MouseEvent) {
 function onMouseDown(e: MouseEvent) {
   // note the position in the element that was originally clicked
   const rect = image.value!.getBoundingClientRect();
-  offsetPos.x = e.clientX - rect.left;
-  offsetPos.y = e.clientY - rect.top;
-
+  offsetPos.x = e.clientX - imagePos.x;
+  offsetPos.y = e.clientY - imagePos.y;
   moving.value = true;
 }
 
@@ -105,9 +100,10 @@ function onMouseMove(e: MouseEvent) {
   }
 }
 
-function updatePositionFromScaleCoords() {
-  const rect = image.value!.getBoundingClientRect();
+function updatePositionFromVirtualCoords() {
   const parentRect = props.parentBounds!;
+
+  const rect = image.value!.getBoundingClientRect();
   imagePos.x = parentRect.left + parentRect.width * props.card.x - rect.width / 2;
   imagePos.y = parentRect.top + parentRect.height * props.card.y - rect.height / 2;
 
@@ -121,19 +117,19 @@ function tap() {
 onMounted(() => {
   document.addEventListener('mousemove', onMouseMove);
   if (props.parentBounds) {
-    updatePositionFromScaleCoords();
+    updatePositionFromVirtualCoords();
   }
 
   if (props.card.zone === ZONES.hand.id) {
     watch([() => board.cards[ZONES.hand.id].length], () => {
-      updatePositionFromScaleCoords();
+      updatePositionFromVirtualCoords();
     })
   }
 })
 
-watch([() => props.parentBounds], () => {
+watch([() => props.parentBounds, () => props.card.x, () => props.card.y], () => {
   if (props.parentBounds) {
-    updatePositionFromScaleCoords();
+    updatePositionFromVirtualCoords();
   }
 })
 

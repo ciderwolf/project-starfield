@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ZoneConfig } from '@/zones';
+import { ZONES, type ZoneConfig } from '@/zones';
 import BoardCard from '@/components/game/BoardCard.vue';
 import { onMounted, onUnmounted, ref } from 'vue';
 import { useBoardStore } from '@/stores/board';
