@@ -1,0 +1,13 @@
+.DS_Store
+
+node_modules/
+.vscode/
+
+build/
+.gradle/
+gradle/
+.idea/
+out/
+*.iml
+
+carddb.json
