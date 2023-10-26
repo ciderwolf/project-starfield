@@ -1,4 +1,6 @@
-export type WebSocketMessage = LocationMessage | IdentityMessage | ListingUpdateMessage | DeleteListingMessage | RoomStateMessage;
+import type { CardId } from "@/stores/board";
+
+export type WebSocketMessage = LocationMessage | IdentityMessage | ListingUpdateMessage | DeleteListingMessage | RoomStateMessage | BoardUpdateMessage | OracleInfoMessage;
 
 type LocationMessage = {
   type: 'location';
@@ -92,6 +94,67 @@ export type DeckCard = Card & {
 
 export type Card = {
   name: string;
-  id: string;
+  oracleId: string;
   image: string;
+}
+
+export type SpecialAction = 'MULLIGAN' | 'SCOOP' | 'SHUFFLE';
+export type CardAttribute = 'PIVOT' | 'COUNTER' | 'TRANSFORMED';
+export type PlayerAttribute = 'LIFE' | 'POISON';
+
+
+export type BoardUpdateMessage = {
+  type: 'board_update';
+  events: BoardDiffEvent[];
+}
+
+export type OracleInfoMessage = {
+  type: 'oracle_info';
+  oracleInfo: { [cardId: CardId]: string };
+}
+
+export type BoardDiffEvent = ChangeZoneEvent | ChangeIndexEvent | ChangePositionEvent | ChangeAttributeEvent | ChangePlayerAttribute | ScoopDeck | ShuffleDeck;
+
+export type ChangeZoneEvent = {
+  type: 'change_zone';
+  cardId: CardId;
+  newZone: Zone;
+  oldCardId: CardId;
+}
+
+export type ChangeIndexEvent = {
+  type: 'change_index';
+  cardId: CardId;
+  newIndex: number;
+}
+
+export type ChangePositionEvent = {
+  type: 'change_position';
+  cardId: CardId;
+  x: number;
+  y: number;
+}
+
+export type ChangeAttributeEvent = {
+  type: 'change_attribute';
+  cardId: CardId;
+  attribute: CardAttribute;
+  value: number;
+}
+
+export type ChangePlayerAttribute = {
+  attribute: PlayerAttribute;
+  newValue: number;
+  playerId: string;
+  type: 'change_player_attribute';
+}
+
+export type ScoopDeck = {
+  newIds: CardId[];
+  type: 'scoop_deck';
+}
+
+export type ShuffleDeck = {
+  newIds: CardId[];
+  type: 'shuffle_deck';
 }

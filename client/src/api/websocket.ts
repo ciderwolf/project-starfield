@@ -2,6 +2,7 @@ import { useGameStore } from "@/stores/games";
 import type { WebSocketMessage } from "./message";
 import { useDataStore } from "@/stores/data";
 import router from '@/router';
+import { useBoardStore } from "@/stores/board";
 
 export class WebSocketConnection {
   private ws: WebSocket;
@@ -15,6 +16,7 @@ export class WebSocketConnection {
   onMessage(event: MessageEvent) {
     const message: WebSocketMessage = JSON.parse(event.data);
     const gamesStore = useGameStore();
+    const boardStore = useBoardStore();
     const login = useDataStore();
     switch (message.type) {
       case 'location':
@@ -39,6 +41,14 @@ export class WebSocketConnection {
         // const gameStore = useGameStore();
         // gameStore.processState(message.roomState);
         break;
+      case 'oracle_info':
+        console.log('oracle_info', message);
+        boardStore.processOracleInfo(message.oracleInfo);
+        break;
+      case 'board_update':
+        console.log('board_update', message);
+        boardStore.processBoardUpdate(message.events);
+        break;
       default:
         const _exhaustiveCheck: never = message;
     }
@@ -46,5 +56,9 @@ export class WebSocketConnection {
 
   private attemptReconnect(e: CloseEvent) {
     console.log(e);
+  }
+
+  send(message: any) {
+    this.ws.send(JSON.stringify(message));
   }
 }

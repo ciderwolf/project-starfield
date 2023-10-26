@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
 import { WebSocketConnection } from '@/api/websocket'
+import { WebSocketGameClient } from './api/game-client';
 
-// const ws = new WebSocketConnection();
+const ws = new WebSocketConnection();
+const client = new WebSocketGameClient(ws);
 </script>
 
 <template>
