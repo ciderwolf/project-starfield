@@ -5,19 +5,50 @@ import starfield.Id
 import starfield.routing.Deck
 import starfield.routing.DeckCard
 import java.util.*
+import java.util.concurrent.atomic.AtomicInteger
 
 typealias Card = DeckCard
+typealias CardId = Int
+typealias OracleId = String
+
+class CardIndexProvider {
+    var index = AtomicInteger(1 shl 5)
+
+    fun getIndex(): CardId {
+        return getIndex(Zone.LIBRARY)
+    }
+
+    fun getIndex(zone: Zone): CardId {
+        val idx = index.getAndIncrement() shl 4
+        return idx or zone.ordinal
+    }
+}
 
 @Serializable
-class BoardCard(val card: Card) {
-    val id: Id = UUID.randomUUID()
+data class CardState(
+    val id: CardId,
+    val x: Double,
+    val y: Double,
+    val index: Int,
+    val pivot: Pivot,
+    val counter: Int,
+    val transformed: Boolean,
+    val zone: Zone
+)
+
+class BoardCard(val card: Card, private val idProvider: CardIndexProvider) {
     val visibility = mutableSetOf<Id>()
     var x = 0.0
     var y = 0.0
     var pivot = Pivot.UNTAPPED
     var counter = 0
     var transformed = false
+    var id: CardId = idProvider.getIndex()
     var zone = Zone.LIBRARY
+        set(value) {
+            idProvider.getIndex(value)
+            field = value
+        }
 
     fun reset(clearVisibility: Boolean = true) {
         x = 0.0
@@ -27,21 +58,28 @@ class BoardCard(val card: Card) {
         if (clearVisibility) {
             visibility.clear()
         }
+        id = idProvider.getIndex(Zone.LIBRARY)
         transformed = false
         zone = Zone.LIBRARY
     }
+
+    fun getState(index: Int): CardState {
+        return CardState(id, x, y, index, pivot, counter, transformed, zone)
+    }
 }
 
-sealed class BoardDiffEvent {
-    data class ChangeZone(val card: UUID, val newZone: Zone, val oldZone: Zone) : BoardDiffEvent()
-    data class ChangeIndex(val card: UUID, val newIndex: Int, val oldIndex: Int) : BoardDiffEvent()
-    data class ChangePosition(val card: UUID, val x: Double, val y: Double) : BoardDiffEvent()
+@Serializable
+sealed class BoardDiffEvent(val type: String) {
+    data class ChangeZone(val card: CardId, val newZone: Zone, val oldCardId: CardId) : BoardDiffEvent("change_zone")
+    data class ChangeIndex(val card: CardId, val newIndex: Int) : BoardDiffEvent("change_index")
+    data class ChangePosition(val card: CardId, val x: Double, val y: Double) : BoardDiffEvent("change_position")
 
-    data class ChangeAttribute(val card: UUID, val attribute: CardAttribute, val newValue: Int) : BoardDiffEvent()
-    data class ChangePlayerAttribute(val attribute: PlayerAttribute, val newValue: Int) : BoardDiffEvent()
+    data class RevealCard(val card: CardId, val players: List<Id>) : BoardDiffEvent("reveal_card")
+    data class ChangeAttribute(val card: CardId, val attribute: CardAttribute, val newValue: Int) : BoardDiffEvent("change_attribute")
+    data class ChangePlayerAttribute(val attribute: PlayerAttribute, val newValue: Int) : BoardDiffEvent("change_player_attribute")
 
-    object ShuffleDeck : BoardDiffEvent()
-    object ScoopDeck : BoardDiffEvent()
+    data class ShuffleDeck(val newIds: List<CardId>) : BoardDiffEvent("shuffle_deck")
+    data class ScoopDeck(val newIds: List<CardId>) : BoardDiffEvent("scoop_deck")
 }
 
 enum class PlayerAttribute {
@@ -68,50 +106,32 @@ inline fun <reified T : Enum<T>> Int.toEnum(): T? {
 class BoardManager(private val owner: UUID, private val game: Game, private val deck: Deck) {
     private val cards: Map<Zone, MutableList<BoardCard>> = Zone.entries.associateWith {
         if (it == Zone.LIBRARY) {
-            deck.maindeck.map { card -> BoardCard(card) }.toMutableList()
+            deck.maindeck.flatMap { card ->
+                (0..card.count).map { BoardCard(card, game.cardIndexProvider) }
+            }.toMutableList()
         } else {
             mutableListOf()
         }
-    }
-
-    fun mulligan(startingHandSize: Int): List<BoardDiffEvent> {
-        val cardMoves = cards[Zone.HAND]!!
-            .map { BoardDiffEvent.ChangeZone(it.id, Zone.LIBRARY, Zone.HAND) }
-            .toMutableList<BoardDiffEvent>()
-
-        cards[Zone.LIBRARY]!!.addAll(cards[Zone.HAND]!!)
-        cards[Zone.HAND]!!.clear()
-
-        cardMoves.addAll(drawCards(startingHandSize))
-
-        return cardMoves
     }
 
     fun drawCards(count: Int): List<BoardDiffEvent> {
         return (0..count).flatMap { drawCard() }
     }
 
-    fun drawCard(): List<BoardDiffEvent> {
+    private fun drawCard(): List<BoardDiffEvent> {
         if (cards[Zone.LIBRARY]!!.size > 0) {
             val card = cards[Zone.LIBRARY]!!.removeAt(0)
 
             cards[Zone.HAND]!!.add(card)
-            return listOf(BoardDiffEvent.ChangeZone(card.id, Zone.HAND, Zone.LIBRARY),
-                BoardDiffEvent.ChangeIndex(card.id, cards[Zone.HAND]!!.size - 1, 0))
+            val oldCardId = card.id
+            card.zone = Zone.HAND
+            return listOf(BoardDiffEvent.ChangeZone(card.id, Zone.HAND, oldCardId),
+                BoardDiffEvent.ChangeIndex(card.id, cards[Zone.HAND]!!.size - 1))
         }
         return listOf()
     }
 
-    fun shuffleDeck(): BoardDiffEvent {
-        cards[Zone.LIBRARY]!!.shuffle()
-        cards[Zone.LIBRARY]!!.forEach {
-            it.visibility.clear()
-        }
-
-        return BoardDiffEvent.ShuffleDeck
-    }
-
-    fun setAttribute(card: UUID, attribute: CardAttribute, value: Int): BoardDiffEvent? {
+    fun setAttribute(card: CardId, attribute: CardAttribute, value: Int): BoardDiffEvent? {
         val targetCard = findCard(card) ?: return null
 
         when(attribute) {
@@ -119,19 +139,10 @@ class BoardManager(private val owner: UUID, private val game: Game, private val 
             CardAttribute.COUNTER -> targetCard.counter = value
             CardAttribute.TRANSFORMED -> targetCard.transformed = value != 0
         }
-        return BoardDiffEvent.ChangeAttribute(card, attribute, value, )
+        return BoardDiffEvent.ChangeAttribute(card, attribute, value)
     }
 
-
-    /**
-     * move cases:
-     *
-     * 1. Move to battlefield (x, y)
-     * 2. Move on battlefield (x, y)
-     * 3. Move in other zone (index)
-     * 4. Move to other zone (index, zone)
-     */
-    fun moveCard(cardId: Id, x: Double, y: Double): List<BoardDiffEvent> {
+    fun moveCard(cardId: CardId, x: Double, y: Double): List<BoardDiffEvent> {
         val events = mutableListOf<BoardDiffEvent>()
         val card = findCard(cardId) ?: return events
         card.x = x
@@ -140,7 +151,7 @@ class BoardManager(private val owner: UUID, private val game: Game, private val 
         return events
     }
 
-    fun moveCard(cardId: Id, newIndex: Int): List<BoardDiffEvent> {
+    fun moveCard(cardId: CardId, newIndex: Int): List<BoardDiffEvent> {
         val events = mutableListOf<BoardDiffEvent>()
         val card = findCard(cardId) ?: return events
 
@@ -148,43 +159,46 @@ class BoardManager(private val owner: UUID, private val game: Game, private val 
         cards[card.zone]!!.removeAt(oldIndex)
         cards[card.zone]!!.add(newIndex, card)
 
-        events.add(BoardDiffEvent.ChangeIndex(cardId, newIndex, oldIndex))
+        events.add(BoardDiffEvent.ChangeIndex(cardId, newIndex))
 
         return events
     }
 
+    fun shuffleDeck(): BoardDiffEvent {
+        cards[Zone.LIBRARY]!!.shuffle()
+        cards[Zone.LIBRARY]!!.forEach {
+            it.visibility.clear()
+        }
 
-    fun reset(): BoardDiffEvent {
+        return BoardDiffEvent.ShuffleDeck(cards[Zone.LIBRARY]!!.map { it.id })
+    }
+
+    fun reset(): List<BoardDiffEvent> {
         for(entry in cards) {
-            for(card in entry.value) {
-                card.reset()
-            }
             if (entry.key != Zone.LIBRARY) {
                 cards[Zone.LIBRARY]!!.addAll(entry.value)
                 entry.value.clear()
+                entry.value.forEach { it.reset(clearVisibility = true) }
             }
         }
 
-        cards[Zone.LIBRARY]!!.shuffle()
-
-        return BoardDiffEvent.ScoopDeck
+        return listOf(BoardDiffEvent.ScoopDeck(cards[Zone.LIBRARY]!!.map { it.id }))
     }
 
 
-    private fun findCard(id: UUID): BoardCard? {
+    private fun findCard(id: CardId): BoardCard? {
         return cards.values.flatten().find { it.id == id }
     }
 
-    fun getState(): Map<Zone, List<BoardCard>> {
-        return cards
+    fun getState(): Map<Zone, List<CardState>> {
+        return cards.map { Pair(it.key, it.value.mapIndexed { index, card -> card.getState(index) }) }.toMap()
     }
 
-    fun changeZone(cardId: Id, newZone: Zone): List<BoardDiffEvent> {
+    fun changeZone(cardId: CardId, newZone: Zone): List<BoardDiffEvent> {
         val events = mutableListOf<BoardDiffEvent>()
         val card = findCard(cardId) ?: return events
 
         val oldZone = card.zone
-        val oldIndex = cards[oldZone]!!.indexOf(card)
         cards[oldZone]!!.remove(card)
         cards[newZone]!!.add(card)
 
@@ -194,17 +208,24 @@ class BoardManager(private val owner: UUID, private val game: Game, private val 
             game.users().forEach {
                 card.visibility.add(it.id)
             }
+            events.add(BoardDiffEvent.RevealCard(cardId, game.users().map { it.id }))
         } else if (newZone == Zone.HAND) {
             // visible to just the owner
             card.visibility.add(owner)
+            events.add(BoardDiffEvent.RevealCard(cardId, listOf(owner)))
         }
 
+        val oldCardId = card.id
         card.zone = newZone
 
-        events.add(BoardDiffEvent.ChangeZone(cardId, newZone, oldZone))
-        events.add(BoardDiffEvent.ChangeIndex(cardId, cards[newZone]!!.size - 1, oldIndex))
+        events.add(BoardDiffEvent.ChangeZone(cardId, newZone, oldCardId))
+        events.add(BoardDiffEvent.ChangeIndex(cardId, cards[newZone]!!.size - 1))
 
         return events
+    }
+
+    fun getOracleId(card: CardId): OracleId {
+        return findCard(card)!!.card.image
     }
 }
 
@@ -212,7 +233,7 @@ class BoardManager(private val owner: UUID, private val game: Game, private val 
 data class PlayerState(
     val name: String,
     val id: Id,
-    val board: Map<Zone, List<BoardCard>>,
+    val board: Map<Zone, List<CardState>>,
     val life: Int,
     val poison: Int
 )
@@ -224,10 +245,10 @@ class Player(val user: User, deck: Deck, game: Game) {
     private var poison = 0
 
     fun mulligan(): List<BoardDiffEvent> {
-        return board.mulligan(7)
+        return board.reset() + board.drawCards(7)
     }
 
-    fun tapCard(card: UUID): List<BoardDiffEvent> {
+    fun tapCard(card: CardId): List<BoardDiffEvent> {
         val event = board.setAttribute(card, CardAttribute.PIVOT, Pivot.TAPPED.ordinal)
         return if (event != null) {
             listOf(event)
@@ -249,15 +270,15 @@ class Player(val user: User, deck: Deck, game: Game) {
         return board.drawCards(count)
     }
 
-    fun playCard(card: Id, x: Double, y: Double): List<BoardDiffEvent> {
+    fun playCard(card: CardId, x: Double, y: Double): List<BoardDiffEvent> {
         return board.changeZone(card, Zone.BATTLEFIELD) + board.moveCard(card, x, y)
     }
 
-    fun moveCard(card: Id, index: Int): List<BoardDiffEvent> {
+    fun moveCard(card: CardId, index: Int): List<BoardDiffEvent> {
         return board.moveCard(card, index)
     }
 
-    fun moveCard(card: Id, zone: Zone, index: Int): List<BoardDiffEvent> {
+    fun moveCard(card: CardId, zone: Zone, index: Int): List<BoardDiffEvent> {
         val events = board.changeZone(card, zone)
         return if (index != -1) {
             events + board.moveCard(card, index)
@@ -267,7 +288,7 @@ class Player(val user: User, deck: Deck, game: Game) {
     }
 
     fun scoop(): List<BoardDiffEvent> {
-        return listOf(board.reset())
+        return board.reset()
     }
 
     fun shuffle(): List<BoardDiffEvent> {
@@ -283,6 +304,10 @@ class Player(val user: User, deck: Deck, game: Game) {
         poison = newValue
         return listOf(BoardDiffEvent.ChangePlayerAttribute(PlayerAttribute.POISON, newValue))
     }
+
+    fun getOracleCard(card: CardId): OracleId {
+        return board.getOracleId(card)
+    }
 }
 
 enum class Zone {
@@ -291,7 +316,8 @@ enum class Zone {
     BATTLEFIELD,
     GRAVEYARD,
     EXILE,
-    FACE_DOWN;
+    FACE_DOWN,
+    SIDEBOARD;
 
     val isPublic: Boolean
         get() {

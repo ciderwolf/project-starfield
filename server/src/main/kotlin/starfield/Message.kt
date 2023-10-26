@@ -2,9 +2,7 @@ package starfield
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import starfield.model.CardAttribute
-import starfield.model.PlayerAttribute
-import starfield.model.Zone
+import starfield.model.*
 import starfield.plugins.Location
 import java.util.*
 
@@ -32,6 +30,11 @@ data class IdentityMessage(val username: String, val id: Id) : ServerMessage("id
 @Serializable
 data class StateMessage<T>(val roomState: T, val room: String): ServerMessage("state")
 
+@Serializable
+data class BoardUpdateMessage(val events: List<BoardDiffEvent>) : ServerMessage("board_update")
+
+@Serializable
+data class OracleCardInfoMessage(val cards: Map<CardId, OracleId>) : ServerMessage("oracle_cards")
 
 @Serializable
 sealed class ClientMessage
@@ -51,7 +54,7 @@ enum class SpecialAction {
 @Serializable
 @SerialName("change_card_attribute")
 data class ChangeCardAttributeMessage(
-    val card: Id,
+    val card: CardId,
     val attribute: CardAttribute,
     val newValue: Int) : ClientMessage()
 
@@ -83,28 +86,28 @@ data class ChangePlayerAttributeMessage(
 @Serializable
 @SerialName("play_card")
 data class PlayCardMessage(
-    val card: Id,
+    val card: CardId,
     val x: Double,
     val y: Double) : ClientMessage()
 
 @Serializable
 @SerialName("change_position")
 data class ChangeCardPositionMessage(
-    val card: Id,
+    val card: CardId,
     val x: Double,
     val y: Double) : ClientMessage()
 
 @Serializable
 @SerialName("change_zone")
 data class ChangeCardZoneMessage(
-    val card: Id,
+    val card: CardId,
     val zone: Zone,
     val index: Int) : ClientMessage()
 
 @Serializable
 @SerialName("change_index")
 data class ChangeCardIndexMessage(
-    val card: Id,
+    val card: CardId,
     val index: Int) : ClientMessage()
 
 
