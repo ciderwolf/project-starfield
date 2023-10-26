@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import type { Card } from '@/api/message';
-import BattlefieldZone from '@/components/game/BattlefieldZone.vue';
 import Zone from '@/components/game/Zone.vue';
 import { OPPONENT_ZONES, ZONES } from '@/zones';
 import { ref } from 'vue';

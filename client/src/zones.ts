@@ -1,6 +1,3 @@
-import Rectangle from './rect';
-// import Card from './card';
-
 const Z_WIDTH = '78px';
 const Z_HEIGHT = '108px';
 

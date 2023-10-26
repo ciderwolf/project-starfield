@@ -34,6 +34,7 @@ export const useGameStore = defineStore('games', () => {
         break;
       default:
         const _exhaustiveCheck: never = message;
+        console.error(_exhaustiveCheck);
     }
   }
 
