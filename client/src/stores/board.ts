@@ -1,20 +1,26 @@
 import { reactive } from 'vue'
 import { defineStore } from 'pinia'
-import { v4 as uuidv4 } from 'uuid';
 import { ZONES } from '@/zones';
 import type { BoardDiffEvent, Card, ChangeAttributeEvent, ChangeIndexEvent, ChangePlayerAttribute, ChangePositionEvent, ChangeZoneEvent, ScoopDeck, ShuffleDeck } from '@/api/message';
+import { useZoneStore } from './zone';
 
 
-export type Pivot = 'TAPPED' | 'UNTAPPED' | 'UPSIDE_DOWN' | 'LEFT_TAPPED';
+export enum Pivot {
+  UNTAPPED,
+  TAPPED,
+  LEFT_TAPPED,
+  UPSIDE_DOWN,
+}
+
 export function pivotToAngle(pivot: Pivot) {
   switch (pivot) {
-    case 'LEFT_TAPPED':
+    case Pivot.LEFT_TAPPED:
       return '270deg';
-    case 'TAPPED':
+    case Pivot.TAPPED:
       return '90deg';
-    case 'UNTAPPED':
+    case Pivot.UNTAPPED:
       return '0deg';
-    case 'UPSIDE_DOWN':
+    case Pivot.UPSIDE_DOWN:
       return '180deg';
     default:
       const _exhaustiveCheck: never = pivot;
@@ -22,21 +28,10 @@ export function pivotToAngle(pivot: Pivot) {
   }
 }
 function indexToPivot(index: number): Pivot {
-  switch (index) {
-    case 0:
-      return 'UNTAPPED';
-    case 1:
-      return 'TAPPED';
-    case 2:
-      return 'UPSIDE_DOWN';
-    case 3:
-      return 'LEFT_TAPPED';
-    default:
-      throw new Error(`Invalid index ${index}. Unable to convert to pivot.`);
-  }
+  return index as Pivot;
 }
 
-export type CardId = string;
+export type CardId = number;
 export type OracleId = string;
 export type BoardCard = Card & {
   x: number;
@@ -61,7 +56,8 @@ interface HandOrderInfo {
 type HandOrder = { [id: CardId]: HandOrderInfo };
 
 function extractZone(cardId: CardId): number {
-  return Number(cardId.split('-')[0]);
+  // extract the lowest four bits and return the corresponding zone id
+  return cardId & 0xF;
 }
 
 const TestCards: BoardCard[] = [
@@ -71,11 +67,11 @@ const TestCards: BoardCard[] = [
     oracleId: 'f29ba16f-c8fb-42fe-aabf-87089cb214a7',
     x: 0,
     y: 0,
-    pivot: 'UNTAPPED',
+    pivot: Pivot.UNTAPPED,
     counter: 0,
     transformed: false,
     zone: 0,
-    id: uuidv4()
+    id: (1 << 4 | ZONES.play.id)
   },
   {
     name: 'Path to Exile',
@@ -83,11 +79,11 @@ const TestCards: BoardCard[] = [
     oracleId: '061df0a2-1967-4ddd-84e3-3ecf3af98f6b',
     x: 0,
     y: 0,
-    pivot: 'UNTAPPED',
+    pivot: Pivot.UNTAPPED,
     counter: 0,
     transformed: false,
     zone: 0,
-    id: uuidv4()
+    id: (2 << 4 | ZONES.play.id)
   },
   {
     name: 'Serum Visions',
@@ -95,28 +91,28 @@ const TestCards: BoardCard[] = [
     oracleId: '4bc61952-88ba-447a-835a-f1e9643fcd0d',
     x: 0,
     y: 0,
-    pivot: 'UNTAPPED',
+    pivot: Pivot.UNTAPPED,
     counter: 0,
     transformed: false,
     zone: 0,
-    id: uuidv4()
+    id: (3 << 4 | ZONES.play.id)
   },
 ]
 
 export const useBoardStore = defineStore('board', () => {
   
-  const cards: { [zoneId: number]: BoardCard[] } = reactive({ [ZONES.battlefield.id]: TestCards });
+  const cards: { [zoneId: number]: BoardCard[] } = reactive({ [ZONES.play.id]: TestCards });
   const oracleInfo = reactive<{ [cardId: CardId]: OracleId }>({});
   const players = reactive<{ [playerId: string]: PlayerAttributes }>({});
+  const zones = useZoneStore();
   
   function moveCard(zoneId: number, cardId: CardId, x: number, y: number) {
     const cardIndex = findCardIndex(cardId);
     cards[zoneId][cardIndex].x = x;
     cards[zoneId][cardIndex].y = y;
     if (zoneId === ZONES.hand.id) {
-      // recalculateHandOrder(cards[ZONES.hand.id], zoneBounds[zoneId]);
-    } 
-
+      recalculateHandOrder(cards[ZONES.hand.id], zones.zoneBounds[ZONES.hand.id]);
+    }
   }
 
   function moveCardZone(currentZoneId: number, cardId: CardId, newZoneId: number, x: number, y: number) {
@@ -126,10 +122,10 @@ export const useBoardStore = defineStore('board', () => {
     card.x = x;
     card.y = y;
     card.zone = newZoneId;
-    card.id = uuidv4();
+    card.id = Math.round(Math.random() * 100000) << 4 | newZoneId;
 
     if (newZoneId === ZONES.hand.id || currentZoneId === ZONES.hand.id) {
-      // recalculateHandOrder(cards[ZONES.hand.id], zoneBounds[ZONES.hand.id]);
+      recalculateHandOrder(cards[ZONES.hand.id], zones.zoneBounds[ZONES.hand.id]);
     }
   }
 
@@ -264,7 +260,7 @@ export const useBoardStore = defineStore('board', () => {
   }
 
   function resetCard(card: BoardCard) {
-    card.pivot = 'UNTAPPED';
+    card.pivot = Pivot.UNTAPPED;
     card.counter = 0;
     card.transformed = false;
     card.x = 0;

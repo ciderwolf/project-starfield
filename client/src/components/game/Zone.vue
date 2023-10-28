@@ -1,18 +1,21 @@
 <script setup lang="ts">
-import { ZONES, type ZoneConfig } from '@/zones';
+import { type ZoneConfig } from '@/zones';
+import { client } from '@/ws';
 import BoardCard from '@/components/game/BoardCard.vue';
 import { onMounted, onUnmounted, ref } from 'vue';
-import { useBoardStore } from '@/stores/board';
+import { useBoardStore, type CardId, Pivot } from '@/stores/board';
+import { useZoneStore } from '@/stores/zone';
 
 const props = defineProps<{ zone: ZoneConfig }>();
 
 const zoneBounds = ref<HTMLElement | null>(null);
 const zoneRect = ref<DOMRect | undefined>(undefined);
 const board = useBoardStore();
+const zones = useZoneStore();
 
 function resetZoneRect() {
   zoneRect.value = zoneBounds.value?.getBoundingClientRect()!;
-  board.updateZoneBounds(props.zone.id, zoneRect.value!);
+  zones.updateZoneBounds(props.zone.id, zoneRect.value!);
 }
 
 onMounted(() => {
@@ -27,20 +30,32 @@ onUnmounted(() => {
   window.removeEventListener('resize', resetZoneRect);
 });
 
-function moveCardPos(index: number, x: number, y: number) {
-  board.moveCard(props.zone.id, index, x, y);
+function moveCardPos(cardId: CardId, x: number, y: number) {
+  client.moveCard(props.zone.id, cardId, x, y);
+  board.moveCard(props.zone.id, cardId, x, y);
 }
 
-function moveCardZone(index: number, zoneId: number, x: number, y: number) {
-  board.moveCardZone(props.zone.id, index, zoneId, x, y);
+function moveCardZone(cardId: CardId, zoneId: number, x: number, y: number) {
+  client.moveCardToZone(props.zone.id, cardId, zoneId, x, y);
+  board.moveCardZone(props.zone.id, cardId, zoneId, x, y);
+}
+
+function tap(cardId: CardId) {
+  const currentPivot = board.cards[props.zone.id].find(c => c.id === cardId)!.pivot;
+  if (currentPivot === Pivot.UNTAPPED) {
+    client.changeCardAttribute(props.zone.id, cardId, 'PIVOT', Pivot.TAPPED);
+  } else {
+    client.changeCardAttribute(props.zone.id, cardId, 'PIVOT', Pivot.UNTAPPED);
+  }
 }
 
 </script>
 
 <template>
   <div class="zone-box">
-    <board-card v-for="card, index in board.cards[zone.id]" :parent-bounds="zoneRect" :card="card" :key="card.key"
-      @move="(x, y) => moveCardPos(index, x, y)" @move-zone="(z, x, y) => moveCardZone(index, z, x, y)"></board-card>
+    <board-card v-for="card, index in board.cards[zone.id]" :parent-bounds="zoneRect" :card="card" :key="card.id"
+      @move="(x, y) => moveCardPos(card.id, x, y)" @move-zone="(z, x, y) => moveCardZone(card.id, z, x, y)"
+      @tap="tap(card.id)" />
     <div class="zone-bounds" ref="zoneBounds" :style="zone.pos"></div>
   </div>
 </template>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { useBoardStore, type BoardCard } from '@/stores/board';
+import { useBoardStore, pivotToAngle, type BoardCard } from '@/stores/board';
+import { useZoneStore } from '@/stores/zone';
 import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
 import { ZONES } from '@/zones';
 
@@ -13,28 +14,29 @@ const props = defineProps<{ card: BoardCard, parentBounds?: DOMRect }>();
 const emit = defineEmits<{
   (event: 'move', x: number, y: number): void
   (event: 'move-zone', zoneId: number, x: number, y: number): void
+  (event: 'tap'): void
 }>()
 
 const board = useBoardStore();
+const zones = useZoneStore();
 const image = ref<HTMLImageElement | null>(null);
 
 const boardPos = reactive<Position>({ x: 0, y: 0 });
 const imagePos = reactive<Position>({ x: 0, y: 0 });
 const offsetPos = reactive<Position>({ x: 0, y: 0 });
 const moving = ref(false);
-const tapped = ref(false);
 
 const positionInfo = computed(() => ({
   left: `${imagePos.x}px`,
   top: `${imagePos.y}px`,
   zIndex: moving.value ? 1 : 0,
-  transform: `rotate(${tapped.value ? '90deg' : '0deg'})`,
+  transform: `rotate(${pivotToAngle(props.card.pivot)})`,
 }));
 
 const ghostPositionInfo = computed(() => ({
   left: `${boardPos.x}px`,
   top: `${boardPos.y}px`,
-  transform: `rotate(${tapped.value ? '90deg' : '0deg'})`,
+  transform: `rotate(${pivotToAngle(props.card.pivot)})`,
 }));
 
 function clampToBounds(rect: DOMRect, parentRect: DOMRect) {
@@ -64,12 +66,12 @@ function onMouseUp(e: MouseEvent) {
   if (moving.value) {
     moving.value = false;
 
-    const otherZone = board.overlappingZone(e.clientX, e.clientY);
+    const otherZone = zones.overlappingZone(e.clientX, e.clientY);
 
     if (otherZone !== null && otherZone.id !== props.card.zone) {
       // move this card to that zone
       const rect = image.value!.getBoundingClientRect();
-      const newPos = board.pointInZone(otherZone.id, imagePos.x + rect.width / 2, imagePos.y + rect.height / 2);
+      const newPos = zones.pointInZone(otherZone.id, imagePos.x + rect.width / 2, imagePos.y + rect.height / 2);
       emit('move-zone', otherZone.id, newPos.x, newPos.y);
     }
     else {
@@ -111,7 +113,7 @@ function updatePositionFromVirtualCoords() {
 }
 
 function tap() {
-  tapped.value = !tapped.value;
+  emit('tap');
 }
 
 onMounted(() => {
