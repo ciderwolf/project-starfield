@@ -28,8 +28,8 @@ class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserColle
         return players.map { it.user }
     }
 
-    override fun currentState(): GameState {
-        return GameState(name, players.map { it.getState() })
+    override fun currentState(playerId: UUID): GameState {
+        return GameState(name, players.map { it.getState(playerId) })
     }
 
     suspend fun handleMessage(userId: UUID, message: ClientMessage) {

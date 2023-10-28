@@ -15,7 +15,7 @@ import java.util.*
 
 abstract class UserCollection<S> {
     abstract fun users(): List<User>
-    abstract fun currentState(): S
+    abstract fun currentState(playerId: UUID): S
 
     open fun reconnectUser(connection: WSConnection) {
         val user = users().find { it.id == connection.id }
@@ -34,6 +34,12 @@ abstract class UserCollection<S> {
     protected suspend inline fun <reified T : ServerMessage> broadcast(message: T) {
         users().forEach {
             it.connection?.send(message)
+        }
+    }
+
+    protected suspend inline fun <reified T : ServerMessage> broadcastToEach(messageFactory: (User) -> T) {
+        users().forEach {
+            it.connection?.send(messageFactory(it))
         }
     }
 }
@@ -72,7 +78,7 @@ suspend fun reconnect(connection: WSConnection) {
     val lobby = findLobby(connection.id)
     lobby?.reconnectUser(connection)
     if (lobby != null) {
-        connection.send(StateMessage(lobby.currentState(), "lobby"))
+        connection.send(StateMessage(lobby.currentState(connection.id), "lobby"))
         connection.send(LocationMessage(Location.LOBBY, lobby.id))
         return
     }
@@ -80,7 +86,7 @@ suspend fun reconnect(connection: WSConnection) {
     val game = findGame(connection.id)
     game?.reconnectUser(connection)
     if (game != null) {
-        connection.send(StateMessage(game.currentState(), "game"))
+        connection.send(StateMessage(game.currentState(connection.id), "game"))
         connection.send(LocationMessage(Location.GAME, game.id))
         return
     }

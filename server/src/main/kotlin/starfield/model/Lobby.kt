@@ -33,14 +33,14 @@ class Lobby(val id: UUID, val owner: User, val name: String): UserCollection<Lob
         } else if (player == otherPlayer) {
             otherDeck = deck
         }
-        broadcast(StateMessage(currentState(), "lobby"))
+        broadcast(StateMessage(currentState(owner.id), "lobby"))
     }
 
     fun canJoin(): Boolean = otherPlayer == null
     suspend fun join(other: User): Boolean {
         if (canJoin()) {
             otherPlayer = other
-            owner.connection?.send(StateMessage(currentState(), "lobby"))
+            owner.connection?.send(StateMessage(currentState(owner.id), "lobby"))
             return true
         }
 
@@ -53,7 +53,9 @@ class Lobby(val id: UUID, val owner: User, val name: String): UserCollection<Lob
             otherDeck = null
             true
         } else user == owner
-        broadcast(StateMessage(currentState(), "lobby"))
+        broadcastToEach {
+            StateMessage(currentState(it.id), "lobby")
+        }
         return left
     }
 
@@ -61,7 +63,9 @@ class Lobby(val id: UUID, val owner: User, val name: String): UserCollection<Lob
         if (otherPlayer?.id == other) {
             otherPlayer = null
             otherDeck = null
-            broadcast(StateMessage(currentState(), "lobby"))
+            broadcastToEach {
+                StateMessage(currentState(it.id), "lobby")
+            }
             return true
         }
         return false
@@ -81,7 +85,7 @@ class Lobby(val id: UUID, val owner: User, val name: String): UserCollection<Lob
         }
     }
 
-    override fun currentState(): LobbyState {
+    override fun currentState(playerId: UUID): LobbyState {
         return LobbyState(
             name, users().map { it.id }, listOf(ownerDeck, otherDeck).map { it?.id }
         )

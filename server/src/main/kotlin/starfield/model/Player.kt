@@ -227,6 +227,12 @@ class BoardManager(private val owner: UUID, private val game: Game, private val 
     fun getOracleId(card: CardId): OracleId {
         return findCard(card)!!.card.image
     }
+
+    fun getOracleInfo(playerId: UUID): Map<CardId, OracleId> {
+        return cards.values.flatten()
+            .filter { it.visibility.contains(playerId) }
+            .associate { Pair(it.id, it.card.image) }
+    }
 }
 
 @Serializable
@@ -234,6 +240,7 @@ data class PlayerState(
     val name: String,
     val id: Id,
     val board: Map<Zone, List<CardState>>,
+    val oracleInfo: Map<CardId, OracleId>,
     val life: Int,
     val poison: Int
 )
@@ -257,11 +264,12 @@ class Player(val user: User, deck: Deck, game: Game) {
         }
     }
 
-    fun getState(): PlayerState {
+    fun getState(playerId: UUID): PlayerState {
         return PlayerState(
             user.name,
             user.id,
             board.getState(),
+            board.getOracleInfo(playerId),
             life, poison
         )
     }

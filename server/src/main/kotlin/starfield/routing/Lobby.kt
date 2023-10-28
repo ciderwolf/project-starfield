@@ -44,7 +44,7 @@ fun Route.gameRouting() {
             it.send(message)
         }
         lobby.owner.connection?.send(LocationMessage(Location.LOBBY, lobby.id))
-        call.respondSuccess(lobby.currentState())
+        call.respondSuccess(lobby.currentState(session.id))
     }
 
     post("/chooseDeck") {
@@ -81,7 +81,7 @@ fun Route.gameRouting() {
             val user = session.user()
             lobby.join(user)
             user.connection?.send(LocationMessage(Location.LOBBY, lobby.id))
-            return@post call.respondSuccess(lobby.currentState())
+            return@post call.respondSuccess(lobby.currentState(user.id))
         } else {
             return@post call.respondError("Can't join that game")
         }
@@ -160,7 +160,7 @@ fun Route.gameRouting() {
         }
 
         game.users().forEach {
-            it.connection?.send(StateMessage(game.currentState(), "game"))
+            it.connection?.send(StateMessage(game.currentState(it.id), "game"))
             it.connection?.send(LocationMessage(Location.GAME, game.id))
         }
 
