@@ -21,6 +21,14 @@ const board = useBoardStore();
 const zones = useZoneStore();
 const image = ref<HTMLImageElement | null>(null);
 
+const imageUrl = computed(() => {
+  if (board.oracleInfo[props.card.id]) {
+    return `https://api.scryfall.com/cards/${board.oracleInfo[props.card.id]}?format=image&version=small`;
+  } else {
+    return '/back.png';
+  }
+});
+
 const boardPos = reactive<Position>({ x: 0, y: 0 });
 const imagePos = reactive<Position>({ x: 0, y: 0 });
 const offsetPos = reactive<Position>({ x: 0, y: 0 });
@@ -142,10 +150,9 @@ onUnmounted(() => {
 
 <template>
   <img class="board-card" :style="positionInfo" draggable="false" @dblclick="tap" @mousedown="onMouseDown"
-    @mouseup="onMouseUp" :src="`https://api.scryfall.com/cards/${card.image}?format=image&version=small`" ref="image">
+    @mouseup="onMouseUp" :src="imageUrl" ref="image">
   <img v-if="moving && (boardPos.x != imagePos.x || boardPos.y != imagePos.y)" class="board-card board-card-ghost"
-    :style="ghostPositionInfo" draggable="false"
-    :src="`https://api.scryfall.com/cards/${card.image}?format=image&version=small`">
+    :style="ghostPositionInfo" draggable="false" :src="imageUrl">
 </template>
 
 <style scoped>
