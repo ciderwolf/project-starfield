@@ -86,6 +86,7 @@ enum class PlayerAttribute {
     LIFE, POISON
 }
 
+@Serializable(with = PivotSerializer::class)
 enum class Pivot {
     UNTAPPED,
     TAPPED,
