@@ -31,13 +31,16 @@ onUnmounted(() => {
 });
 
 function moveCardPos(cardId: CardId, x: number, y: number) {
-  client.moveCard(props.zone.id, cardId, x, y);
-  board.moveCard(props.zone.id, cardId, x, y);
+  if (props.zone.name == 'BATTLEFIELD') {
+    client.moveCard(props.zone.id, cardId, x, y);
+  }
+  else if (props.zone.name === 'HAND') {
+    board.moveCard(props.zone.id, cardId, x, y);
+  }
 }
 
 function moveCardZone(cardId: CardId, zoneId: number, x: number, y: number) {
   client.moveCardToZone(props.zone.id, cardId, zoneId, x, y);
-  board.moveCardZone(props.zone.id, cardId, zoneId, x, y);
 }
 
 function tap(cardId: CardId) {

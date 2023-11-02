@@ -1,4 +1,4 @@
-import { ZONES } from "@/zones";
+import { ZONES, zoneFromIndex } from "@/zones";
 import type { WebSocketConnection } from "./websocket";
 import { useBoardStore, type CardId } from "@/stores/board";
 import type { PlayerAttribute, SpecialAction, CardAttribute } from "./message";
@@ -26,11 +26,11 @@ export abstract class GameClient {
 
 export class WebSocketGameClient extends GameClient {
 
-  private board: ReturnType<typeof useBoardStore>;
+  // private board: ReturnType<typeof useBoardStore>;
 
   constructor(private ws: WebSocketConnection) {
     super();
-    this.board = useBoardStore();
+    // this.board = useBoardStore();
   }
 
   drawCards(count: number): void {
@@ -56,8 +56,7 @@ export class WebSocketGameClient extends GameClient {
   changeCardAttribute(zoneId: number, cardId: CardId, attribute: CardAttribute, newValue: number): void {
     this.ws.send({
       type: 'change_card_attribute',
-      zoneId,
-      cardId,
+      card: cardId,
       attribute,
       newValue
     });
@@ -67,8 +66,7 @@ export class WebSocketGameClient extends GameClient {
     if (newZoneId === ZONES.play.id) {
       this.ws.send({
         type: 'play_card',
-        zoneId,
-        cardId,
+        card: cardId,
         x,
         y,
       });
@@ -76,9 +74,8 @@ export class WebSocketGameClient extends GameClient {
     else {
       this.ws.send({
         type: 'change_zone',
-        zoneId,
-        cardId,
-        newZoneId,
+        card: cardId,
+        zone: zoneFromIndex(newZoneId)!.name,
         index: -1,
       });
     }
@@ -87,8 +84,7 @@ export class WebSocketGameClient extends GameClient {
     if (zoneId === ZONES.play.id) {
       this.ws.send({
         type: 'change_position',
-        zoneId,
-        cardId,
+        card: cardId,
         x,
         y,
       });
@@ -96,8 +92,7 @@ export class WebSocketGameClient extends GameClient {
     else {
       this.ws.send({
         type: 'change_index',
-        zoneId,
-        cardId,
+        card: cardId,
         index: -1,
       });
     }

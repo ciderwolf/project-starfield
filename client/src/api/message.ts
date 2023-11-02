@@ -1,6 +1,6 @@
 import type { CardId } from "@/stores/board";
 
-export type WebSocketMessage = LocationMessage | IdentityMessage | ListingUpdateMessage | DeleteListingMessage | RoomStateMessage | BoardUpdateMessage | OracleInfoMessage;
+export type WebSocketMessage = LocationMessage | IdentityMessage | ListingUpdateMessage | DeleteListingMessage | RoomStateMessage | BoardUpdateMessage | OracleCardsMessage;
 
 type LocationMessage = {
   type: 'location';
@@ -56,22 +56,32 @@ export type GameState = {
   players: PlayerState[];
 }
 
-type Zone = 'BATTLEFIELD' | 'HAND' | 'LIBRARY' | 'GRAVEYARD' | 'EXILE' | 'FACE_DOWN';
+export type Zone = 'BATTLEFIELD' | 'HAND' | 'LIBRARY' | 'GRAVEYARD' | 'EXILE' | 'FACE_DOWN' | 'SIDEBOARD';
 
-type PlayerState = {
+export type PlayerState = {
   id: string;
   name: string;
   board: Partial<{ [key in Zone]: BoardCard[] }>;
+  oracleInfo: { [cardId: CardId]: string };
   life: number;
   poison: number;
 }
 
-type BoardCard = {
-  id: string;
+export enum Pivot {
+  UNTAPPED,
+  TAPPED,
+  LEFT_TAPPED,
+  UPSIDE_DOWN,
+}
+
+export type BoardCard = Card & {
   x: number;
   y: number;
-  attributes: { [attr: string]: number };
-  card: Card;
+  pivot: Pivot;
+  counter: number;
+  transformed: boolean;
+  zone: number;
+  id: CardId;
 };
 
 export type Deck = {
@@ -108,38 +118,38 @@ export type BoardUpdateMessage = {
   events: BoardDiffEvent[];
 }
 
-export type OracleInfoMessage = {
-  type: 'oracle_info';
+export type OracleCardsMessage = {
+  type: 'oracle_cards';
   oracleInfo: { [cardId: CardId]: string };
 }
 
-export type BoardDiffEvent = ChangeZoneEvent | ChangeIndexEvent | ChangePositionEvent | ChangeAttributeEvent | ChangePlayerAttribute | ScoopDeck | ShuffleDeck;
+export type BoardDiffEvent = ChangeZoneEvent | ChangeIndexEvent | ChangePositionEvent | ChangeAttributeEvent | ChangePlayerAttribute | ScoopDeck | ShuffleDeck | RevealCard;
 
 export type ChangeZoneEvent = {
   type: 'change_zone';
-  cardId: CardId;
+  card: CardId;
   newZone: Zone;
   oldCardId: CardId;
 }
 
 export type ChangeIndexEvent = {
   type: 'change_index';
-  cardId: CardId;
+  card: CardId;
   newIndex: number;
 }
 
 export type ChangePositionEvent = {
   type: 'change_position';
-  cardId: CardId;
+  card: CardId;
   x: number;
   y: number;
 }
 
 export type ChangeAttributeEvent = {
   type: 'change_attribute';
-  cardId: CardId;
+  card: CardId;
   attribute: CardAttribute;
-  value: number;
+  newValue: number;
 }
 
 export type ChangePlayerAttribute = {
@@ -158,3 +168,62 @@ export type ShuffleDeck = {
   newIds: CardId[];
   type: 'shuffle_deck';
 }
+
+export type RevealCard = {
+  players: string[];
+  card: CardId;
+  type: 'reveal_card';
+}
+
+export type ClientMessage = ChangeCardAttributeMessage | ChangeCardIndexMessage | ChangeCardPositionMessage | ChangeCardZoneMessage | ChangePlayerAttributeMessage | DrawCardMessage | PlayCardMessage | SpecialActionMessage;
+
+type ChangeCardAttributeMessage = {
+  attribute: CardAttribute;
+  card: number;
+  newValue: number;
+  type: "change_card_attribute";
+}
+
+type ChangeCardIndexMessage = {
+  card: number;
+  index: number;
+  type: "change_index";
+}
+
+type ChangeCardPositionMessage = {
+  card: number;
+  x: number;
+  y: number;
+  type: "change_position";
+}
+
+type ChangeCardZoneMessage = {
+  card: number;
+  index: number;
+  zone: Zone;
+  type: "change_zone";
+}
+
+type ChangePlayerAttributeMessage = {
+  attribute: PlayerAttribute;
+  newValue: number;
+  type: "change_player_attribute";
+}
+
+type DrawCardMessage = {
+  count: number;
+  type: "draw_card";
+}
+
+type PlayCardMessage = {
+  card: number;
+  x: number;
+  y: number;
+  type: "play_card";
+}
+
+type SpecialActionMessage = {
+  action: SpecialAction;
+  type: "special_action";
+}
+

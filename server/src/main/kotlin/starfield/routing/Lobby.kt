@@ -36,7 +36,7 @@ fun Route.gameRouting() {
         }
 
         val definition = call.receive<CreateGameMessage>()
-        val lobby = Lobby(UUID.randomUUID(), session.user(), definition.name)
+        val lobby = Lobby(UUID.randomUUID(), session.user(), definition.name, definition.players)
         lobbies[lobby.id] = lobby
         val listing = GameListing(lobby.id, lobby.name, lobby.users().map { it.id }, false)
         val message = ListingUpdateMessage(listing)
@@ -154,6 +154,10 @@ fun Route.gameRouting() {
         }
 
         val game = lobby.startGame() ?: return@post call.respondError("Unable to start game")
+        
+        lobbies.remove(lobby.id)
+        games[game.id] = game
+
         val listing = ListingUpdateMessage(GameListing(game.id, game.name, game.users().map { it.id }, false))
         connections.forEach {
             it.send(listing)

@@ -1,7 +1,7 @@
 import type { GameListing, LobbyState } from "./message";
 
 export async function createGame(name: string): Promise<LobbyState> {
-  const response = await postJson('lobbies', { name });
+  const response = await postJson('lobbies', { name, players: 1 });
   return response;
 }
 

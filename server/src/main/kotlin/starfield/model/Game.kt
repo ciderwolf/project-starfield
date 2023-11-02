@@ -12,11 +12,11 @@ data class GameState(val name: String, val players: List<PlayerState>)
 class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserCollection<GameState>() {
 
     private val players: List<Player>
-    public val cardIndexProvider = CardIndexProvider()
+    val cardIdProvider = CardIdProvider()
 
     init {
-        this.players = players.map {
-            Player(it.key, it.value, this)
+        this.players = players.entries.mapIndexed { index, it ->
+            Player(it.key, index, it.value, this)
         }
     }
 
@@ -34,9 +34,10 @@ class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserColle
 
     suspend fun handleMessage(userId: UUID, message: ClientMessage) {
         val player = players.find { it.user.id == userId } ?: return
+        println("Received message: $message")
         val messages = when(message) {
-            is ChangeCardAttributeMessage -> player.tapCard(message.card)
-            is ChangeCardPositionMessage -> player.playCard(message.card, message.x, message.y)
+            is ChangeCardAttributeMessage -> player.changeAttribute(message.card, message.attribute, message.newValue)
+            is ChangeCardPositionMessage -> player.moveCard(message.card, message.x, message.y)
             is PlayCardMessage -> player.playCard(message.card, message.x, message.y)
             is ChangeCardIndexMessage -> player.moveCard(message.card, message.index)
             is ChangeCardZoneMessage -> player.moveCard(message.card, message.zone, message.index)

@@ -1,5 +1,5 @@
 import { useGameStore } from "@/stores/games";
-import type { WebSocketMessage } from "./message";
+import type { ClientMessage, WebSocketMessage } from "./message";
 import { useDataStore } from "@/stores/data";
 import router from '@/router';
 import { useBoardStore } from "@/stores/board";
@@ -38,11 +38,14 @@ export class WebSocketConnection {
       case 'state':
         console.log('state', message.room, message.roomState);
         gamesStore.processState(message);
+        if (message.room === 'game') {
+          boardStore.setBoardState(message.roomState.players);
+        }
         // const gameStore = useGameStore();
         // gameStore.processState(message.roomState);
         break;
-      case 'oracle_info':
-        console.log('oracle_info', message);
+      case 'oracle_cards':
+        console.log('oracle_cards', message);
         boardStore.processOracleInfo(message.oracleInfo);
         break;
       case 'board_update':
@@ -51,6 +54,7 @@ export class WebSocketConnection {
         break;
       default:
         const _exhaustiveCheck: never = message;
+        console.error(_exhaustiveCheck);
     }
   }
 
@@ -58,7 +62,7 @@ export class WebSocketConnection {
     console.log(e);
   }
 
-  send(message: any) {
+  send(message: ClientMessage) {
     this.ws.send(JSON.stringify(message));
   }
 }

@@ -19,7 +19,7 @@ data class ListingUpdateMessage(val listing: GameListing) : ServerMessage("listi
 data class DeleteListingMessage(val id: Id) : ServerMessage("delete_listing")
 
 @Serializable
-data class CreateGameMessage(val name: String)
+data class CreateGameMessage(val name: String, val players: Int)
 
 @Serializable
 data class LocationMessage(val location: Location, val id: Id?) : ServerMessage("location")

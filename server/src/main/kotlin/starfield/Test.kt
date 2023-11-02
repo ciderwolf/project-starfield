@@ -90,11 +90,16 @@ fun main() {
 //
 //    }
 
-    determineType(ServerMessage::class)
-
+    determineType(ClientMessage::class)
+    val alreadyWritten = mutableSetOf<String>()
     for(t in types) {
         val source = t.write()
+
         if (source != null) {
+            if (source in alreadyWritten) {
+                continue
+            }
+            alreadyWritten.add(source)
             println(source + "\n")
         }
 
@@ -140,12 +145,19 @@ fun determineType(current: KClass<*>, isFromSealed: Boolean = false): Typescript
 //                    queue.add(cls)
                     if (isFromSealed && it.name == "type") {
 //                        val default = getTypeName(current)
-                        props[it.name] = TypescriptType.BaseType("\"${current.simpleName!!}\"")
+                        val type = current.findAnnotation<SerialName>()
+                        val typeName = type?.value ?: current.simpleName!!
+                        props[it.name] = TypescriptType.BaseType("\"${typeName}\"")
                     } else {
                         props[it.name] = determineType(cls)
                     }
                 }
             }
+        }
+        if ("type" !in props) {
+            val type = current.findAnnotation<SerialName>()
+            val typeName = type?.value ?: current.simpleName!!
+            props["type"] = TypescriptType.BaseType("\"${typeName}\"")
         }
         types.add(TypescriptType.CompositeType(current.simpleName!!, props))
         return TypescriptType.CompositeType(current.simpleName!!, props)

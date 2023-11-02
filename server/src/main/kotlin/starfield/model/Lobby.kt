@@ -14,13 +14,16 @@ data class LobbyState(
     val decks: List<Id?>,
 )
 
-class Lobby(val id: UUID, val owner: User, val name: String): UserCollection<LobbyState>() {
+class Lobby(val id: UUID, val owner: User, val name: String, val players: Int): UserCollection<LobbyState>() {
 
     private var otherPlayer: User? = null
     private var ownerDeck: Deck? = null
     private var otherDeck: Deck? = null
 
     fun startGame(): Game? {
+        if (players == 1 && ownerDeck != null) {
+            return Game(name, id, mapOf(owner to ownerDeck!!, owner to ownerDeck!!))
+        }
         if (otherPlayer != null && ownerDeck != null && otherDeck != null) {
             return Game(name, id, mapOf(owner to ownerDeck!!, otherPlayer!! to otherDeck!!))
         }
@@ -86,6 +89,11 @@ class Lobby(val id: UUID, val owner: User, val name: String): UserCollection<Lob
     }
 
     override fun currentState(playerId: UUID): LobbyState {
+        if (players == 1) {
+            return LobbyState(
+                name, users().map { it.id }, listOf(ownerDeck).map { it?.id }
+            )
+        }
         return LobbyState(
             name, users().map { it.id }, listOf(ownerDeck, otherDeck).map { it?.id }
         )
