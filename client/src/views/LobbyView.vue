@@ -58,7 +58,7 @@ async function startGameClicked() {
     <h1>Lobby <span v-if="game">&mdash; {{ game.name }}</span></h1>
     <button v-if="isOwner" @click="leaveGameClicked">Cancel game</button>
     <button v-else @click="leaveGameClicked">Leave game</button>
-    <button v-if="game && game.decks.every(d => d !== null)" @click="startGameClicked">Start game</button>
+    <button v-if="isOwner && game && game.decks.every(d => d !== null)" @click="startGameClicked">Start game</button>
     <p>Players:</p>
     <div v-if="game">
       <div class="player-status" v-for="player, i in game.users" :key="player">

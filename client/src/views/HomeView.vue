@@ -4,6 +4,7 @@ import Modal from '@/components/Modal.vue';
 import { useGameStore } from '@/stores/games';
 import { useDataStore } from '@/stores/data';
 import { ref } from 'vue';
+import { getDecks, newDeck, submitDeck } from '@/api/deck';
 
 const showCreateGameModal = ref(false);
 const gameName = ref('');
@@ -29,6 +30,11 @@ async function loginClicked() {
   const data = useDataStore();
   data.login(userInfo.username, userInfo.id);
   // todo: reconnect ws
+  const listings = await getDecks();
+  if (!listings.some(d => d.name === 'TestDeck')) {
+    const created = await newDeck();
+    await submitDeck(created.id, 'TestDeck', ['Serum Visions', 'Lightning Bolt', 'Path to Exile'], []);
+  }
 }
 
 </script>

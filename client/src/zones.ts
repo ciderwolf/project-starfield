@@ -1,3 +1,5 @@
+import type { Zone } from "./api/message";
+
 const Z_WIDTH = '78px';
 const Z_HEIGHT = '108px';
 
@@ -13,7 +15,7 @@ export interface ZoneConfig {
     height: string;
   },
   type: ZoneFlex,
-  name: string,
+  name: Zone,
   id: number,
   reveal: [boolean, boolean]
 }
@@ -27,7 +29,7 @@ export const OPPONENT_ZONES: { [name: string] : ZoneConfig } = {
       height: `calc(50vh - ${Z_HEIGHT})`,
     },
     type: 'free',
-    name: 'play', 
+    name: 'BATTLEFIELD', 
     id: -1, 
     reveal: [true, true]
   },
@@ -39,7 +41,7 @@ export const OPPONENT_ZONES: { [name: string] : ZoneConfig } = {
       height: `${Z_HEIGHT}`,
     },
     type: 'hstack',
-    name: 'hand', 
+    name: 'HAND', 
     id: -2, 
     reveal: [true, false]
   },
@@ -51,7 +53,7 @@ export const OPPONENT_ZONES: { [name: string] : ZoneConfig } = {
       height: `${Z_HEIGHT}`,
     },
     type: 'stack',
-    name: 'graveyard', 
+    name: 'GRAVEYARD', 
     id: -3, 
     reveal: [true, true]
   },
@@ -63,7 +65,7 @@ export const OPPONENT_ZONES: { [name: string] : ZoneConfig } = {
       height: `${Z_HEIGHT}`,
     },
     type: 'stack',
-    name: 'exile', 
+    name: 'EXILE', 
     id: -4, 
     reveal: [true, true]
   },
@@ -75,7 +77,7 @@ export const OPPONENT_ZONES: { [name: string] : ZoneConfig } = {
       height: `${Z_HEIGHT}`,
     },
     type: 'stack',
-    name: 'Face Down', 
+    name: 'FACE_DOWN', 
     id: -5, 
     reveal: [false, false]
   },
@@ -87,7 +89,7 @@ export const OPPONENT_ZONES: { [name: string] : ZoneConfig } = {
       height: `${Z_HEIGHT}`,
     },
     type: 'stack',
-    name: 'library', 
+    name: 'LIBRARY', 
     id: -6, 
     reveal: [false, false]
   },
@@ -102,8 +104,8 @@ export const ZONES: { [name: string] : ZoneConfig } = {
       height: `calc(50% - ${Z_HEIGHT})`,
     },
     type: 'free',
-    name: 'play', 
-    id: 0, 
+    name: 'BATTLEFIELD', 
+    id: 2, 
     reveal: [true, true]
   },
   hand: {
@@ -114,7 +116,7 @@ export const ZONES: { [name: string] : ZoneConfig } = {
       height: `${Z_HEIGHT}`,
     },
     type: 'hstack',
-    name: 'hand', 
+    name: 'HAND', 
     id: 1, 
     reveal: [true, false]
   },
@@ -126,8 +128,8 @@ export const ZONES: { [name: string] : ZoneConfig } = {
       height: `${Z_HEIGHT}`,
     },
     type: 'stack',
-    name: 'graveyard', 
-    id: 2, 
+    name: 'GRAVEYARD', 
+    id: 3, 
     reveal: [true, true]
   },
   exile: {
@@ -138,8 +140,8 @@ export const ZONES: { [name: string] : ZoneConfig } = {
       height: `${Z_HEIGHT}`,
     },
     type: 'stack',
-    name: 'exile', 
-    id: 3, 
+    name: 'EXILE', 
+    id: 4, 
     reveal: [true, true]
   },
   faceDown: {
@@ -150,8 +152,8 @@ export const ZONES: { [name: string] : ZoneConfig } = {
       height: `${Z_HEIGHT}`,
     },
     type: 'stack',
-    name: 'Face Down', 
-    id: 4, 
+    name: 'FACE_DOWN', 
+    id: 5, 
     reveal: [false, false]
   },
   library: {
@@ -162,8 +164,8 @@ export const ZONES: { [name: string] : ZoneConfig } = {
       height: `${Z_HEIGHT}`,
     },
     type: 'stack',
-    name: 'library', 
-    id: 5, 
+    name: 'LIBRARY', 
+    id: 0, 
     reveal: [false, false]
   },
 };
@@ -178,4 +180,8 @@ export function zoneFromIndex(index: number): ZoneConfig | undefined {
 
 export function opponentZone(zone: ZoneConfig): ZoneConfig {
   return Object.values(OPPONENT_ZONES).find((oZone) => oZone.name === zone.name)!;
+}
+
+export function zoneNameToId(zone: Zone): number {
+  return Object.values(ZONES).find(z => z.name === zone)!.id;
 }

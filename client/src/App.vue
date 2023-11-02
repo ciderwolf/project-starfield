@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
-
+import { ws } from './ws'
+console.log(ws);
 </script>
 
 <template>
