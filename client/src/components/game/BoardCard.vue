@@ -2,7 +2,7 @@
 import { useBoardStore, pivotToAngle } from '@/stores/board';
 import { useZoneStore } from '@/stores/zone';
 import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
-import { ZONES } from '@/zones';
+import { ScreenPosition, ZONES } from '@/zones';
 import type { BoardCard } from '@/api/message';
 
 interface Position {
@@ -115,9 +115,12 @@ function onMouseMove(e: MouseEvent) {
 function updatePositionFromVirtualCoords() {
   const parentRect = props.parentBounds!;
 
+  const screenPos = board.getScreenPositionFromCard(props.card.id);
+  const visualYPos = screenPos === ScreenPosition.PRIMARY ? props.card.y : 1 - props.card.y;
+
   const rect = image.value!.getBoundingClientRect();
   imagePos.x = parentRect.left + parentRect.width * props.card.x - rect.width / 2;
-  imagePos.y = parentRect.top + parentRect.height * props.card.y - rect.height / 2;
+  imagePos.y = parentRect.top + parentRect.height * visualYPos - rect.height / 2;
 
   clampToBounds(rect, parentRect);
 }

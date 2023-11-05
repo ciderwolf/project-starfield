@@ -320,13 +320,18 @@ export const useBoardStore = defineStore('board', () => {
     }
   }
 
+  function getScreenPositionFromCard(cardId: CardId): ScreenPosition {
+    const playerIndex = extractPlayerIndex(cardId);
+    return getScreenPosition(playerIndex);
+  }
+
   function getZoneId(cardId: CardId, zone: Zone): number {
     const playerIndex = extractPlayerIndex(cardId);
     const pos = getScreenPosition(playerIndex);
     return zoneNameToId(zone, pos);
   }
 
-  return { setBoardState, processBoardUpdate, processOracleInfo, oracleInfo, cards, moveCard, cardIsMovable }
+  return { setBoardState, processBoardUpdate, processOracleInfo, oracleInfo, cards, moveCard, cardIsMovable, getScreenPositionFromCard }
 });
 
 function recalculateHandOrder(handCards: BoardCard[], handBounds: DOMRect) {
