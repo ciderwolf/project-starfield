@@ -14,7 +14,7 @@ typealias CardId = Int
 typealias OracleId = String
 
 class CardIdProvider {
-    private var index = AtomicInteger(1 shl 8)
+    private var index = AtomicInteger(1)
 
     fun getId(zone: Zone, playerIndex: Int): CardId {
         val idx = index.getAndIncrement() shl 8
@@ -90,10 +90,11 @@ sealed class BoardDiffEvent {
 
     @Serializable
     @SerialName("shuffle_deck")
-    data class ShuffleDeck(val newIds: List<CardId>) : BoardDiffEvent()
+    data class ShuffleDeck(val playerId: Id, val newIds: List<CardId>) : BoardDiffEvent()
+
     @Serializable
     @SerialName("scoop_deck")
-    data class ScoopDeck(val newIds: List<CardId>) : BoardDiffEvent()
+    data class ScoopDeck(val playerId: Id, val newIds: List<CardId>) : BoardDiffEvent()
 }
 
 enum class PlayerAttribute {
@@ -122,7 +123,7 @@ class BoardManager(private val owner: UUID, ownerIndex: Int, private val game: G
     private val cards: Map<Zone, MutableList<BoardCard>> = Zone.entries.associateWith {
         if (it == Zone.LIBRARY) {
             deck.maindeck.flatMap { card ->
-                (0..card.count).map { BoardCard(card, game.cardIdProvider, ownerIndex) }
+                (0..<card.count).map { BoardCard(card, game.cardIdProvider, ownerIndex) }
             }.toMutableList()
         } else {
             mutableListOf()
@@ -130,18 +131,12 @@ class BoardManager(private val owner: UUID, ownerIndex: Int, private val game: G
     }
 
     fun drawCards(count: Int): List<BoardDiffEvent> {
-        return (0..count).flatMap { drawCard() }
+        return (0..<count).flatMap { drawCard() }
     }
 
     private fun drawCard(): List<BoardDiffEvent> {
         if (cards[Zone.LIBRARY]!!.size > 0) {
-            val card = cards[Zone.LIBRARY]!!.removeAt(0)
-
-            cards[Zone.HAND]!!.add(card)
-            val oldCardId = card.id
-            card.zone = Zone.HAND
-            return listOf(BoardDiffEvent.ChangeZone(card.id, Zone.HAND, oldCardId))
-//                BoardDiffEvent.ChangeIndex(card.id, cards[Zone.HAND]!!.size - 1))
+            return changeZone(cards[Zone.LIBRARY]!![0].id, Zone.HAND)
         }
         return listOf()
     }
@@ -187,7 +182,7 @@ class BoardManager(private val owner: UUID, ownerIndex: Int, private val game: G
             it.visibility.clear()
         }
 
-        return BoardDiffEvent.ShuffleDeck(cards[Zone.LIBRARY]!!.map { it.id })
+        return BoardDiffEvent.ShuffleDeck(owner, cards[Zone.LIBRARY]!!.map { it.id })
     }
 
     fun reset(): List<BoardDiffEvent> {
@@ -195,13 +190,12 @@ class BoardManager(private val owner: UUID, ownerIndex: Int, private val game: G
             if (entry.key != Zone.LIBRARY) {
                 cards[Zone.LIBRARY]!!.addAll(entry.value)
                 entry.value.clear()
-                entry.value.forEach { it.reset(clearVisibility = true) }
             }
         }
-
-        return listOf(BoardDiffEvent.ScoopDeck(cards[Zone.LIBRARY]!!.map { it.id }))
+        cards[Zone.LIBRARY]!!.forEach { it.reset(clearVisibility = true) }
+        cards[Zone.LIBRARY]!!.shuffle()
+        return listOf(BoardDiffEvent.ScoopDeck(owner, cards[Zone.LIBRARY]!!.map { it.id }))
     }
-
 
     private fun findCard(id: CardId): BoardCard? {
         return cards.values.flatten().find { it.id == id }

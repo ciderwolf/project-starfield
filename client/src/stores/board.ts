@@ -1,8 +1,9 @@
 import { reactive } from 'vue'
 import { defineStore } from 'pinia'
-import { ZONES, zoneNameToId } from '@/zones';
-import type { BoardDiffEvent, Card, ChangeAttributeEvent, ChangeIndexEvent, ChangePlayerAttribute, ChangePositionEvent, ChangeZoneEvent, PlayerState, ScoopDeck, ShuffleDeck, Zone } from '@/api/message';
+import { ScreenPosition, ZONES, OPPONENT_ZONES, findZoneByName, getZones, zoneNameToId } from '@/zones';
+import type { BoardDiffEvent, BoardCard, ChangeAttributeEvent, ChangeIndexEvent, ChangePlayerAttribute, ChangePositionEvent, ChangeZoneEvent, PlayerState, ScoopDeck, ShuffleDeck, Zone } from '@/api/message';
 import { useZoneStore } from './zone';
+import { useDataStore } from './data';
 
 
 export enum Pivot {
@@ -33,19 +34,13 @@ function indexToPivot(index: number): Pivot {
 
 export type CardId = number;
 export type OracleId = string;
-export type BoardCard = Card & {
-  x: number;
-  y: number;
-  pivot: Pivot;
-  counter: number;
-  transformed: boolean;
-  zone: number;
-  id: CardId;
-};
 
 interface PlayerAttributes {
   life: number;
   poison: number;
+  id: string;
+  name: string;
+  index: number;
 }
 
 interface HandOrderInfo {
@@ -55,9 +50,9 @@ interface HandOrderInfo {
 
 type HandOrder = { [id: CardId]: HandOrderInfo };
 
-function extractZone(cardId: CardId): number {
-  // extract the lowest four bits and return the corresponding zone id
-  return cardId & 0xF;
+function extractPlayerIndex(cardId: CardId): number {
+  // extract the first four bits and return the corresponding player index
+  return cardId & 0b00001111;
 }
 
 export const useBoardStore = defineStore('board', () => {
@@ -71,46 +66,49 @@ export const useBoardStore = defineStore('board', () => {
     const cardIndex = findCardIndex(cardId);
     cards[zoneId][cardIndex].x = x;
     cards[zoneId][cardIndex].y = y;
-    if (zoneId === ZONES.hand.id) {
-      recalculateHandOrder(cards[ZONES.hand.id], zones.zoneBounds[ZONES.hand.id]);
-    }
-  }
 
-  function moveCardZone(currentZoneId: number, cardId: CardId, newZoneId: number, x: number, y: number) {
-    const cardIndex = findCardIndex(cardId);
-    const card = cards[currentZoneId].splice(cardIndex, 1)[0];
-    cards[newZoneId].push(card);
-    card.x = x;
-    card.y = y;
-    card.zone = newZoneId;
-    card.id = Math.round(Math.random() * 100000) << 4 | newZoneId;
-
-    if (newZoneId === ZONES.hand.id || currentZoneId === ZONES.hand.id) {
-      recalculateHandOrder(cards[ZONES.hand.id], zones.zoneBounds[ZONES.hand.id]);
+    const handId = getZoneId(cardId, 'HAND');
+    if (zoneId === handId) {
+      recalculateHandOrder(cards[handId], zones.zoneBounds[handId]);
     }
   }
 
   function setBoardState(playerStates: PlayerState[]) {
+    let index = 0;
     for(const state of playerStates) {
-      for(const [zoneName, cardList] of Object.entries(state.board)) {
-        const zone = Object.values(ZONES).find(z => z.name === zoneName);
+      players[state.id] = {
+        life: state.life,
+        poison: state.poison,
+        id: state.id,
+        name: state.name,
+        index
+      }
+      index += 1;
+    }
 
+    for(const state of playerStates) {
+      const pos = getScreenPosition(players[state.id].index);
+      console.log(state.id, pos);
+      for(const [zoneName, cardList] of Object.entries(state.board)) {
+        const zone = findZoneByName(zoneName, pos);
         // reserialize Zone name as id number
-        cardList.forEach(card => card.zone = zoneNameToId(card.zone as unknown as Zone))
+        if (cardList.length > 0)
+          console.log(cardList[0], zoneNameToId(cardList[0]?.zone as unknown as Zone, pos))
+        cardList.forEach(card => card.zone = zoneNameToId(card.zone as unknown as Zone, pos))
         if (zone) {
           cards[zone.id] = cardList;
         }
       }
-      players[state.id] = {
-        life: state.life,
-        poison: state.poison,
-      }
-  
+
       // overwrite oracleInfo from message
       for(const [cardId, oracleId] of Object.entries(state.oracleInfo)) {
         oracleInfo[Number(cardId)] = oracleId;
       }
     }
+
+    
+    recalculateHandOrder(cards[ZONES.hand.id], zones.zoneBounds[ZONES.hand.id]);
+    recalculateHandOrder(cards[OPPONENT_ZONES.hand.id], zones.zoneBounds[OPPONENT_ZONES.hand.id]);
   }
 
   function processBoardUpdate(events: BoardDiffEvent[]) {
@@ -155,11 +153,17 @@ export const useBoardStore = defineStore('board', () => {
     const newZoneId = extractZone(event.card);
     const card = cards[oldZoneId].splice(findCardIndex(event.oldCardId), 1)[0];
     cards[newZoneId].push(card);
+    resetCardAttributes(card);
     card.id = event.card;
     card.zone = newZoneId;
     if (event.oldCardId in oracleInfo) {
       oracleInfo[card.id] = oracleInfo[event.oldCardId];
       delete oracleInfo[event.oldCardId];
+    }
+    
+    const handId = getZoneId(event.card, 'HAND');
+    if (newZoneId === handId || oldZoneId === handId) {
+      recalculateHandOrder(cards[handId], zones.zoneBounds[handId]);
     }
   }
 
@@ -215,8 +219,13 @@ export const useBoardStore = defineStore('board', () => {
 
   function processScoopDeck(event: ScoopDeck) {
     const deck: BoardCard[] = [];
-    for(const [zone, cardList] of Object.entries(cards)) {
-      cards[Number(zone)] = [];
+    const player = players[event.playerId];
+    const pos = getScreenPosition(player.index);
+    const zones = getZones(pos);
+    const libraryId = zones.find(z => z.name === 'LIBRARY')!.id;
+    for(const zone of zones.map(zone => zone.id)) {
+      const cardList = cards[zone];
+      cards[zone] = [];
       deck.push(...cardList);
     }
 
@@ -227,14 +236,17 @@ export const useBoardStore = defineStore('board', () => {
       }
       resetCard(card);
       card.id = event.newIds[i];
-      card.zone = ZONES.library.id;
+      card.zone = libraryId;
     }
 
-    cards[ZONES.library.id] = deck;
+    cards[libraryId] = deck;
   }
 
   function processShuffleDeck(event: ShuffleDeck) {
-    const deck = cards[ZONES.library.id];
+    const player = players[event.playerId];
+    const libraryId = getZones(getScreenPosition(player.index))
+      .find(z => z.name === 'LIBRARY')!.id;
+    const deck = cards[libraryId];
     for(let i = 0; i < deck.length; i++) {
       const card = deck[i];
       if (card.id in oracleInfo) {
@@ -246,17 +258,31 @@ export const useBoardStore = defineStore('board', () => {
   }
 
   function resetCard(card: BoardCard) {
+    resetCardAttributes(card);
+    card.x = 0;
+    card.y = 0;
+    card.zone = getZoneId(card.id, 'LIBRARY');
+  }
+
+  function resetCardAttributes(card: BoardCard) {
     card.pivot = Pivot.UNTAPPED;
     card.counter = 0;
     card.transformed = false;
-    card.x = 0;
-    card.y = 0;
-    card.zone = ZONES.library.id;
-
   }
 
   function processOracleInfo(newOracleInfo: { [cardId: CardId]: string }) {
     Object.assign(oracleInfo, newOracleInfo);
+  }
+
+  function cardIsMovable(card: CardId): boolean {
+    const player = extractPlayerIndex(card);
+    const data = useDataStore();
+    const myAttributes = players[data.userId!];
+    if (myAttributes && myAttributes.index === player) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   function findCardIndex(cardId: CardId): number {
@@ -265,7 +291,42 @@ export const useBoardStore = defineStore('board', () => {
     return cardIndex;
   }
 
-  return { setBoardState, processBoardUpdate, processOracleInfo, oracleInfo, cards, moveCard, moveCardZone }
+  function extractZone(cardId: CardId): number {
+    // extract the second four bits and return the corresponding zone id
+    const playerIndex = extractPlayerIndex(cardId);
+    const pos = getScreenPosition(playerIndex);
+    const zoneIndex = (cardId & 0b11110000) >> 4;
+    if (pos === ScreenPosition.PRIMARY) {
+      return zoneIndex;
+    } else if (pos === ScreenPosition.SECONDARY) {
+      return -(zoneIndex + 1);
+    } else {
+      const _exhaustiveCheck: never = pos;
+      throw new Error(_exhaustiveCheck);
+    }
+  }
+
+  function getScreenPosition(playerIndex: number): ScreenPosition {
+    const data = useDataStore();
+    const myAttributes = players[data.userId!];
+    if (myAttributes) {
+      if (myAttributes.index === 0) {
+        return playerIndex === 0 ? ScreenPosition.PRIMARY : ScreenPosition.SECONDARY;
+      } else {
+        return playerIndex === 0 ? ScreenPosition.SECONDARY : ScreenPosition.PRIMARY;
+      }
+    } else {
+      return playerIndex as ScreenPosition;
+    }
+  }
+
+  function getZoneId(cardId: CardId, zone: Zone): number {
+    const playerIndex = extractPlayerIndex(cardId);
+    const pos = getScreenPosition(playerIndex);
+    return zoneNameToId(zone, pos);
+  }
+
+  return { setBoardState, processBoardUpdate, processOracleInfo, oracleInfo, cards, moveCard, cardIsMovable }
 });
 
 function recalculateHandOrder(handCards: BoardCard[], handBounds: DOMRect) {

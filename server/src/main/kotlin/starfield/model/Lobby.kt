@@ -56,6 +56,7 @@ class Lobby(val id: UUID, val owner: User, val name: String, val players: Int): 
             otherDeck = null
             true
         } else user == owner
+
         broadcastToEach {
             StateMessage(currentState(it.id), "lobby")
         }

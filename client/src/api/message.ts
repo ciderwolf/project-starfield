@@ -120,7 +120,7 @@ export type BoardUpdateMessage = {
 
 export type OracleCardsMessage = {
   type: 'oracle_cards';
-  oracleInfo: { [cardId: CardId]: string };
+  cards: { [cardId: CardId]: string };
 }
 
 export type BoardDiffEvent = ChangeZoneEvent | ChangeIndexEvent | ChangePositionEvent | ChangeAttributeEvent | ChangePlayerAttribute | ScoopDeck | ShuffleDeck | RevealCard;
@@ -160,11 +160,13 @@ export type ChangePlayerAttribute = {
 }
 
 export type ScoopDeck = {
+  playerId: string;
   newIds: CardId[];
   type: 'scoop_deck';
 }
 
 export type ShuffleDeck = {
+  playerId: string;
   newIds: CardId[];
   type: 'shuffle_deck';
 }

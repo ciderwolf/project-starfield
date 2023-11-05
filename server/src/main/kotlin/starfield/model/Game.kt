@@ -74,5 +74,12 @@ class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserColle
             }
         }
     }
+
+    fun end(user: User): Boolean {
+        if (users().contains(user)) {
+            return true
+        }
+        return false
+    }
 }
 

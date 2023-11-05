@@ -21,17 +21,17 @@ export interface ZoneConfig {
 }
 
 export const OPPONENT_ZONES: { [name: string] : ZoneConfig } = {
-  play: {
+  library: {
     pos: {
-      left: `${Z_WIDTH}`,
-      top: `${Z_HEIGHT}`,
-      width: `calc(100% - 2 * ${Z_WIDTH})`,
-      height: `calc(50vh - ${Z_HEIGHT})`,
+      right: '0',
+      top: '0',
+      width: `${Z_WIDTH}`,
+      height: `${Z_HEIGHT}`,
     },
-    type: 'free',
-    name: 'BATTLEFIELD', 
+    type: 'stack',
+    name: 'LIBRARY', 
     id: -1, 
-    reveal: [true, true]
+    reveal: [false, false]
   },
   hand: {
     pos: {
@@ -45,6 +45,18 @@ export const OPPONENT_ZONES: { [name: string] : ZoneConfig } = {
     id: -2, 
     reveal: [true, false]
   },
+  play: {
+    pos: {
+      left: `${Z_WIDTH}`,
+      top: `${Z_HEIGHT}`,
+      width: `calc(100% - 2 * ${Z_WIDTH})`,
+      height: `calc(50vh - ${Z_HEIGHT})`,
+    },
+    type: 'free',
+    name: 'BATTLEFIELD', 
+    id: -3, 
+    reveal: [true, true]
+  },
   graveyard: {
     pos: {
       left: '0',
@@ -54,7 +66,7 @@ export const OPPONENT_ZONES: { [name: string] : ZoneConfig } = {
     },
     type: 'stack',
     name: 'GRAVEYARD', 
-    id: -3, 
+    id: -4, 
     reveal: [true, true]
   },
   exile: {
@@ -66,7 +78,7 @@ export const OPPONENT_ZONES: { [name: string] : ZoneConfig } = {
     },
     type: 'stack',
     name: 'EXILE', 
-    id: -4, 
+    id: -5, 
     reveal: [true, true]
   },
   faceDown: {
@@ -78,35 +90,23 @@ export const OPPONENT_ZONES: { [name: string] : ZoneConfig } = {
     },
     type: 'stack',
     name: 'FACE_DOWN', 
-    id: -5, 
-    reveal: [false, false]
-  },
-  library: {
-    pos: {
-      right: '0',
-      top: '0',
-      width: `${Z_WIDTH}`,
-      height: `${Z_HEIGHT}`,
-    },
-    type: 'stack',
-    name: 'LIBRARY', 
     id: -6, 
     reveal: [false, false]
   },
 };
 
 export const ZONES: { [name: string] : ZoneConfig } = {
-  play: {
+  library: {
     pos: {
-      left: `${Z_WIDTH}`,
-      top: '50vh',
-      width: `calc(100% - 2 * ${Z_WIDTH})`,
-      height: `calc(50% - ${Z_HEIGHT})`,
+      right: '0',
+      bottom: '0',
+      width: `${Z_WIDTH}`,
+      height: `${Z_HEIGHT}`,
     },
-    type: 'free',
-    name: 'BATTLEFIELD', 
-    id: 2, 
-    reveal: [true, true]
+    type: 'stack',
+    name: 'LIBRARY', 
+    id: 0, 
+    reveal: [false, false]
   },
   hand: {
     pos: {
@@ -119,6 +119,18 @@ export const ZONES: { [name: string] : ZoneConfig } = {
     name: 'HAND', 
     id: 1, 
     reveal: [true, false]
+  },
+  play: {
+    pos: {
+      left: `${Z_WIDTH}`,
+      top: '50vh',
+      width: `calc(100% - 2 * ${Z_WIDTH})`,
+      height: `calc(50% - ${Z_HEIGHT})`,
+    },
+    type: 'free',
+    name: 'BATTLEFIELD', 
+    id: 2, 
+    reveal: [true, true]
   },
   graveyard: {
     pos: {
@@ -156,32 +168,39 @@ export const ZONES: { [name: string] : ZoneConfig } = {
     id: 5, 
     reveal: [false, false]
   },
-  library: {
-    pos: {
-      right: '0',
-      bottom: '0',
-      width: `${Z_WIDTH}`,
-      height: `${Z_HEIGHT}`,
-    },
-    type: 'stack',
-    name: 'LIBRARY', 
-    id: 0, 
-    reveal: [false, false]
-  },
 };
 
-// export function zoneAtPoint(x: number, y: number): Zone | undefined {
-//   return Object.values(ZONES).find((zone) => zone.getBounds().containsPoint(x, y));
-// }
+export enum ScreenPosition {
+  PRIMARY, SECONDARY
+}
 
 export function zoneFromIndex(index: number): ZoneConfig | undefined {
-  return Object.values(ZONES).find((zone) => zone.id === index);
+  const zone = Object.values(ZONES).find((zone) => zone.id === index);
+  if (zone === undefined) {
+    return Object.values(OPPONENT_ZONES).find((zone) => zone.id === index);
+  }
+  return zone;
 }
 
 export function opponentZone(zone: ZoneConfig): ZoneConfig {
   return Object.values(OPPONENT_ZONES).find((oZone) => oZone.name === zone.name)!;
 }
 
-export function zoneNameToId(zone: Zone): number {
-  return Object.values(ZONES).find(z => z.name === zone)!.id;
+export function findZoneByName(name: string, pos = ScreenPosition.PRIMARY): ZoneConfig | undefined {
+  return getZones(pos).find((zone) => zone.name === name);
+}
+
+
+export function zoneNameToId(zone: Zone, pos = ScreenPosition.PRIMARY): number {
+  return getZones(pos).find((z) => z.name === zone)!.id;
+}
+
+
+export function getZones(pos = ScreenPosition.PRIMARY): ZoneConfig[] {
+  if (pos === ScreenPosition.SECONDARY) {
+    return Object.values(OPPONENT_ZONES);
+  }
+  else {
+    return Object.values(ZONES);
+  }
 }

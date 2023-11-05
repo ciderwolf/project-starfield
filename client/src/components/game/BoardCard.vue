@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { useBoardStore, pivotToAngle, type BoardCard } from '@/stores/board';
+import { useBoardStore, pivotToAngle } from '@/stores/board';
 import { useZoneStore } from '@/stores/zone';
 import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
 import { ZONES } from '@/zones';
+import type { BoardCard } from '@/api/message';
 
 interface Position {
   x: number;
@@ -33,6 +34,7 @@ const boardPos = reactive<Position>({ x: 0, y: 0 });
 const imagePos = reactive<Position>({ x: 0, y: 0 });
 const offsetPos = reactive<Position>({ x: 0, y: 0 });
 const moving = ref(false);
+const isMe = computed(() => board.cardIsMovable(props.card.id));
 
 const positionInfo = computed(() => ({
   left: `${imagePos.x}px`,
@@ -121,6 +123,9 @@ function updatePositionFromVirtualCoords() {
 }
 
 function tap() {
+  if (props.card.zone !== ZONES.play.id) {
+    return;
+  }
   emit('tap');
 }
 
@@ -149,8 +154,9 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <img class="board-card" :style="positionInfo" draggable="false" @dblclick="tap" @mousedown="onMouseDown"
+  <img v-if="isMe" class="board-card" :style="positionInfo" draggable="false" @dblclick="tap" @mousedown="onMouseDown"
     @mouseup="onMouseUp" :src="imageUrl" ref="image">
+  <img v-else class="board-card" :style="positionInfo" draggable="false" :src="imageUrl" ref="image">
   <img v-if="moving && (boardPos.x != imagePos.x || boardPos.y != imagePos.y)" class="board-card board-card-ghost"
     :style="ghostPositionInfo" draggable="false" :src="imageUrl">
 </template>

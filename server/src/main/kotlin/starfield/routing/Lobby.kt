@@ -121,6 +121,32 @@ fun Route.gameRouting() {
         }
     }
 
+
+    post("/{id}/end") {
+        val session = call.sessions.get<UserSession>() ?: return@post call.respondError(
+            "You must be logged in to end a game",
+            status = HttpStatusCode.Unauthorized
+        )
+        val uuid = tryParseUuid(call.parameters["id"]) ?: return@post call.respondError("Invalid id")
+
+        val game = games[uuid] ?: return@post call.respondError(
+            "Game not found",
+            status = HttpStatusCode.NotFound)
+
+        if (game.end(session.user())) {
+            games.remove(game.id)
+            game.users().forEach {
+                it.connection?.send(LocationMessage(Location.HOME, null))
+            }
+            connections.forEach {
+                it.send(DeleteListingMessage(game.id))
+            }
+            return@post call.respondSuccess("OK")
+        } else {
+            return@post call.respondError("Can't join that game")
+        }
+    }
+
     post("/{id}/kick") {
         val session = call.sessions.get<UserSession>() ?: return@post call.respondError(
             "You must be logged in to leave a game",

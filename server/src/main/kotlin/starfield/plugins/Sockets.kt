@@ -78,16 +78,16 @@ suspend fun reconnect(connection: WSConnection) {
     val lobby = findLobby(connection.id)
     lobby?.reconnectUser(connection)
     if (lobby != null) {
-        connection.send(StateMessage(lobby.currentState(connection.id), "lobby"))
         connection.send(LocationMessage(Location.LOBBY, lobby.id))
+        connection.send(StateMessage(lobby.currentState(connection.id), "lobby"))
         return
     }
 
     val game = findGame(connection.id)
     game?.reconnectUser(connection)
     if (game != null) {
-        connection.send(StateMessage(game.currentState(connection.id), "game"))
         connection.send(LocationMessage(Location.GAME, game.id))
+        connection.send(StateMessage(game.currentState(connection.id), "game"))
         return
     }
 }
@@ -113,14 +113,14 @@ fun Application.configureSockets() {
         webSocket("/ws") { // websocketSession
             val session = call.sessions.get<UserSession>()
             if (session == null) {
-                send(Json.encodeToString(LocationMessage(Location.LOGIN, null) as ServerMessage))
+                send(Json.encodeToString(LocationMessage(Location.LOGIN, null)))
                 close(CloseReason(CloseReason.Codes.NORMAL, "Not authenticated"))
                 return@webSocket
             }
             val connection = WSConnection(session.id, this)
             connections += connection
-            reconnect(connection)
             connection.send(IdentityMessage(session.username, session.id))
+            reconnect(connection)
             try {
                 for (frame in incoming) {
                     frame as? Frame.Text ?: continue
