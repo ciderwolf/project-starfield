@@ -1,14 +1,17 @@
 package starfield.data
 
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
+import starfield.Id
 import java.io.File
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
+import java.util.*
 import java.util.stream.Collectors
 
 class CardDatabase(private val data: Map<String, DbCard>) : Map<String, CardDatabase.DbCard> by data {
@@ -20,12 +23,19 @@ class CardDatabase(private val data: Map<String, DbCard>) : Map<String, CardData
         @SerialName("t")
         val type: String,
         @SerialName("i")
-        val image: String
+        val id: Id,
+        @SerialName("f")
+        val image: String,
+        @SerialName("b")
+        val backImage: String?
     )
 
     companion object {
 
         private var instance: CardDatabase? = null
+
+        @OptIn(ExperimentalSerializationApi::class)
+        private val json = Json { explicitNulls = false }
 
         fun download() {
             val request = HttpRequest.newBuilder(URI("https://api.scryfall.com/bulk-data/oracle-cards")).build()
@@ -48,7 +58,7 @@ class CardDatabase(private val data: Map<String, DbCard>) : Map<String, CardData
                 .map { parseCard(it) }
                 .collect(Collectors.toMap({ it.first }, { it.second }))
 
-            val string = Json.encodeToString(cards)
+            val string = json.encodeToString(cards)
             println(string.length)
             val writer = File("carddb.json").bufferedWriter()
             writer.write(string)
@@ -58,7 +68,7 @@ class CardDatabase(private val data: Map<String, DbCard>) : Map<String, CardData
 
         fun instance(): CardDatabase {
             if (instance == null) {
-                val data = Json.decodeFromString<Map<String, DbCard>>(File("carddb.json").readText())
+                val data = json.decodeFromString<Map<String, DbCard>>(File("carddb.json").readText())
                 instance = CardDatabase(data)
             }
 
@@ -70,25 +80,38 @@ class CardDatabase(private val data: Map<String, DbCard>) : Map<String, CardData
 
             val type = card["type_line"]!!.jsonPrimitive.content.split(" — ")[0].split(" ").last().trim()
 
-//            val image = if ("image_uris" !in card) {
-//                card["card_faces"]!!
-//                    .jsonArray[0]
-//                    .jsonObject["image_uris"]!!
-//                    .jsonObject["normal"]!!
-//                    .jsonPrimitive.content
-//            } else {
-//                card["image_uris"]!!
-//                    .jsonObject["normal"]!!
-//                    .jsonPrimitive.content
-//            }
-            val image = card["id"]!!.jsonPrimitive.content
+            val image = if ("image_uris" !in card) {
+                card["card_faces"]!!
+                    .jsonArray[0]
+                    .jsonObject["image_uris"]!!
+                    .jsonObject["normal"]!!
+                    .jsonPrimitive.content
+            } else {
+                card["image_uris"]!!
+                    .jsonObject["normal"]!!
+                    .jsonPrimitive.content
+            }
+
+            val backImage = if ("image_uris" !in card) {
+                card["card_faces"]!!
+                    .jsonArray[1]
+                    .jsonObject["image_uris"]!!
+                    .jsonObject["normal"]!!
+                    .jsonPrimitive.content
+            } else {
+                null
+            }
+
+            val id = UUID.fromString(card["id"]!!.jsonPrimitive.content)
 
             return Pair(
                 normalizeName(name),
                 DbCard(
                     name,
                     type,
-                    image
+                    id,
+                    image,
+                    backImage
                 )
             )
         }

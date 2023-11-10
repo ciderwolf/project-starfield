@@ -19,6 +19,8 @@ data class DeckCard(
     val name: String,
     val type: String,
     val image: String,
+    val id: Id,
+    val backImage: String?,
     val count: Int
 )
 
@@ -135,11 +137,14 @@ fun lookupCard(card: Pair<Int, String>): DeckCard {
     val type = cardData?.type ?: ""
     val image = cardData?.image ?: ""
     val fullName = cardData?.name ?: name
+    val id = cardData?.id ?: UUID.randomUUID()
 
     return DeckCard(
         fullName,
         type,
         image,
+        id,
+        cardData?.backImage,
         count
     )
 }

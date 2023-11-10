@@ -1,20 +1,26 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, mergeProps, ref } from 'vue';
 
 interface Card {
     count: number;
     name: string;
     type: string;
     image: string;
+    backImage: string | null;
+    id: string;
 }
 
-defineProps<{ card: Card }>();
+const props = defineProps<{ card: Card }>();
 
 const display = ref("none");
 const left = ref(0);
 const top = ref(0);
 const cardImage = ref<HTMLInputElement | null>(null);
-const face = ref("front");
+
+const dfc = computed(() => props.card.backImage !== null);
+const frontName = computed(() => props.card.name.split(' // ')[0]);
+const backName = computed(() => props.card.name.split(' // ')[1]);
+const backFace = ref(false);
 
 const style = computed(() => ({
     display: display.value,
@@ -41,6 +47,7 @@ function normalizePreviewX(e: MouseEvent) {
 }
 function mouseLeave() {
     display.value = 'none';
+    backFace.value = false
 }
 function mouseOver(e: MouseEvent) {
     display.value = 'inline';
@@ -51,16 +58,20 @@ function mouseMove(e: MouseEvent) {
     left.value = normalizePreviewX(e);
     top.value = normalizePreviewY(e);
 }
+function mouseOverDfc(e: MouseEvent) {
+    backFace.value = true;
+    mouseOver(e);
+}
 </script>
 
 <template>
     <div>
-        <img :style="style" class="card-preview"
-            :src="`https://api.scryfall.com/cards/${card.image}?format=image&version=normal&face=${face}`"
-            ref="cardImage" />
-        <a class="card-line" :href="`https://scryfall.com/card/${card.image}`" target="_blank" rel="noreferrer"
+        <img :style="style" class="card-preview" :src="backFace ? card.backImage! : card.image" ref="cardImage" />
+        <a class="card-line" :href="`https://scryfall.com/card/${card.id}`" target="_blank" rel="noreferrer"
             @mouseleave="mouseLeave" @mouseover="mouseOver" @mousemove="mouseMove">
-            {{ card.count }} {{ card.name }}</a>
+            {{ card.count }} {{ frontName }}</a>
+        <a v-if="dfc" class="card-line" :href="`https://scryfall.com/card/${card.id}?back`" target="_blank" rel="noreferrer"
+            @mouseleave="mouseLeave" @mouseover="mouseOverDfc" @mousemove="mouseMove"> // {{ backName }}</a>
     </div>
 </template>
 
