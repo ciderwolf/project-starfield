@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 typealias Card = DeckCard
 typealias CardId = Int
-typealias OracleId = String
+typealias OracleId = Id
 
 class CardIdProvider {
     private var index = AtomicInteger(1)
@@ -31,6 +31,7 @@ data class CardState(
     val pivot: Pivot,
     val counter: Int,
     val transformed: Boolean,
+    val flipped: Boolean,
     val zone: Zone
 )
 
@@ -41,6 +42,7 @@ class BoardCard(val card: Card, private val idProvider: CardIdProvider, private 
     var pivot = Pivot.UNTAPPED
     var counter = 0
     var transformed = false
+    var flipped = false
     var id: CardId = idProvider.getId(Zone.LIBRARY, playerIndex)
     var zone = Zone.LIBRARY
         set(value) {
@@ -58,11 +60,12 @@ class BoardCard(val card: Card, private val idProvider: CardIdProvider, private 
         }
         id = idProvider.getId(Zone.LIBRARY, playerIndex)
         transformed = false
+        flipped = false
         zone = Zone.LIBRARY
     }
 
     fun getState(index: Int): CardState {
-        return CardState(id, x, y, index, pivot, counter, transformed, zone)
+        return CardState(id, x, y, index, pivot, counter, transformed, flipped, zone)
     }
 }
 
@@ -112,7 +115,8 @@ enum class Pivot {
 enum class CardAttribute {
     PIVOT,
     COUNTER,
-    TRANSFORMED
+    TRANSFORMED,
+    FLIPPED
 }
 
 inline fun <reified T : Enum<T>> Int.toEnum(): T? {
@@ -148,6 +152,7 @@ class BoardManager(private val owner: UUID, ownerIndex: Int, private val game: G
             CardAttribute.PIVOT -> targetCard.pivot = value.toEnum<Pivot>()!!
             CardAttribute.COUNTER -> targetCard.counter = value
             CardAttribute.TRANSFORMED -> targetCard.transformed = value != 0
+            CardAttribute.FLIPPED -> targetCard.flipped = value != 0
         }
         return listOf(BoardDiffEvent.ChangeAttribute(card, attribute, value))
     }
@@ -242,13 +247,13 @@ class BoardManager(private val owner: UUID, ownerIndex: Int, private val game: G
     }
 
     fun getOracleId(card: CardId): OracleId {
-        return findCard(card)!!.card.image
+        return findCard(card)!!.card.id
     }
 
     fun getOracleInfo(playerId: UUID): Map<CardId, OracleId> {
         return cards.values.flatten()
             .filter { it.visibility.contains(playerId) }
-            .associate { Pair(it.id, it.card.image) }
+            .associate { Pair(it.id, it.card.id) }
     }
 }
 

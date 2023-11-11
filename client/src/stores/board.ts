@@ -88,12 +88,10 @@ export const useBoardStore = defineStore('board', () => {
 
     for(const state of playerStates) {
       const pos = getScreenPosition(players[state.id].index);
-      console.log(state.id, pos);
       for(const [zoneName, cardList] of Object.entries(state.board)) {
         const zone = findZoneByName(zoneName, pos);
         // reserialize Zone name as id number
         if (cardList.length > 0)
-          console.log(cardList[0], zoneNameToId(cardList[0]?.zone as unknown as Zone, pos))
         cardList.forEach(card => card.zone = zoneNameToId(card.zone as unknown as Zone, pos))
         if (zone) {
           cards[zone.id] = cardList;
@@ -196,6 +194,9 @@ export const useBoardStore = defineStore('board', () => {
       case 'TRANSFORMED':
         card.transformed = event.newValue === 1;
         break;
+      case 'FLIPPED':
+        card.flipped = event.newValue === 1;
+        break;
       default:
         const _exhaustiveCheck: never = event.attribute;
         console.error(_exhaustiveCheck);
@@ -285,6 +286,12 @@ export const useBoardStore = defineStore('board', () => {
     }
   }
 
+  function updateHandPos(id: number, bounds: DOMRect) {
+    const handCards = cards[id];
+    if (!handCards) return;
+    recalculateHandOrder(handCards, bounds);
+  }
+
   function findCardIndex(cardId: CardId): number {
     const zone = extractZone(cardId);
     const cardIndex = cards[zone].findIndex(card => card.id === cardId);
@@ -331,10 +338,11 @@ export const useBoardStore = defineStore('board', () => {
     return zoneNameToId(zone, pos);
   }
 
-  return { setBoardState, processBoardUpdate, processOracleInfo, oracleInfo, cards, moveCard, cardIsMovable, getScreenPositionFromCard }
+  return { setBoardState, processBoardUpdate, processOracleInfo, oracleInfo, updateHandPos, cards, moveCard, cardIsMovable, getScreenPositionFromCard }
 });
 
 function recalculateHandOrder(handCards: BoardCard[], handBounds: DOMRect) {
+  if (!handBounds) return;
   // assign indices based on pos order, and then recalculate pos based on index
   const handOrder: HandOrder = {};
   for (const card of handCards) {

@@ -23,8 +23,13 @@ const zones = useZoneStore();
 const image = ref<HTMLImageElement | null>(null);
 
 const imageUrl = computed(() => {
-  if (board.oracleInfo[props.card.id]) {
-    return `https://api.scryfall.com/cards/${board.oracleInfo[props.card.id]}?format=image&version=small`;
+  if (board.oracleInfo[props.card.id] && !props.card.flipped) {
+    const id = board.oracleInfo[props.card.id]
+    if (props.card.transformed) {
+      return `https://api.scryfall.com/cards/${id}?format=image&version=small&face=back`;
+    } else {
+      return `https://api.scryfall.com/cards/${id}?format=image&version=small`;
+    }
   } else {
     return '/back.png';
   }

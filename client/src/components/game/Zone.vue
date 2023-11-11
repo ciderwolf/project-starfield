@@ -52,13 +52,23 @@ function tap(cardId: CardId) {
   }
 }
 
+function transform(cardId: CardId) {
+  const card = board.cards[props.zone.id].find(c => c.id === cardId)!;
+  client.changeCardAttribute(props.zone.id, cardId, 'TRANSFORMED', card.transformed ? 0 : 1);
+}
+
+function flip(cardId: CardId) {
+  const card = board.cards[props.zone.id].find(c => c.id === cardId)!;
+  client.changeCardAttribute(props.zone.id, cardId, 'FLIPPED', card.flipped ? 0 : 1);
+}
+
 </script>
 
 <template>
   <div class="zone-box">
-    <board-card v-for="card, index in board.cards[zone.id]" :parent-bounds="zoneRect" :card="card" :key="card.id"
+    <board-card v-for="card in board.cards[zone.id]" :parent-bounds="zoneRect" :card="card" :key="card.id"
       @move="(x, y) => moveCardPos(card.id, x, y)" @move-zone="(z, x, y) => moveCardZone(card.id, z, x, y)"
-      @tap="tap(card.id)" />
+      @tap="tap(card.id)" @transform="transform(card.id)" @flip="flip(card.id)" />
     <div class="zone-bounds" ref="zoneBounds" :style="zone.pos"></div>
   </div>
 </template>

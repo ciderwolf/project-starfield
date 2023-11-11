@@ -1,6 +1,7 @@
-import { zoneFromIndex, type ZoneConfig, ZONES } from "@/zones";
+import { zoneFromIndex, type ZoneConfig, ZONES, OPPONENT_ZONES } from "@/zones";
 import { defineStore } from "pinia";
 import { reactive } from "vue";
+import { useBoardStore } from "./board";
 
 export const useZoneStore = defineStore('zone', () => {
   const zoneBounds: { [id: number]: DOMRect } = reactive({});
@@ -24,8 +25,9 @@ export const useZoneStore = defineStore('zone', () => {
 
   function updateZoneBounds(id: number, bounds: DOMRect) {
     zoneBounds[id] = bounds;
-    if (id === ZONES.hand.id) {
-      // recalculateHandOrder(cards[ZONES.hand.id], bounds);
+    const board = useBoardStore();
+    if (id === ZONES.hand.id || id === OPPONENT_ZONES.hand.id) {
+      board.updateHandPos(id, bounds);
     }
   }
 

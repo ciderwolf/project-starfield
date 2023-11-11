@@ -80,6 +80,7 @@ export type BoardCard = Card & {
   pivot: Pivot;
   counter: number;
   transformed: boolean;
+  flipped: boolean;
   zone: number;
   id: CardId;
 };
@@ -109,7 +110,7 @@ export type Card = {
 }
 
 export type SpecialAction = 'MULLIGAN' | 'SCOOP' | 'SHUFFLE';
-export type CardAttribute = 'PIVOT' | 'COUNTER' | 'TRANSFORMED';
+export type CardAttribute = 'PIVOT' | 'COUNTER' | 'TRANSFORMED' | 'FLIPPED';
 export type PlayerAttribute = 'LIFE' | 'POISON';
 
 
