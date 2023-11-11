@@ -4,6 +4,8 @@ import { useZoneStore } from '@/stores/zone';
 import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
 import { ScreenPosition, ZONES } from '@/zones';
 import type { BoardCard } from '@/api/message';
+import ContextMenu from '@/components/ContextMenu.vue';
+import { createContextMenu, type ContextMenuDefinition } from '@/context-menu';
 
 interface Position {
   x: number;
@@ -15,7 +17,9 @@ const props = defineProps<{ card: BoardCard, parentBounds?: DOMRect }>();
 const emit = defineEmits<{
   (event: 'move', x: number, y: number): void
   (event: 'move-zone', zoneId: number, x: number, y: number): void
-  (event: 'tap'): void
+  (event: 'tap'): void,
+  (event: 'transform'): void,
+  (event: 'flip'): void,
 }>()
 
 const board = useBoardStore();
@@ -39,6 +43,7 @@ const boardPos = reactive<Position>({ x: 0, y: 0 });
 const imagePos = reactive<Position>({ x: 0, y: 0 });
 const offsetPos = reactive<Position>({ x: 0, y: 0 });
 const moving = ref(false);
+let hasMoved = false;
 const isMe = computed(() => board.cardIsMovable(props.card.id));
 
 const positionInfo = computed(() => ({
@@ -80,6 +85,12 @@ function stopMoving(): Position {
 function onMouseUp(e: MouseEvent) {
   if (moving.value) {
     moving.value = false;
+    // if the card hasn't actually moved, skip
+    if (!hasMoved) {
+      showContextMenu(e);
+      return;
+    }
+    hasMoved = false;
 
     const otherZone = zones.overlappingZone(e.clientX, e.clientY);
 
@@ -103,7 +114,6 @@ function onMouseUp(e: MouseEvent) {
 
 function onMouseDown(e: MouseEvent) {
   // note the position in the element that was originally clicked
-  const rect = image.value!.getBoundingClientRect();
   offsetPos.x = e.clientX - imagePos.x;
   offsetPos.y = e.clientY - imagePos.y;
   moving.value = true;
@@ -112,6 +122,7 @@ function onMouseDown(e: MouseEvent) {
 
 function onMouseMove(e: MouseEvent) {
   if (moving.value) {
+    hasMoved = true;
     imagePos.x = e.clientX - offsetPos.x;
     imagePos.y = e.clientY - offsetPos.y;
   }
@@ -128,13 +139,35 @@ function updatePositionFromVirtualCoords() {
   imagePos.y = parentRect.top + parentRect.height * visualYPos - rect.height / 2;
 
   clampToBounds(rect, parentRect);
+  showMenu.value = false;
 }
 
 function tap() {
   if (props.card.zone !== ZONES.play.id) {
     return;
   }
+  // cancel the context menu
+  window.clearTimeout(showMenuTimer);
   emit('tap');
+}
+
+const showMenu = ref(false);
+const menuPos = reactive<Position>({ x: 0, y: 0 });
+let showMenuTimer: number = 0;
+function showContextMenu(e: MouseEvent) {
+  if (hasMoved || e.detail > 1 || showMenu.value) {
+    return;
+  }
+  moving.value = false;
+
+  menuPos.x = e.clientX + 5;
+  menuPos.y = e.clientY + 5;
+
+  menuDefinition.value = createContextMenu(props.card.zone, props.card, doMenuAction);
+
+  showMenuTimer = window.setTimeout(() => {
+    showMenu.value = true;
+  }, 250);
 }
 
 onMounted(() => {
@@ -159,6 +192,32 @@ watch([() => props.parentBounds, () => props.card.x, () => props.card.y], () => 
 onUnmounted(() => {
   document.removeEventListener('mousemove', onMouseMove);
 })
+
+
+const menu = ref();
+
+function doMenuAction(name: string, ...args: number[]) {
+  showMenu.value = false;
+
+  switch (name) {
+    case 'tap':
+      emit(name);
+      break;
+    case 'transform':
+      emit(name);
+      break;
+    case 'flip':
+      emit(name);
+      break;
+    case 'move-zone':
+      emit(name, args[0], 0, 0);
+      break;
+  }
+}
+
+const menuDefinition = ref<ContextMenuDefinition>({ options: [] });
+
+
 </script>
 
 <template>
@@ -167,6 +226,9 @@ onUnmounted(() => {
   <img v-else class="board-card" :style="positionInfo" draggable="false" :src="imageUrl" ref="image">
   <img v-if="moving && (boardPos.x != imagePos.x || boardPos.y != imagePos.y)" class="board-card board-card-ghost"
     :style="ghostPositionInfo" draggable="false" :src="imageUrl">
+
+  <ContextMenu v-if="showMenu" v-click-outside="() => showMenu = false" :real-pos="menuPos" :menu="menuDefinition"
+    ref="menu" />
 </template>
 
 <style scoped>

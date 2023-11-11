@@ -31,10 +31,10 @@ onUnmounted(() => {
 });
 
 function moveCardPos(cardId: CardId, x: number, y: number) {
-  if (props.zone.name == 'BATTLEFIELD') {
+  if (props.zone.type == 'BATTLEFIELD') {
     client.moveCard(props.zone.id, cardId, x, y);
   }
-  else if (props.zone.name === 'HAND') {
+  else if (props.zone.type === 'HAND') {
     board.moveCard(props.zone.id, cardId, x, y);
   }
 }

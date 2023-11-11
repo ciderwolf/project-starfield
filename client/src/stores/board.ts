@@ -223,7 +223,7 @@ export const useBoardStore = defineStore('board', () => {
     const player = players[event.playerId];
     const pos = getScreenPosition(player.index);
     const zones = getZones(pos);
-    const libraryId = zones.find(z => z.name === 'LIBRARY')!.id;
+    const libraryId = zones.find(z => z.type === 'LIBRARY')!.id;
     for(const zone of zones.map(zone => zone.id)) {
       const cardList = cards[zone];
       cards[zone] = [];
@@ -246,7 +246,7 @@ export const useBoardStore = defineStore('board', () => {
   function processShuffleDeck(event: ShuffleDeck) {
     const player = players[event.playerId];
     const libraryId = getZones(getScreenPosition(player.index))
-      .find(z => z.name === 'LIBRARY')!.id;
+      .find(z => z.type === 'LIBRARY')!.id;
     const deck = cards[libraryId];
     for(let i = 0; i < deck.length; i++) {
       const card = deck[i];

@@ -75,7 +75,7 @@ export class WebSocketGameClient extends GameClient {
       this.ws.send({
         type: 'change_zone',
         card: cardId,
-        zone: zoneFromIndex(newZoneId)!.name,
+        zone: zoneFromIndex(newZoneId)!.type,
         index: -1,
       });
     }
