@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { type ZoneConfig } from '@/zones';
-import { client } from '@/ws';
-import BoardCard from '@/components/game/BoardCard.vue';
+import BattlefieldCard from '@/components/game/BattlefieldCard.vue';
+import HandCard from '@/components/game/HandCard.vue';
+import PileCard from '@/components/game/PileCard.vue';
 import { onMounted, onUnmounted, ref } from 'vue';
 import { useBoardStore, type CardId, Pivot } from '@/stores/board';
 import { useZoneStore } from '@/stores/zone';
+import CardDispatch from './CardDispatch.vue';
 
 const props = defineProps<{ zone: ZoneConfig }>();
 
@@ -30,45 +32,18 @@ onUnmounted(() => {
   window.removeEventListener('resize', resetZoneRect);
 });
 
-function moveCardPos(cardId: CardId, x: number, y: number) {
-  if (props.zone.type == 'BATTLEFIELD') {
-    client.moveCard(props.zone.id, cardId, x, y);
-  }
-  else if (props.zone.type === 'HAND') {
-    board.moveCard(props.zone.id, cardId, x, y);
-  }
-}
-
-function moveCardZone(cardId: CardId, zoneId: number, x: number, y: number) {
-  client.moveCardToZone(props.zone.id, cardId, zoneId, x, y);
-}
-
-function tap(cardId: CardId) {
-  const currentPivot = board.cards[props.zone.id].find(c => c.id === cardId)!.pivot;
-  if (currentPivot === Pivot.UNTAPPED) {
-    client.changeCardAttribute(props.zone.id, cardId, 'PIVOT', Pivot.TAPPED);
-  } else {
-    client.changeCardAttribute(props.zone.id, cardId, 'PIVOT', Pivot.UNTAPPED);
-  }
-}
-
-function transform(cardId: CardId) {
-  const card = board.cards[props.zone.id].find(c => c.id === cardId)!;
-  client.changeCardAttribute(props.zone.id, cardId, 'TRANSFORMED', card.transformed ? 0 : 1);
-}
-
-function flip(cardId: CardId) {
-  const card = board.cards[props.zone.id].find(c => c.id === cardId)!;
-  client.changeCardAttribute(props.zone.id, cardId, 'FLIPPED', card.flipped ? 0 : 1);
-}
-
 </script>
 
 <template>
   <div class="zone-box">
-    <board-card v-for="card in board.cards[zone.id]" :parent-bounds="zoneRect" :card="card" :key="card.id"
-      @move="(x, y) => moveCardPos(card.id, x, y)" @move-zone="(z, x, y) => moveCardZone(card.id, z, x, y)"
-      @tap="tap(card.id)" @transform="transform(card.id)" @flip="flip(card.id)" />
+    <!-- <battlefield-card v-if="zone.type === 'BATTLEFIELD'" v-for="card in board.cards[zone.id]" :key="card.id"
+      :zone-bounds="zoneRect" :card="card" />
+    <hand-card v-else-if="zone.type === 'HAND'" v-for="card in board.cards[zone.id]" :key="card.id + 1"
+      :zone-bounds="zoneRect" :card="card" />
+    <pile-card v-else v-for="card in board.cards[zone.id]" :key="card.id + 2" :zone-bounds="zoneRect" :card="card" /> -->
+
+    <card-dispatch v-for="card in board.cards[zone.id]" :key="card.id" :zone="zone.type" :card="card"
+      :zone-rect="zoneRect" />
     <div class="zone-bounds" ref="zoneBounds" :style="zone.pos"></div>
   </div>
 </template>

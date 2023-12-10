@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ContextMenuDefinition } from '@/context-menu';
-import { computed, reactive, ref } from 'vue';
+import { computed, reactive, ref, onMounted } from 'vue';
 
 interface Position {
   x: number;
@@ -80,7 +80,16 @@ function noShow(index: number) {
 
 const optionElements = ref<HTMLElement[]>([]);
 const menu = ref<HTMLElement | null>(null);
-const numberInputs = ref<number[]>([]);;
+const numberInputs = ref<number[]>([]);
+
+onMounted(() => {
+  for (let i = 0; i < props.menu.options.length; i++) {
+    const option = props.menu.options[i]
+    if (option.type === 'number') {
+      numberInputs.value[i] = option.default ?? 1;
+    }
+  }
+})
 </script>
 
 <template>
@@ -96,7 +105,7 @@ const numberInputs = ref<number[]>([]);;
           <div class="card-context-menu-option card-context-menu-number-option">
             <div class="card-context-menu-text" @click="option.effect(numberInputs[index])">{{ option.title }}</div>
             <input class="card-context-menu-number-input" type="number" :min="option.min" :max="option.max"
-              v-model.number="numberInputs[index]" placeholder="1" />
+              v-model.number="numberInputs[index]" :placeholder="`${option.default}`" />
           </div>
         </template>
         <template v-if="option.type == 'seperator'">

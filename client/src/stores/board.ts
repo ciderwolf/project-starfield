@@ -338,7 +338,7 @@ export const useBoardStore = defineStore('board', () => {
     return zoneNameToId(zone, pos);
   }
 
-  return { setBoardState, processBoardUpdate, processOracleInfo, oracleInfo, updateHandPos, cards, moveCard, cardIsMovable, getScreenPositionFromCard }
+  return { setBoardState, processBoardUpdate, processOracleInfo, oracleInfo, updateHandPos, cards, moveCard, cardIsMovable, getScreenPositionFromCard, players }
 });
 
 function recalculateHandOrder(handCards: BoardCard[], handBounds: DOMRect) {

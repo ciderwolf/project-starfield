@@ -1,4 +1,6 @@
 import { Pivot, type BoardCard } from "./api/message";
+import { useBoardStore } from "./stores/board";
+import { useDataStore } from "./stores/data";
 import { ZONES, zoneFromIndex } from "./zones";
 
 export interface ContextMenuDefinition {
@@ -26,18 +28,19 @@ type TextOption = {
 type NumberInputOption = {
   type: 'number';
   title: string;
+  default?: number;
   min?: number;
   max?: number;
   effect: (value: number) => void;
 }
 
 
-type ActionEmit = (action: string, ...args: number[]) => void;
+type ActionEmit = (action: string, ...args: any[]) => void;
 
 export function createContextMenu(zone: number, card: BoardCard, emit: ActionEmit) {
   switch(zone) {
-    // case ZONES.hand.id:
-    //   return createHandContextMenu(card, emit);
+    case ZONES.hand.id:
+      return createHandContextMenu(card, emit);
     case ZONES.play.id:
       return createBattlefieldContextMenu(card, emit);
     case ZONES.library.id:
@@ -48,40 +51,61 @@ export function createContextMenu(zone: number, card: BoardCard, emit: ActionEmi
 }
 
 
-function createBattlefieldContextMenu(card: BoardCard, emit: ActionEmit): ContextMenuDefinition {
-  return {
-    options: [
-      {
-        type: 'text',
-        title: 'Transform',
-        effect: () => {
-          emit('transform');
-        }
-      },
-      {
-        type: 'text',
-        title: card.flipped ? 'Turn face up' : 'Turn face down',
-        effect: () => {
-          emit('flip');
-        }
-      },
-      {
-        type: 'text',
-        title: card.pivot === Pivot.TAPPED ? 'Untap' : 'Tap',
-        effect: () => {
-          emit('tap');
-        }
-      },
-      {
-        type: 'submenu',
-        title: 'Move to zone',
-        options: getMoveZoneActions(card.zone, emit)
-      },
-      {
-        type: 'seperator'
+export function createBattlefieldContextMenu(card: BoardCard, emit: ActionEmit): ContextMenuDefinition {
+  const options: ContextMenuOption[] = [];
+  if (card.flipped) {
+    options.push({
+      type: 'submenu',
+      title: 'Reveal to...',
+      options: getRevealToPlayersSubmenu(emit)
+    });
+  }
+
+  options.push(
+    {
+      type: 'text',
+      title: 'Transform',
+      effect: () => {
+        emit('transform');
       }
-    ]
-  };
+    },
+    {
+      type: 'text',
+      title: card.flipped ? 'Turn face up' : 'Turn face down',
+      effect: () => {
+        emit('flip');
+      }
+    },
+    {
+      type: 'text',
+      title: card.pivot === Pivot.TAPPED ? 'Untap' : 'Tap',
+      effect: () => {
+        emit('tap');
+      }
+    },
+    {
+      type: 'seperator'
+    },
+    {
+      type: 'submenu',
+      title: 'Move to zone',
+      options: getMoveZoneActions(card.zone, emit)
+    },
+    {
+      type: 'seperator'
+    },
+    {
+      type: 'number',
+      title: card.counter === 0 ? 'Add counter' : 'Set counter',
+      default: card.counter,
+      min: 0,
+      effect: (count: number) => {
+        count = isNaN(count) ? 1 : count;
+        emit('add-counter', count);
+      }
+    }
+  );
+  return { options };
 }
 
 function createLibraryContextMenu(emit: ActionEmit): ContextMenuDefinition {
@@ -101,6 +125,13 @@ function createLibraryContextMenu(emit: ActionEmit): ContextMenuDefinition {
           emit('scoop');
         }
       },
+      {
+        type: 'text',
+        title: 'Show Sideboard',
+        effect: () => {
+          emit('show-sideboard');
+        }
+      },
       { 
         type: 'seperator'
       },
@@ -109,6 +140,22 @@ function createLibraryContextMenu(emit: ActionEmit): ContextMenuDefinition {
         title: 'Reveal top card',
         effect: () => {
           emit('reveal-top');
+        }
+      },
+      {
+        type: 'number',
+        title: 'Scry',
+        min: 1,
+        effect: (count: number) => {
+          count = isNaN(count) ? 1 : count;
+          emit('scry', count);
+        }
+      },
+      {
+        type: 'text',
+        title: 'Find card',
+        effect: () => {
+          emit('find-card');
         }
       },
       {
@@ -176,6 +223,54 @@ function createLibraryContextMenu(emit: ActionEmit): ContextMenuDefinition {
   };
 }
 
+export function createHandContextMenu(card: BoardCard, emit: ActionEmit): ContextMenuDefinition {
+  return {
+    options: [
+      {
+        type: 'text',
+        title: 'Reveal',
+        effect: () => {
+          emit('reveal');
+        }
+      },
+      {
+        type: 'submenu',
+        title: 'Reveal to...',
+        options: getRevealToPlayersSubmenu(emit)
+      },
+      {
+        type: 'text',
+        title: card.transformed ? 'See front face' : 'See back face',
+        effect: () => {
+          emit('transform');
+        }
+      },
+      {
+        type: 'seperator'
+      },
+      {
+        type: 'text',
+        title: 'Play',
+        effect: () => {
+          emit('play');
+        }
+      },
+      {
+        type: 'text',
+        title: 'Play face down',
+        effect: () => {
+          emit('play-face-down');
+        }
+      },
+      {
+        type: 'submenu',
+        title: 'Move to zone...',
+        options: getMoveZoneActions(card.zone, emit)
+      },
+    ]
+  };
+}
+
 function getMoveZoneActions(exceptZone: number, emit: ActionEmit): TextOption[] {
   const options: TextOption[] = [
     {
@@ -230,4 +325,57 @@ function getMoveZoneActions(exceptZone: number, emit: ActionEmit): TextOption[] 
   ];
   return options
     .filter(option => option.title !== zoneFromIndex(exceptZone)?.name);
+}
+
+export function getZoneContextMenu(zoneId: number, emit: ActionEmit): ContextMenuDefinition {
+  return {
+    options: [
+      {
+        type: 'submenu',
+        title: 'Reveal all to...',
+        options: getRevealToPlayersSubmenu(emit)
+      },
+      {
+        type: 'text',
+        title: 'Reveal all',
+        effect: () => {
+          emit('reveal-all')
+        }
+      },
+      {
+        type: 'submenu',
+        title: 'Move all to zone...',
+        options: getMoveZoneActions(zoneId, emit)
+      }
+    ]
+  }
+}
+
+function getRevealToPlayersSubmenu(emit: ActionEmit) {
+  const board = useBoardStore();
+  const data = useDataStore();
+  
+  const options: ContextMenuOption[] = Object.values(board.players)
+    .filter(player => player.id !== data.userId)
+    .map(player => {
+      return {
+        type: 'text',
+        title: player.name,
+        effect: () => {
+          emit('reveal-to', player.id);
+        }
+      }
+    });
+    options.push({
+      'type': 'seperator'
+    }, 
+    {
+      type: 'text',
+      title: 'All',
+      effect: () => {
+        emit('reveal-to', -1);
+      }
+    });
+  
+  return options;
 }
