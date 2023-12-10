@@ -4,8 +4,8 @@ import { useBoardStore } from '@/stores/board';
 import BattlefieldCard from '@/components/game/BattlefieldCard.vue';
 import HandCard from '@/components/game/HandCard.vue';
 import PileCard from '@/components/game/PileCard.vue';
-import StaticCard from '@/components/game/StaticCard.vue';
-import { computed, ref } from 'vue';
+import CardImage from '@/components/game/CardImage.vue';
+import { computed } from 'vue';
 
 const props = defineProps<{ zoneRect?: DOMRect, card: BoardCard, zone: Zone }>();
 
@@ -22,6 +22,6 @@ const isMe = computed(() => board.cardIsMovable(props.card.id));
     <pile-card v-else :zone-bounds="zoneRect" :card="card" />
   </template>
   <template v-else>
-    <static-card :card="card" :zone-rect="zoneRect" :zone="zone" />
+    <card-image :card="card" :moving="false" :image-pos="{ x: 0, y: 0 }" :zone-rect="zoneRect" />
   </template>
 </template>

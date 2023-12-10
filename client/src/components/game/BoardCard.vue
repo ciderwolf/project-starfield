@@ -1,9 +1,7 @@
 <script setup lang="ts">
-import { useBoardStore } from '@/stores/board';
 import { useZoneStore } from '@/stores/zone';
-import { onMounted, onUnmounted, reactive, ref, watch } from 'vue';
+import { onMounted, onUnmounted, reactive, ref } from 'vue';
 import { type ComponentExposed } from 'vue-component-type-helpers';
-import { ScreenPosition, ZONES } from '@/zones';
 import type { BoardCard } from '@/api/message';
 import CardImage from './CardImage.vue';
 
@@ -13,7 +11,9 @@ interface Position {
 }
 
 const props = defineProps<{ card: BoardCard, parentBounds?: DOMRect }>();
-defineExpose<{ recomputePosition: () => void }>({ recomputePosition: updatePositionFromVirtualCoords });
+const image = ref<ComponentExposed<typeof CardImage>>();
+
+defineExpose<{ recomputePosition: () => void }>({ recomputePosition: () => image.value!.recomputePosition() });
 const emit = defineEmits<{
   (event: 'move', x: number, y: number): void
   (event: 'move-zone', zoneId: number, x: number, y: number): void
@@ -21,23 +21,12 @@ const emit = defineEmits<{
   (event: 'contextmenu', e: MouseEvent): void,
 }>()
 
-const board = useBoardStore();
 const zones = useZoneStore();
-const image = ref<ComponentExposed<typeof CardImage>>();
 
-const boardPos = reactive<Position>({ x: 0, y: 0 });
 const imagePos = reactive<Position>({ x: 0, y: 0 });
 const offsetPos = reactive<Position>({ x: 0, y: 0 });
 const moving = ref(false);
 let hasMoved = false;
-
-function clampToBounds(rect: DOMRect, parentRect: DOMRect) {
-  imagePos.x = Math.max(parentRect.left, Math.min(imagePos.x, parentRect.left + parentRect.width - rect.width));
-  imagePos.y = Math.max(parentRect.top, Math.min(imagePos.y, parentRect.top + parentRect.height - rect.height));
-
-  boardPos.x = imagePos.x;
-  boardPos.y = imagePos.y;
-}
 
 function stopMoving(): Position {
   // get the position of the element relative to the board
@@ -45,7 +34,6 @@ function stopMoving(): Position {
   const parentRect = props.parentBounds!;
 
   // clamp the image position inside the parent element
-  clampToBounds(rect, parentRect);
 
   // get the center of the element
   const centerX = (imagePos.x + rect.width / 2 - parentRect.left) / parentRect.width;
@@ -82,6 +70,10 @@ function onMouseUp(e: MouseEvent) {
 
 function onMouseDown(e: MouseEvent) {
   // note the position in the element that was originally clicked
+  const img = image.value!.cardPosition();
+  imagePos.x = img.x;
+  imagePos.y = img.y;
+
   offsetPos.x = e.clientX - imagePos.x;
   offsetPos.y = e.clientY - imagePos.y;
   moving.value = true;
@@ -96,37 +88,8 @@ function onMouseMove(e: MouseEvent) {
   }
 }
 
-function updatePositionFromVirtualCoords() {
-  const parentRect = props.parentBounds!;
-
-  const screenPos = board.getScreenPositionFromCard(props.card.id);
-  const visualYPos = screenPos === ScreenPosition.PRIMARY ? props.card.y : 1 - props.card.y;
-
-  const rect = image.value!.getBounds();
-  imagePos.x = parentRect.left + parentRect.width * props.card.x - rect.width / 2;
-  imagePos.y = parentRect.top + parentRect.height * visualYPos - rect.height / 2;
-
-  clampToBounds(rect, parentRect);
-}
-
-
 onMounted(() => {
   document.addEventListener('mousemove', onMouseMove);
-  if (props.parentBounds) {
-    updatePositionFromVirtualCoords();
-  }
-
-  if (props.card.zone === ZONES.hand.id) {
-    watch([() => board.cards[ZONES.hand.id].length], () => {
-      updatePositionFromVirtualCoords();
-    })
-  }
-})
-
-watch([() => props.parentBounds, () => props.card.x, () => props.card.y], () => {
-  if (props.parentBounds) {
-    updatePositionFromVirtualCoords();
-  }
 });
 
 onUnmounted(() => {
@@ -136,7 +99,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <CardImage :card="card" :moving="moving" :board-pos="boardPos" :image-pos="imagePos" ref="image"
+  <card-image :card="card" :moving="moving" :image-pos="imagePos" :zone-rect="parentBounds" ref="image"
     @dblclick="$emit('dblclick')" @mousedown="onMouseDown" @mouseup="onMouseUp" />
 </template>
 
