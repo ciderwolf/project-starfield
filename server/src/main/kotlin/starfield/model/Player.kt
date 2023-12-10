@@ -154,7 +154,12 @@ class BoardManager(private val owner: UUID, ownerIndex: Int, private val game: G
             CardAttribute.TRANSFORMED -> targetCard.transformed = value != 0
             CardAttribute.FLIPPED -> targetCard.flipped = value != 0
         }
-        return listOf(BoardDiffEvent.ChangeAttribute(card, attribute, value))
+        val events = mutableListOf<BoardDiffEvent>(BoardDiffEvent.ChangeAttribute(card, attribute, value))
+        if (attribute == CardAttribute.FLIPPED && value == 0 && targetCard.zone.isPublic) {
+            events.addAll(revealToAll(targetCard))
+        }
+
+        return events
     }
 
     fun moveCard(cardId: CardId, x: Double, y: Double): List<BoardDiffEvent> {
@@ -210,7 +215,7 @@ class BoardManager(private val owner: UUID, ownerIndex: Int, private val game: G
         return cards.map { Pair(it.key, it.value.mapIndexed { index, card -> card.getState(index) }) }.toMap()
     }
 
-    fun changeZone(cardId: CardId, newZone: Zone): List<BoardDiffEvent> {
+    fun changeZone(cardId: CardId, newZone: Zone, playFaceDown: Boolean = false): List<BoardDiffEvent> {
         val events = mutableListOf<BoardDiffEvent>()
         val card = findCard(cardId) ?: return events
 
@@ -222,21 +227,15 @@ class BoardManager(private val owner: UUID, ownerIndex: Int, private val game: G
         card.reset(clearVisibility = false)
         card.zone = newZone
 
-        if (newZone.isPublic) {
-            // visible to everyone
-            val justAdded = mutableListOf<Id>()
-            game.users().forEach {
-                if (card.visibility.add(it.id)) {
-                    justAdded.add(it.id)
+        if (!playFaceDown) {
+            if (newZone.isPublic) {
+                // visible to everyone
+                events.addAll(revealToAll(card))
+            } else if (newZone == Zone.HAND) {
+                // visible to just the owner
+                if (card.visibility.add(owner)) {
+                    events.add(BoardDiffEvent.RevealCard(card.id, listOf(owner)))
                 }
-            }
-            if (justAdded.size > 0) {
-                events.add(BoardDiffEvent.RevealCard(card.id, justAdded))
-            }
-        } else if (newZone == Zone.HAND) {
-            // visible to just the owner
-            if (card.visibility.add(owner)) {
-                events.add(BoardDiffEvent.RevealCard(card.id, listOf(owner)))
             }
         }
 
@@ -244,6 +243,21 @@ class BoardManager(private val owner: UUID, ownerIndex: Int, private val game: G
 //        events.add(BoardDiffEvent.ChangeIndex(cardId, cards[newZone]!!.size - 1))
 
         return events
+    }
+
+    private fun revealToAll(card: BoardCard): List<BoardDiffEvent> {
+        val justAdded = mutableListOf<Id>()
+        game.users().forEach {
+            if (card.visibility.add(it.id)) {
+                justAdded.add(it.id)
+            }
+        }
+
+        return if (justAdded.size > 0) {
+            listOf(BoardDiffEvent.RevealCard(card.id, justAdded))
+        } else {
+            listOf()
+        }
     }
 
     fun getOracleId(card: CardId): OracleId {
@@ -254,6 +268,21 @@ class BoardManager(private val owner: UUID, ownerIndex: Int, private val game: G
         return cards.values.flatten()
             .filter { it.visibility.contains(playerId) }
             .associate { Pair(it.id, it.card.id) }
+    }
+
+    fun revealTo(cardId: CardId, revealTo: Id?): List<BoardDiffEvent> {
+        val card = findCard(cardId) ?: return listOf()
+        val events = mutableListOf<BoardDiffEvent>()
+        if (revealTo == null) {
+            events.addAll(revealToAll(card))
+        }
+        else {
+            if (card.visibility.add(revealTo)) {
+                events.add(BoardDiffEvent.RevealCard(card.id, listOf(revealTo)))
+            }
+        }
+
+        return events
     }
 }
 
@@ -291,11 +320,17 @@ class Player(val user: User, userIndex: Int, deck: Deck, game: Game) {
         return board.drawCards(count)
     }
 
-    fun playCard(card: CardId, x: Double, y: Double): List<BoardDiffEvent> {
-        val changeZoneResult = board.changeZone(card, Zone.BATTLEFIELD)
+    fun playCard(card: CardId, x: Double, y: Double, attributes: Map<CardAttribute, Int>): List<BoardDiffEvent> {
+        val playFaceDown = attributes.containsKey(CardAttribute.FLIPPED)
+                && attributes[CardAttribute.FLIPPED]!! == 1
+        val changeZoneResult = board.changeZone(card, Zone.BATTLEFIELD, playFaceDown)
+
         return if (changeZoneResult.isNotEmpty() && changeZoneResult.last() is BoardDiffEvent.ChangeZone) {
             val updatedCardId = (changeZoneResult.last() as BoardDiffEvent.ChangeZone).card
-            changeZoneResult + board.moveCard(updatedCardId, x, y)
+
+            changeZoneResult +
+                    board.moveCard(updatedCardId, x, y) +
+                    attributes.flatMap { board.setAttribute(updatedCardId, it.key, it.value) }
         } else {
             changeZoneResult
         }
@@ -342,6 +377,10 @@ class Player(val user: User, userIndex: Int, deck: Deck, game: Game) {
 
     fun changeAttribute(card: CardId, attribute: CardAttribute, newValue: Int): List<BoardDiffEvent> {
         return board.setAttribute(card, attribute, newValue)
+    }
+
+    fun revealCard(card: CardId, revealTo: Id?): List<BoardDiffEvent> {
+        return board.revealTo(card, revealTo)
     }
 }
 

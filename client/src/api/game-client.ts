@@ -1,8 +1,7 @@
 import { ZONES, zoneFromIndex } from "@/zones";
 import type { WebSocketConnection } from "./websocket";
-import { useBoardStore, type CardId } from "@/stores/board";
-import type { PlayerAttribute, SpecialAction, CardAttribute } from "./message";
-
+import { type CardId } from "@/stores/board";
+import type { PlayerAttribute, SpecialAction, CardAttribute, CardAttributeMap } from "./message";
 
 export abstract class GameClient {
   abstract drawCards(count: number): void;
@@ -18,19 +17,18 @@ export abstract class GameClient {
     this.takeSpecialAction('SCOOP');
   }
 
-  abstract changeCardAttribute(zoneId: number, cardId: CardId, attribute: CardAttribute, value: number): void;
+  abstract changeCardAttribute(cardId: CardId, attribute: CardAttribute, value: number): void;
   abstract changePlayerAttribute(attribute: PlayerAttribute, newValue: number): void;
-  abstract moveCardToZone(zoneId: number, cardId: CardId, newZoneId: number, x: number, y: number): void;
+  abstract moveCardToZone(cardId: CardId, newZoneId: number, x: number, y: number): void;
+  abstract playWithAttributes(cardId: CardId, x: number, y: number, attributes: Record<CardAttribute, number>): void;
   abstract moveCard(zoneId: number, cardId: CardId, x: number, y: number): void;
+  abstract revealCard(cardId: CardId, playerId?: string): void;
 }
 
 export class WebSocketGameClient extends GameClient {
 
-  // private board: ReturnType<typeof useBoardStore>;
-
   constructor(private ws: WebSocketConnection) {
     super();
-    // this.board = useBoardStore();
   }
 
   drawCards(count: number): void {
@@ -53,7 +51,7 @@ export class WebSocketGameClient extends GameClient {
     });
   }
 
-  changeCardAttribute(zoneId: number, cardId: CardId, attribute: CardAttribute, newValue: number): void {
+  changeCardAttribute(cardId: CardId, attribute: CardAttribute, newValue: number): void {
     this.ws.send({
       type: 'change_card_attribute',
       card: cardId,
@@ -62,13 +60,14 @@ export class WebSocketGameClient extends GameClient {
     });
   }
 
-  moveCardToZone(zoneId: number, cardId: CardId, newZoneId: number, x: number, y: number): void {
+  moveCardToZone(cardId: CardId, newZoneId: number, x: number, y: number): void {
     if (newZoneId === ZONES.play.id) {
       this.ws.send({
         type: 'play_card',
         card: cardId,
         x,
         y,
+        attributes: {}
       });
     }
     else {
@@ -80,6 +79,17 @@ export class WebSocketGameClient extends GameClient {
       });
     }
   }
+
+  playWithAttributes(cardId: number, x: number, y: number, attributes: CardAttributeMap): void {
+    this.ws.send({
+      type: 'play_card',
+      card: cardId,
+      x,
+      y,
+      attributes
+    });
+  }
+
   moveCard(zoneId: number, cardId: CardId, x: number, y: number): void {
     if (zoneId === ZONES.play.id) {
       this.ws.send({
@@ -96,5 +106,13 @@ export class WebSocketGameClient extends GameClient {
         index: -1,
       });
     }
+  }
+
+  revealCard(cardId: number, playerId?: string | undefined): void {
+    this.ws.send({
+      type: 'reveal',
+      card: cardId,
+      revealTo: playerId ?? null,
+    });
   }
 }

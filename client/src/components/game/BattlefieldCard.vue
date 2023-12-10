@@ -20,27 +20,27 @@ function tap() {
 
   const currentPivot = board.cards[zone].find(c => c.id === cardId)!.pivot;
   if (currentPivot === Pivot.UNTAPPED) {
-    client.changeCardAttribute(zone, cardId, 'PIVOT', Pivot.TAPPED);
+    client.changeCardAttribute(cardId, 'PIVOT', Pivot.TAPPED);
   } else {
-    client.changeCardAttribute(zone, cardId, 'PIVOT', Pivot.UNTAPPED);
+    client.changeCardAttribute(cardId, 'PIVOT', Pivot.UNTAPPED);
   }
 }
 
 function transform() {
   const cardId = props.card.id;
   const card = board.cards[zone].find(c => c.id === cardId)!;
-  client.changeCardAttribute(zone, cardId, 'TRANSFORMED', card.transformed ? 0 : 1);
+  client.changeCardAttribute(cardId, 'TRANSFORMED', card.transformed ? 0 : 1);
 }
 
 function flip() {
   const cardId = props.card.id;
   const card = board.cards[zone].find(c => c.id === cardId)!;
-  client.changeCardAttribute(zone, cardId, 'FLIPPED', card.flipped ? 0 : 1);
+  client.changeCardAttribute(cardId, 'FLIPPED', card.flipped ? 0 : 1);
 }
 
 function addCounter(counter: number) {
   const cardId = props.card.id;
-  client.changeCardAttribute(zone, cardId, 'COUNTER', counter);
+  client.changeCardAttribute(cardId, 'COUNTER', counter);
 }
 
 
@@ -51,7 +51,7 @@ function moveCard(x: number, y: number) {
 
 function moveZone(zoneId: number, x: number, y: number) {
   const cardId = props.card.id;
-  client.moveCardToZone(zone, cardId, zoneId, x, y);
+  client.moveCardToZone(cardId, zoneId, x, y);
 }
 
 
@@ -92,7 +92,7 @@ function doMenuAction(name: string, ...args: number[]) {
       addCounter(args[0]);
       break;
     default:
-      console.log('Unknown action for battlefield card', name, args);
+      console.error('Unknown action for battlefield card', name, args);
   }
 }
 

@@ -4,7 +4,6 @@ import type { BoardCard as BoardCardData } from '@/api/message';
 import BoardCard from '@/components/game/BoardCard.vue';
 import ContextMenu from '@/components/ContextMenu.vue';
 import { createHandContextMenu, type ContextMenuDefinition } from '@/context-menu';
-import { ZONES } from '@/zones';
 import { client } from '@/ws';
 
 const props = defineProps<{ zoneBounds?: DOMRect, card: BoardCardData }>()
@@ -16,7 +15,7 @@ const emit = defineEmits<{
 }>()
 
 function moveZone(zoneId: number, x: number, y: number) {
-  client.moveCardToZone(props.card.zone, props.card.id, zoneId, x, y);
+  client.moveCardToZone(props.card.id, zoneId, x, y);
 }
 
 
@@ -42,14 +41,16 @@ function doMenuAction(name: string, ...args: any[]) {
       moveZone(args[0], 0, 0);
       break;
     case 'reveal':
-      // client.revealCard(props.card.id);
+      client.revealCard(props.card.id);
       break;
     case 'reveal-to':
-      // client.revealCardTo(props.card.id, args[0]);
+      client.revealCard(props.card.id, args[0]);
       break;
     case 'play-face-down':
-      moveZone(ZONES.play.id, 0, 0);
+      client.playWithAttributes(props.card.id, 0, 0, { FLIPPED: 1 });
       break;
+    default:
+      console.error('Unknown action for pile card', name, args);
   }
 }
 

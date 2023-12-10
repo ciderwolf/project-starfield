@@ -79,7 +79,7 @@ data class ChangePlayerAttributeMessage(
              Play from sideboard
          Other
          =====
-         Reveal cards (to only some players)
+         ✓ Reveal cards (to only some players)
          Ask for permission
  */
 
@@ -88,7 +88,8 @@ data class ChangePlayerAttributeMessage(
 data class PlayCardMessage(
     val card: CardId,
     val x: Double,
-    val y: Double) : ClientMessage()
+    val y: Double,
+    val attributes: Map<CardAttribute, Int>) : ClientMessage()
 
 @Serializable
 @SerialName("change_position")
@@ -109,6 +110,13 @@ data class ChangeCardZoneMessage(
 data class ChangeCardIndexMessage(
     val card: CardId,
     val index: Int) : ClientMessage()
+
+@Serializable
+@SerialName("reveal")
+data class RevealCardMessage(
+    val card: CardId,
+    val revealTo: Id?
+) : ClientMessage()
 
 
 

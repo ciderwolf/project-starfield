@@ -23,12 +23,11 @@ const boardCard = ref<ComponentExposed<typeof BoardCard>>();
 function moveCard(x: number, y: number) {
   const board = useBoardStore();
   board.moveCard(props.card.zone, props.card.id, x, y);
-  // board.updateHandPos(props.card.id, props.zoneBounds!);
   boardCard.value?.recomputePosition();
 }
 
 function moveZone(zoneId: number, x: number, y: number) {
-  client.moveCardToZone(props.card.zone, props.card.id, zoneId, x, y);
+  client.moveCardToZone(props.card.id, zoneId, x, y);
 }
 
 
@@ -46,7 +45,7 @@ function showContextMenu(e: MouseEvent) {
 
   showMenu.value = true;
 }
-function doMenuAction(name: string, ...args: number[]) {
+function doMenuAction(name: string, ...args: any[]) {
   showMenu.value = false;
 
   switch (name) {
@@ -54,17 +53,22 @@ function doMenuAction(name: string, ...args: number[]) {
       props.card.transformed = !props.card.transformed;
       break;
     case 'reveal':
-      // client.revealCard(props.card.id);
+      client.revealCard(props.card.id);
+      break;
+    case 'reveal-to':
+      client.revealCard(props.card.id, args[0]);
       break;
     case 'play':
-      moveZone(ZONES.play.id, 0, 0);
+      client.playWithAttributes(props.card.id, 0, 0, {});
       break;
     case 'play-face-down':
-      moveZone(ZONES.play.id, 0, 0);
+      client.playWithAttributes(props.card.id, 0, 0, { FLIPPED: 1 });
       break;
     case 'move-zone':
       moveZone(args[0], 0, 0);
       break;
+    default:
+      console.error('Unknown menu action for hand card', name, args);
   }
 }
 

@@ -108,6 +108,7 @@ export type Card = {
   oracleId: string;
   image: string;
 }
+export type CardAttributeMap = Partial<Record<CardAttribute, number>>;
 
 export type SpecialAction = 'MULLIGAN' | 'SCOOP' | 'SHUFFLE';
 export type CardAttribute = 'PIVOT' | 'COUNTER' | 'TRANSFORMED' | 'FLIPPED';
@@ -178,7 +179,15 @@ export type RevealCard = {
   type: 'reveal_card';
 }
 
-export type ClientMessage = ChangeCardAttributeMessage | ChangeCardIndexMessage | ChangeCardPositionMessage | ChangeCardZoneMessage | ChangePlayerAttributeMessage | DrawCardMessage | PlayCardMessage | SpecialActionMessage;
+export type ClientMessage = ChangeCardAttributeMessage 
+  | ChangeCardIndexMessage 
+  | ChangeCardPositionMessage 
+  | ChangeCardZoneMessage 
+  | ChangePlayerAttributeMessage 
+  | DrawCardMessage 
+  | PlayCardMessage 
+  | SpecialActionMessage 
+  | RevealCardMessage;
 
 type ChangeCardAttributeMessage = {
   attribute: CardAttribute;
@@ -222,11 +231,18 @@ type PlayCardMessage = {
   card: number;
   x: number;
   y: number;
+  attributes: CardAttributeMap;
   type: "play_card";
 }
 
 type SpecialActionMessage = {
   action: SpecialAction;
   type: "special_action";
+}
+
+type RevealCardMessage = {
+  card: CardId;
+  revealTo: string | null;
+  type: "reveal";
 }
 
