@@ -5,6 +5,7 @@ import router from '@/router';
 import { useBoardStore } from "@/stores/board";
 
 export class WebSocketConnection {
+
   private ws: WebSocket;
 
   constructor() {
@@ -60,6 +61,12 @@ export class WebSocketConnection {
 
   private attemptReconnect(e: CloseEvent) {
     console.log(e);
+  }
+
+  reconnect() {
+    this.ws = new WebSocket('ws://127.0.0.1:8080/ws');
+    this.ws.onmessage = this.onMessage;
+    this.ws.onclose = this.attemptReconnect;
   }
 
   send(message: ClientMessage) {

@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue'
+import { ref, computed, reactive } from 'vue'
 import { defineStore } from 'pinia'
 import { getGames } from '@/api';
 import type { GameListing, GameState, LobbyState, RoomStateMessage } from '@/api/message';
@@ -9,16 +9,16 @@ export const useGameStore = defineStore('games', () => {
 
   getGames().then((gameInfo) => {
     for(const game of gameInfo) {
-      games.value[game.id] = game;
+      games[game.id] = game;
     }
   });
 
   function processListing(listing: GameListing) {
-    games.value[listing.id] = listing;
+    games[listing.id] = listing;
   }
 
   function processDeleteListing(id: string) {
-    delete games.value[id];
+    delete games[id];
   }
 
 
@@ -39,9 +39,9 @@ export const useGameStore = defineStore('games', () => {
   }
 
   function getGame(id: string) {
-    return games.value[id];
+    return games[id];
   }
 
-  const games = ref<GameMap>({});
+  const games = reactive<GameMap>({});
   return { games, processListing, processDeleteListing, processState, getGame, gameState, lobbyState };
 });

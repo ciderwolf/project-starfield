@@ -5,15 +5,19 @@ import { useGameStore } from '@/stores/games';
 import { useDataStore } from '@/stores/data';
 import { ref } from 'vue';
 import { getDecks, newDeck, submitDeck } from '@/api/deck';
+import { useRouter } from 'vue-router';
+import { ws } from '@/ws';
 
 const showCreateGameModal = ref(false);
 const gameName = ref('');
 const games = useGameStore();
+const router = useRouter();
 
 function submitGame() {
   createGame(gameName.value).then((state) => {
     showCreateGameModal.value = false;
     games.processState({ type: 'state', room: 'lobby', roomState: state });
+    router.push(`/lobby/${state.id}`);
   });
 }
 
@@ -21,6 +25,7 @@ function joinGameClicked(id: string) {
   joinGame(id).then((state) => {
     if (state) {
       games.processState({ type: 'state', room: 'lobby', roomState: state });
+      router.push(`/lobby/${id}`);
     }
   });
 }
@@ -29,7 +34,7 @@ async function loginClicked() {
   const userInfo = await login('myname');
   const data = useDataStore();
   data.login(userInfo.username, userInfo.id);
-  // todo: reconnect ws
+  ws.reconnect();
   const listings = await getDecks();
   if (!listings.some(d => d.name === 'TestDeck')) {
     const created = await newDeck();

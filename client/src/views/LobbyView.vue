@@ -3,7 +3,7 @@ import DeckPreview from '@/components/deck/DeckPreview.vue';
 import { submitDeckChoice, leaveGame, kickPlayer, startGame } from '@/api/lobby';
 import { useDecksStore } from '@/stores/decks';
 import { useGameStore } from '@/stores/games';
-import { computed, ref, watchEffect } from 'vue';
+import { computed, ref, watch, watchEffect } from 'vue';
 import { useDecksCache } from '@/cache/decks';
 import { type Deck } from '@/api/message';
 import { useDataStore } from '@/stores/data';
@@ -14,7 +14,6 @@ const router = useRouter()
 const gameId = route.params.id as string;
 const games = useGameStore();
 const game = computed(() => games.lobbyState);
-
 const decks = useDecksStore();
 
 
@@ -24,6 +23,13 @@ const deckChoice = ref('none');
 watchEffect(() => {
   if (game.value && currentUser) {
     deckChoice.value = game.value.decks[game.value.users.indexOf(currentUser)] ?? 'none';
+  }
+});
+
+
+watchEffect(() => {
+  if (games.games[gameId]?.inProgress) {
+    router.push(`/game/${gameId}`);
   }
 });
 

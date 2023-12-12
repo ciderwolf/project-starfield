@@ -9,6 +9,7 @@ import java.util.*
 
 @Serializable
 data class LobbyState(
+    val id: Id,
     val name: String,
     val users: List<Id>,
     val decks: List<Id?>,
@@ -92,11 +93,11 @@ class Lobby(val id: UUID, val owner: User, val name: String, val players: Int): 
     override fun currentState(playerId: UUID): LobbyState {
         if (players == 1) {
             return LobbyState(
-                name, users().map { it.id }, listOf(ownerDeck).map { it?.id }
+                id, name, users().map { it.id }, listOf(ownerDeck).map { it?.id }
             )
         }
         return LobbyState(
-            name, users().map { it.id }, listOf(ownerDeck, otherDeck).map { it?.id }
+            id, name, users().map { it.id }, listOf(ownerDeck, otherDeck).map { it?.id }
         )
     }
 }
