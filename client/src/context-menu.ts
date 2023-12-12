@@ -44,7 +44,7 @@ export function createContextMenu(zone: number, card: BoardCard, emit: ActionEmi
     case ZONES.play.id:
       return createBattlefieldContextMenu(card, emit);
     case ZONES.library.id:
-      return createLibraryContextMenu(emit);
+      return createLibraryContextMenu(card, emit);
     default:
       return { options: [] };
   }
@@ -108,7 +108,7 @@ export function createBattlefieldContextMenu(card: BoardCard, emit: ActionEmit):
   return { options };
 }
 
-function createLibraryContextMenu(emit: ActionEmit): ContextMenuDefinition {
+export function createLibraryContextMenu(card: BoardCard, emit: ActionEmit): ContextMenuDefinition {
   return {
     options: [
       {
@@ -139,8 +139,13 @@ function createLibraryContextMenu(emit: ActionEmit): ContextMenuDefinition {
         type: 'text',
         title: 'Reveal top card',
         effect: () => {
-          emit('reveal-top');
+          emit('reveal');
         }
+      },
+      {
+        type: 'submenu',
+        title: 'Reveal top card to...',
+        options: getRevealToPlayersSubmenu(emit)
       },
       {
         type: 'number',
@@ -168,9 +173,7 @@ function createLibraryContextMenu(emit: ActionEmit): ContextMenuDefinition {
             min: 1,
             effect: (count: number) => {
               count = isNaN(count) ? 1 : count;
-              for(let i = 0; i < count; i++) {
-                emit('move-zone', ZONES.hand.id);
-              }
+              emit('move-zone-n', ZONES.hand.type, count);
             }
           },
           {
@@ -179,9 +182,7 @@ function createLibraryContextMenu(emit: ActionEmit): ContextMenuDefinition {
             min: 1,
             effect: (count: number) => {
               count = isNaN(count) ? 1 : count;
-              for(let i = 0; i < count; i++) {
-                emit('move-zone', ZONES.play.id);
-              }
+              emit('move-zone-n', ZONES.play.type, count);
             }
           },
           {
@@ -190,9 +191,7 @@ function createLibraryContextMenu(emit: ActionEmit): ContextMenuDefinition {
             min: 1,
             effect: (count: number) => {
               count = isNaN(count) ? 1 : count;
-              for(let i = 0; i < count; i++) {
-                emit('move-zone', ZONES.graveyard.id);
-              }
+              emit('move-zone-n', ZONES.graveyard.type, count);
             }
           },
           {
@@ -201,9 +200,7 @@ function createLibraryContextMenu(emit: ActionEmit): ContextMenuDefinition {
             min: 1,
             effect: (count: number) => {
               count = isNaN(count) ? 1 : count;
-              for(let i = 0; i < count; i++) {
-                emit('move-zone', ZONES.exile.id);
-              }
+              emit('move-zone-n', ZONES.exile.type, count);
             }
           },
           {
@@ -212,9 +209,7 @@ function createLibraryContextMenu(emit: ActionEmit): ContextMenuDefinition {
             min: 1,
             effect: (count: number) => {
               count = isNaN(count) ? 1 : count;
-              for(let i = 0; i < count; i++) {
-                emit('move-zone', ZONES.faceDown.id);
-              }
+              emit('move-zone-n', ZONES.faceDown.type, count);
             }
           }, 
         ]

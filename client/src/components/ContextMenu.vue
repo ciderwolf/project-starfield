@@ -89,7 +89,12 @@ onMounted(() => {
       numberInputs.value[i] = option.default ?? 1;
     }
   }
-})
+});
+
+function cancelSubClick(e: MouseEvent) {
+  e.stopPropagation();
+  e.preventDefault();
+}
 </script>
 
 <template>
@@ -102,10 +107,11 @@ onMounted(() => {
           </div>
         </template>
         <template v-if="option.type == 'number'">
-          <div class="card-context-menu-option card-context-menu-number-option">
-            <div class="card-context-menu-text" @click="option.effect(numberInputs[index])">{{ option.title }}</div>
+          <div class="card-context-menu-option card-context-menu-number-option"
+            @click="option.effect(numberInputs[index])">
+            <div class="card-context-menu-text">{{ option.title }}</div>
             <input class="card-context-menu-number-input" type="number" :min="option.min" :max="option.max"
-              v-model.number="numberInputs[index]" :placeholder="`${option.default}`" />
+              v-model.number="numberInputs[index]" :placeholder="`${option.default}`" @click="cancelSubClick" />
           </div>
         </template>
         <template v-if="option.type == 'seperator'">
@@ -205,6 +211,11 @@ onMounted(() => {
   justify-content: space-between;
   gap: 20px;
 }
+
+/* 
+.card-context-menu-number-option .card-context-menu-text {
+  flex-grow: 1;
+} */
 
 .card-context-menu-number-input {
   font-size: 12px;

@@ -134,13 +134,13 @@ class BoardManager(private val owner: UUID, ownerIndex: Int, private val game: G
         }
     }
 
-    fun drawCards(count: Int): List<BoardDiffEvent> {
-        return (0..<count).flatMap { drawCard() }
+    fun drawCards(count: Int, to: Zone): List<BoardDiffEvent> {
+        return (0..<count).flatMap { drawCard(to) }
     }
 
-    private fun drawCard(): List<BoardDiffEvent> {
+    private fun drawCard(to: Zone): List<BoardDiffEvent> {
         if (cards[Zone.LIBRARY]!!.size > 0) {
-            return changeZone(cards[Zone.LIBRARY]!![0].id, Zone.HAND)
+            return changeZone(cards[Zone.LIBRARY]!![0].id, to)
         }
         return listOf()
     }
@@ -303,7 +303,7 @@ class Player(val user: User, userIndex: Int, deck: Deck, game: Game) {
     private var poison = 0
 
     fun mulligan(): List<BoardDiffEvent> {
-        return board.reset() + board.drawCards(7)
+        return board.reset() + board.drawCards(7, to = Zone.HAND)
     }
 
     fun getState(playerId: UUID): PlayerState {
@@ -316,8 +316,8 @@ class Player(val user: User, userIndex: Int, deck: Deck, game: Game) {
         )
     }
 
-    fun drawCards(count: Int): List<BoardDiffEvent> {
-        return board.drawCards(count)
+    fun drawCards(count: Int, to: Zone): List<BoardDiffEvent> {
+        return board.drawCards(count, to)
     }
 
     fun playCard(card: CardId, x: Double, y: Double, attributes: Map<CardAttribute, Int>): List<BoardDiffEvent> {

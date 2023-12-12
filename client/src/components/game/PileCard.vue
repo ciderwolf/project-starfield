@@ -3,8 +3,9 @@ import { reactive, ref, watch } from 'vue';
 import type { BoardCard as BoardCardData } from '@/api/message';
 import BoardCard from '@/components/game/BoardCard.vue';
 import ContextMenu from '@/components/ContextMenu.vue';
-import { createHandContextMenu, type ContextMenuDefinition } from '@/context-menu';
+import { createHandContextMenu, createLibraryContextMenu, type ContextMenuDefinition } from '@/context-menu';
 import { client } from '@/ws';
+import { ZONES } from '@/zones';
 
 const props = defineProps<{ zoneBounds?: DOMRect, card: BoardCardData }>()
 
@@ -29,7 +30,11 @@ function showContextMenu(e: MouseEvent) {
   menuPos.x = e.clientX + 5;
   menuPos.y = e.clientY + 5;
 
-  menuDefinition.value = createHandContextMenu(props.card, doMenuAction);
+  if (props.card.zone === ZONES.library.id) {
+    menuDefinition.value = createLibraryContextMenu(props.card, doMenuAction);
+  } else {
+    menuDefinition.value = createHandContextMenu(props.card, doMenuAction);
+  }
 
   showMenu.value = true;
 }
@@ -40,6 +45,9 @@ function doMenuAction(name: string, ...args: any[]) {
     case 'move-zone':
       moveZone(args[0], 0, 0);
       break;
+    case 'move-zone-n':
+      client.drawCards(args[1], args[0]);
+      break;
     case 'reveal':
       client.revealCard(props.card.id);
       break;
@@ -48,6 +56,12 @@ function doMenuAction(name: string, ...args: any[]) {
       break;
     case 'play-face-down':
       client.playWithAttributes(props.card.id, 0, 0, { FLIPPED: 1 });
+      break;
+    case 'scoop':
+      client.scoop();
+      break;
+    case 'shuffle':
+      client.shuffle();
       break;
     default:
       console.error('Unknown action for pile card', name, args);

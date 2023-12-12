@@ -1,10 +1,10 @@
 import { ZONES, zoneFromIndex } from "@/zones";
 import type { WebSocketConnection } from "./websocket";
 import { type CardId } from "@/stores/board";
-import type { PlayerAttribute, SpecialAction, CardAttribute, CardAttributeMap } from "./message";
+import type { PlayerAttribute, SpecialAction, CardAttribute, CardAttributeMap, Zone } from "./message";
 
 export abstract class GameClient {
-  abstract drawCards(count: number): void;
+  abstract drawCards(count: number, to?: Zone): void;
 
   abstract takeSpecialAction(action: SpecialAction): void;
   muligan() {
@@ -31,9 +31,10 @@ export class WebSocketGameClient extends GameClient {
     super();
   }
 
-  drawCards(count: number): void {
+  drawCards(count: number, to?: Zone): void {
     this.ws.send({
       type: 'draw_card',
+      to: to ?? 'HAND',
       count
     });
   }

@@ -41,7 +41,7 @@ sealed class ClientMessage
 
 @Serializable
 @SerialName("draw_card")
-data class DrawCardMessage(val count: Int) : ClientMessage()
+data class DrawCardMessage(val count: Int, val to: Zone) : ClientMessage()
 
 @Serializable
 @SerialName("special_action")

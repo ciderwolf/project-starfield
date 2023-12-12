@@ -46,6 +46,7 @@ type LobbyStateMessage = {
 }
 
 export type LobbyState = {
+  id: string;
   name: string;
   users: string[];
   decks: (string | null)[];
@@ -224,6 +225,7 @@ type ChangePlayerAttributeMessage = {
 
 type DrawCardMessage = {
   count: number;
+  to: Zone;
   type: "draw_card";
 }
 

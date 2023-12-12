@@ -41,7 +41,7 @@ class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserColle
             is PlayCardMessage -> player.playCard(message.card, message.x, message.y, message.attributes)
             is ChangeCardIndexMessage -> player.moveCard(message.card, message.index)
             is ChangeCardZoneMessage -> player.moveCard(message.card, message.zone, message.index)
-            is DrawCardMessage -> player.drawCards(message.count)
+            is DrawCardMessage -> player.drawCards(message.count, message.to)
             is RevealCardMessage -> player.revealCard(message.card, message.revealTo)
             is SpecialActionMessage -> when(message.action) {
                 SpecialAction.MULLIGAN -> player.mulligan()
