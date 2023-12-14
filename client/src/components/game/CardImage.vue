@@ -55,12 +55,14 @@ const positionInfo = computed(() => {
       top: `${props.imagePos.y}px`,
       zIndex: props.moving ? 1 : 0,
       transform: `rotate(${pivotToAngle(props.card.pivot)})`,
+      backgroundImage: `url(${imageUrl.value})`
     };
   } else {
     return {
       left: `${boardPos.x}px`,
       top: `${boardPos.y}px`,
       transform: `rotate(${pivotToAngle(props.card.pivot)})`,
+      backgroundImage: `url(${imageUrl.value})`
     };
   }
 });
@@ -111,8 +113,10 @@ watch([() => props.zoneRect, () => props.card.x, () => props.card.y], () => {
 </script>
 
 <template>
-  <img class="board-card" :style="positionInfo" draggable="false" @dblclick="$emit('dblclick')"
-    @mousedown="$emit('mousedown', $event)" @mouseup="$emit('mouseup', $event)" :src="imageUrl" ref="image">
+  <figure class="board-card" :style="positionInfo" draggable="false" @dblclick="$emit('dblclick')"
+    @mousedown="$emit('mousedown', $event)" @mouseup="$emit('mouseup', $event)" ref="image" :data-counter="card.counter">
+    <span v-if="card.counter > 0" class="board-card-counter">{{ card.counter }}</span>
+  </figure>
   <img v-if="showGhost" class="board-card board-card-ghost" :style="ghostPositionInfo" draggable="false" :src="imageUrl">
 </template>
 
@@ -122,6 +126,8 @@ watch([() => props.zoneRect, () => props.card.x, () => props.card.y], () => {
   user-select: none;
   width: 78px;
   height: 108px;
+  background-size: contain;
+  margin: 0;
   pointer-events: all;
   border-radius: 3px;
 }
@@ -129,5 +135,20 @@ watch([() => props.zoneRect, () => props.card.x, () => props.card.y], () => {
 .board-card-ghost {
   pointer-events: none;
   opacity: 0.5;
+}
+
+.board-card-counter {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  padding: 2px;
+  border-radius: 3px;
+  font-size: 0.8em;
+  font-weight: bold;
+  text-align: center;
+  padding: 0;
 }
 </style>
