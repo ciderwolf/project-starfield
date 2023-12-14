@@ -272,14 +272,14 @@ function getMoveZoneActions(exceptZone: number, emit: ActionEmit): TextOption[] 
       type: 'text',
       title: 'Deck top',
       effect: () => {
-        emit('move-zone', ZONES.library.id, 0);
+        emit('move-zone', ZONES.library.id, -1);
       }
     },
     {
       type: 'text',
       title: 'Deck bottom',
       effect: () => {
-        emit('move-zone', ZONES.library.id, -1);
+        emit('move-zone', ZONES.library.id, 0);
       }
     },
     {

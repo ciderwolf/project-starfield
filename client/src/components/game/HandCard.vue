@@ -65,7 +65,11 @@ function doMenuAction(name: string, ...args: any[]) {
       client.playWithAttributes(props.card.id, 0, 0, { FLIPPED: 1 });
       break;
     case 'move-zone':
-      moveZone(args[0], 0, 0);
+      if (args[1] !== undefined) {
+        client.moveCardToZoneWithIndex(props.card.id, args[0], args[1])
+      } else {
+        moveZone(args[0], 0, 0);
+      }
       break;
     default:
       console.error('Unknown menu action for hand card', name, args);

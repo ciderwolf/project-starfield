@@ -140,7 +140,7 @@ class BoardManager(private val owner: UUID, ownerIndex: Int, private val game: G
 
     private fun drawCard(to: Zone): List<BoardDiffEvent> {
         if (cards[Zone.LIBRARY]!!.size > 0) {
-            return changeZone(cards[Zone.LIBRARY]!![0].id, to)
+            return changeZone(cards[Zone.LIBRARY]!!.last().id, to).first
         }
         return listOf()
     }
@@ -215,9 +215,9 @@ class BoardManager(private val owner: UUID, ownerIndex: Int, private val game: G
         return cards.map { Pair(it.key, it.value.mapIndexed { index, card -> card.getState(index) }) }.toMap()
     }
 
-    fun changeZone(cardId: CardId, newZone: Zone, playFaceDown: Boolean = false): List<BoardDiffEvent> {
+    fun changeZone(cardId: CardId, newZone: Zone, playFaceDown: Boolean = false): Pair<List<BoardDiffEvent>, CardId> {
         val events = mutableListOf<BoardDiffEvent>()
-        val card = findCard(cardId) ?: return events
+        val card = findCard(cardId) ?: return Pair(events, cardId)
 
         val oldZone = card.zone
         val oldCardId = card.id
@@ -242,7 +242,7 @@ class BoardManager(private val owner: UUID, ownerIndex: Int, private val game: G
         events.add(BoardDiffEvent.ChangeZone(card.id, newZone, oldCardId))
 //        events.add(BoardDiffEvent.ChangeIndex(cardId, cards[newZone]!!.size - 1))
 
-        return events
+        return Pair(events, card.id)
     }
 
     private fun revealToAll(card: BoardCard): List<BoardDiffEvent> {
@@ -325,14 +325,14 @@ class Player(val user: User, userIndex: Int, deck: Deck, game: Game) {
                 && attributes[CardAttribute.FLIPPED]!! == 1
         val changeZoneResult = board.changeZone(card, Zone.BATTLEFIELD, playFaceDown)
 
-        return if (changeZoneResult.isNotEmpty() && changeZoneResult.last() is BoardDiffEvent.ChangeZone) {
-            val updatedCardId = (changeZoneResult.last() as BoardDiffEvent.ChangeZone).card
+        return if (changeZoneResult.first.isNotEmpty()) {
+            val updatedCardId = changeZoneResult.second
 
-            changeZoneResult +
+            changeZoneResult.first +
                     board.moveCard(updatedCardId, x, y) +
                     attributes.flatMap { board.setAttribute(updatedCardId, it.key, it.value) }
         } else {
-            changeZoneResult
+            changeZoneResult.first
         }
     }
 
@@ -345,11 +345,11 @@ class Player(val user: User, userIndex: Int, deck: Deck, game: Game) {
     }
 
     fun moveCard(card: CardId, zone: Zone, index: Int): List<BoardDiffEvent> {
-        val events = board.changeZone(card, zone)
+        val changeZoneResult = board.changeZone(card, zone)
         return if (index != -1) {
-            events + board.moveCard(card, index)
+            changeZoneResult.first + board.moveCard(changeZoneResult.second, index)
         } else {
-            events
+            changeZoneResult.first
         }
     }
 

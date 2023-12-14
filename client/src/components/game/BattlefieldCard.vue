@@ -86,7 +86,11 @@ function doMenuAction(name: string, ...args: number[]) {
       flip();
       break;
     case 'move-zone':
-      moveZone(args[0], 0, 0);
+      if (args[1] !== undefined) {
+        client.moveCardToZoneWithIndex(props.card.id, args[0], args[1])
+      } else {
+        moveZone(args[0], 0, 0);
+      }
       break;
     case 'add-counter':
       addCounter(args[0]);
