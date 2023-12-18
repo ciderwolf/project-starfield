@@ -72,7 +72,7 @@ function showContextMenu(e: MouseEvent) {
     showMenu.value = true;
   }, 250);
 }
-function doMenuAction(name: string, ...args: number[]) {
+function doMenuAction(name: string, ...args: any[]) {
   showMenu.value = false;
 
   switch (name) {
@@ -94,6 +94,9 @@ function doMenuAction(name: string, ...args: number[]) {
       break;
     case 'add-counter':
       addCounter(args[0]);
+      break;
+    case 'reveal-to':
+      client.revealCard(props.card.id, args[0]);
       break;
     default:
       console.error('Unknown action for battlefield card', name, args);

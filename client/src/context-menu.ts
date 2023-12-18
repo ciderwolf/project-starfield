@@ -61,14 +61,18 @@ export function createBattlefieldContextMenu(card: BoardCard, emit: ActionEmit):
     });
   }
 
-  options.push(
-    {
+  const board = useBoardStore();
+  if (board.oracleInfo[board.cardToOracleId[card.id]].hasBackFace) {
+    options.push({
       type: 'text',
       title: 'Transform',
       effect: () => {
         emit('transform');
       }
-    },
+    });
+  }
+
+  options.push(
     {
       type: 'text',
       title: card.flipped ? 'Turn face up' : 'Turn face down',
@@ -219,54 +223,58 @@ export function createLibraryContextMenu(card: BoardCard, emit: ActionEmit): Con
 }
 
 export function createHandContextMenu(card: BoardCard, emit: ActionEmit): ContextMenuDefinition {
-  return {
-    options: [
-      {
-        type: 'text',
-        title: 'Reveal',
-        effect: () => {
-          emit('reveal');
-        }
-      },
-      {
-        type: 'submenu',
-        title: 'Reveal to...',
-        options: getRevealToPlayersSubmenu(emit)
-      },
-      {
-        type: 'text',
-        title: card.transformed ? 'See front face' : 'See back face',
-        effect: () => {
-          emit('transform');
-        }
-      },
-      {
-        type: 'seperator'
-      },
-      {
-        type: 'text',
-        title: 'Play',
-        effect: () => {
-          emit('play');
-        }
-      },
-      {
-        type: 'text',
-        title: 'Play face down',
-        effect: () => {
-          emit('play-face-down');
-        }
-      },
-      {
-        type: 'submenu',
-        title: 'Move to zone...',
-        options: getMoveZoneActions(card.zone, emit)
-      },
-    ]
-  };
+  const options: ContextMenuOption[] = [
+    {
+      type: 'text',
+      title: 'Reveal',
+      effect: () => {
+        emit('reveal');
+      }
+    },
+    {
+      type: 'submenu',
+      title: 'Reveal to...',
+      options: getRevealToPlayersSubmenu(emit)
+    },
+  ];
+  const board = useBoardStore();
+  if (board.oracleInfo[board.cardToOracleId[card.id]].hasBackFace) {
+    options.push({
+      type: 'text',
+      title: card.transformed ? 'See front face' : 'See back face',
+      effect: () => {
+        emit('transform');
+      }
+    })
+  }
+  options.push(
+    {
+      type: 'seperator'
+    },
+    {
+      type: 'text',
+      title: 'Play',
+      effect: () => {
+        emit('play');
+      }
+    },
+    {
+      type: 'text',
+      title: 'Play face down',
+      effect: () => {
+        emit('play-face-down');
+      }
+    },
+    {
+      type: 'submenu',
+      title: 'Move to zone...',
+      options: getMoveZoneActions(card.zone, emit)
+    }
+  );
+  return { options };
 }
 
-function getMoveZoneActions(exceptZone: number, emit: ActionEmit): TextOption[] {
+export function getMoveZoneActions(exceptZone: number, emit: ActionEmit): TextOption[] {
   const options: TextOption[] = [
     {
       type: 'text',
@@ -368,7 +376,7 @@ function getRevealToPlayersSubmenu(emit: ActionEmit) {
       type: 'text',
       title: 'All',
       effect: () => {
-        emit('reveal-to', -1);
+        emit('reveal-to', undefined);
       }
     });
   

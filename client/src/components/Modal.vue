@@ -16,6 +16,11 @@ const emit = defineEmits(['close']);
 </template>
 
 <style scoped>
+.modal {
+  z-index: 1000;
+  position: absolute;
+}
+
 .modal-background {
   background-color: rgba(0, 0, 0, 0.5);
   position: fixed;
@@ -26,7 +31,7 @@ const emit = defineEmits(['close']);
 }
 
 .close-button {
-  position: absolute;
+  position: fixed;
   top: 1rem;
   right: 1rem;
   font-size: 2rem;
@@ -42,5 +47,9 @@ const emit = defineEmits(['close']);
   padding: 2rem;
   border-radius: 0.5rem;
   box-shadow: 0 0 1rem rgba(0, 0, 0, 0.5);
+  max-height: 80%;
+  overflow: scroll;
+  width: max-content;
+  max-width: 80%;
 }
 </style>

@@ -6,6 +6,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
 import starfield.Id
+import starfield.model.OracleId
 import java.io.File
 import java.net.URI
 import java.net.http.HttpClient
@@ -28,7 +29,26 @@ class CardDatabase(private val data: Map<String, DbCard>) : Map<String, CardData
         val image: String,
         @SerialName("b")
         val backImage: String?
+    ) {
+        fun toOracleCard(): OracleCard {
+            return OracleCard(
+                name,
+                id,
+                backImage != null
+            )
+        }
+    }
+
+    @Serializable
+    data class OracleCard (
+        val name: String,
+        val id: Id,
+        val hasBackFace: Boolean
     )
+
+    operator fun get(oracleId: OracleId): DbCard? {
+        return data.values.find { it.id == oracleId }
+    }
 
     companion object {
 

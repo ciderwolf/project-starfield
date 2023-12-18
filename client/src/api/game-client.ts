@@ -2,6 +2,7 @@ import { ZONES, zoneFromIndex } from "@/zones";
 import type { WebSocketConnection } from "./websocket";
 import { type CardId } from "@/stores/board";
 import type { PlayerAttribute, SpecialAction, CardAttribute, CardAttributeMap, Zone } from "./message";
+import { getJson } from ".";
 
 export abstract class GameClient {
   abstract drawCards(count: number, to?: Zone): void;
@@ -119,11 +120,24 @@ export class WebSocketGameClient extends GameClient {
     }
   }
 
+  moveCardsVirtual(ids: string[], zoneId: number, index: number): void {
+    this.ws.send({
+      type: 'move_virtual',
+      ids,
+      zone: zoneFromIndex(zoneId)!.type,
+      index,
+    });
+  }
+
   revealCard(cardId: number, playerId?: string | undefined): void {
     this.ws.send({
       type: 'reveal',
       card: cardId,
       revealTo: playerId ?? null,
     });
+  }
+
+  getVirtualIds(): Promise<{ [key: string]: string }> {
+    return getJson('/game/virtual-ids');
   }
 }

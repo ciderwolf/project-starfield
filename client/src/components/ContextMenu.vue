@@ -7,7 +7,7 @@ interface Position {
   y: number;
 }
 
-const props = defineProps<{ realPos?: Position, relativePos?: Position, parentPos?: Position, menu: ContextMenuDefinition }>();
+const props = defineProps<{ realPos?: Position, relativePos?: Position, parentPos?: Position, menu: ContextMenuDefinition, zIndex?: number }>();
 const emit = defineEmits<{
   (event: 'select', option: string, argument: number): void
 }>();
@@ -49,10 +49,14 @@ function clampToWindow(elementPos: number, elementSize: number, windowSize: numb
 }
 
 const pos = computed(() => {
-  return {
+  const style: any = {
     left: `${displayX.value}px`,
     top: `${displayY.value}px`,
   }
+  if (props.zIndex !== undefined) {
+    style['z-index'] = props.zIndex;
+  }
+  return style;
 });
 
 
@@ -160,7 +164,6 @@ function cancelSubClick(e: MouseEvent) {
   display: flex;
   flex-direction: column;
   cursor: pointer;
-  /* margin: 0 5px; */
 }
 
 .card-context-menu-submenu:hover,
@@ -179,7 +182,6 @@ function cancelSubClick(e: MouseEvent) {
   flex-direction: column;
   margin-bottom: 5px;
   position: relative;
-  /* margin: 0 5px; */
 }
 
 .card-context-menu-submenu-title {
@@ -191,7 +193,6 @@ function cancelSubClick(e: MouseEvent) {
 .card-context-menu-submenu-seperator {
   height: 1px;
   background-color: #ccc;
-  /* margin: 5px 0; */
 }
 
 .card-context-menu-submenu-text {
@@ -211,11 +212,6 @@ function cancelSubClick(e: MouseEvent) {
   justify-content: space-between;
   gap: 20px;
 }
-
-/* 
-.card-context-menu-number-option .card-context-menu-text {
-  flex-grow: 1;
-} */
 
 .card-context-menu-number-input {
   font-size: 12px;

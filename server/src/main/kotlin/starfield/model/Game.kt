@@ -2,6 +2,7 @@ package starfield.model
 
 import kotlinx.serialization.Serializable
 import starfield.*
+import starfield.data.CardDatabase
 import starfield.plugins.UserCollection
 import starfield.routing.Deck
 import java.util.*
@@ -41,6 +42,7 @@ class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserColle
             is PlayCardMessage -> player.playCard(message.card, message.x, message.y, message.attributes)
             is ChangeCardIndexMessage -> player.moveCard(message.card, message.index)
             is ChangeCardZoneMessage -> player.moveCard(message.card, message.zone, message.index)
+            is MoveCardVirtualMessage -> player.moveCardsVirtual(message.ids, message.zone, message.index)
             is DrawCardMessage -> player.drawCards(message.count, message.to)
             is RevealCardMessage -> player.revealCard(message.card, message.revealTo)
             is SpecialActionMessage -> when(message.action) {
@@ -57,21 +59,26 @@ class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserColle
         broadcast(BoardUpdateMessage(messages))
 
         val playerReveals = mutableMapOf<Id, MutableMap<CardId, OracleId>>()
+        val oracleCards = mutableMapOf<Id, MutableMap<OracleId, CardDatabase.OracleCard>>()
+        val db = CardDatabase.instance()
         for(msg in messages) {
             if (msg is BoardDiffEvent.RevealCard) {
                 for(p in msg.players) {
                     if (!playerReveals.containsKey(p)) {
                         playerReveals[p] = mutableMapOf()
+                        oracleCards[p] = mutableMapOf()
                     }
+
                     val oracleId = player.getOracleCard(msg.card)
                     playerReveals[p]!![msg.card] = oracleId
+                    oracleCards[p]!![oracleId] = db[oracleId]!!.toOracleCard()
                 }
             }
         }
 
         for(user in users()) {
             if (playerReveals.containsKey(user.id)) {
-                user.connection?.send(OracleCardInfoMessage(playerReveals[user.id]!!))
+                user.connection?.send(OracleCardInfoMessage(playerReveals[user.id]!!, oracleCards[user.id]!!))
             }
         }
     }
@@ -81,6 +88,11 @@ class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserColle
             return true
         }
         return false
+    }
+
+    fun getVirtualIds(userId: UUID): Map<UUID, OracleId> {
+        val player = players.find { it.user.id == userId } ?: return mapOf()
+        return player.getVirtualIds()
     }
 }
 

@@ -3,6 +3,7 @@ package starfield.model
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import starfield.Id
+import starfield.data.CardDatabase
 import starfield.plugins.PivotSerializer
 import starfield.routing.Deck
 import starfield.routing.DeckCard
@@ -36,6 +37,7 @@ data class CardState(
 )
 
 class BoardCard(val card: Card, private val idProvider: CardIdProvider, private val playerIndex: Int) {
+    var virtualId: UUID? = null
     val visibility = mutableSetOf<Id>()
     var x = 0.0
     var y = 0.0
@@ -62,6 +64,7 @@ class BoardCard(val card: Card, private val idProvider: CardIdProvider, private 
         transformed = false
         flipped = false
         zone = Zone.LIBRARY
+        virtualId = null
     }
 
     fun getState(index: Int): CardState {
@@ -264,10 +267,14 @@ class BoardManager(private val owner: UUID, ownerIndex: Int, private val game: G
         return findCard(card)!!.card.id
     }
 
-    fun getOracleInfo(playerId: UUID): Map<CardId, OracleId> {
-        return cards.values.flatten()
+    fun getOracleInfo(playerId: UUID): Pair<Map<CardId, OracleId>, Map<OracleId, CardDatabase.OracleCard>> {
+        val cardToOracle = cards.values.flatten()
             .filter { it.visibility.contains(playerId) }
             .associate { Pair(it.id, it.card.id) }
+        val db = CardDatabase.instance()
+        val oracleInfo = cardToOracle.values.associateWith { db[it]!!.toOracleCard() }
+
+        return Pair(cardToOracle, oracleInfo)
     }
 
     fun revealTo(cardId: CardId, revealTo: Id?): List<BoardDiffEvent> {
@@ -284,6 +291,19 @@ class BoardManager(private val owner: UUID, ownerIndex: Int, private val game: G
 
         return events
     }
+
+    fun getVirtualIds(): Map<UUID, OracleId> {
+        cards[Zone.LIBRARY]!!.forEach {
+            it.virtualId = UUID.randomUUID()
+        }
+
+        return cards[Zone.LIBRARY]!!.associate { Pair(it.virtualId!!, it.card.id) }
+    }
+
+    fun getCardsFromVirtualIds(virtualIds: List<Id>): List<CardId> {
+        val cards = cards[Zone.LIBRARY]!!.associateBy { it.virtualId }
+        return virtualIds.mapNotNull { cards[it]?.id }
+    }
 }
 
 @Serializable
@@ -291,7 +311,8 @@ data class PlayerState(
     val name: String,
     val id: Id,
     val board: Map<Zone, List<CardState>>,
-    val oracleInfo: Map<CardId, OracleId>,
+    val cardToOracleId: Map<CardId, OracleId>,
+    val oracleInfo: Map<OracleId, CardDatabase.OracleCard>,
     val life: Int,
     val poison: Int
 )
@@ -307,11 +328,13 @@ class Player(val user: User, userIndex: Int, deck: Deck, game: Game) {
     }
 
     fun getState(playerId: UUID): PlayerState {
+        val oracleInfo = board.getOracleInfo(playerId)
         return PlayerState(
             user.name,
             user.id,
             board.getState(),
-            board.getOracleInfo(playerId),
+            oracleInfo.first,
+            oracleInfo.second,
             life, poison
         )
     }
@@ -381,6 +404,14 @@ class Player(val user: User, userIndex: Int, deck: Deck, game: Game) {
 
     fun revealCard(card: CardId, revealTo: Id?): List<BoardDiffEvent> {
         return board.revealTo(card, revealTo)
+    }
+
+    fun getVirtualIds(): Map<UUID, OracleId> {
+        return board.getVirtualIds()
+    }
+
+    fun moveCardsVirtual(virtualIds: List<Id>, zone: Zone, index: Int): List<BoardDiffEvent> {
+        return board.getCardsFromVirtualIds(virtualIds).flatMap { moveCard(it, zone, index) }
     }
 }
 

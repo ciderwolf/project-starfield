@@ -2,6 +2,7 @@ package starfield
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import starfield.data.CardDatabase
 import starfield.model.*
 import starfield.plugins.Location
 import java.util.*
@@ -34,7 +35,7 @@ data class StateMessage<T>(val roomState: T, val room: String): ServerMessage("s
 data class BoardUpdateMessage(val events: List<BoardDiffEvent>) : ServerMessage("board_update")
 
 @Serializable
-data class OracleCardInfoMessage(val cards: Map<CardId, OracleId>) : ServerMessage("oracle_cards")
+data class OracleCardInfoMessage(val cards: Map<CardId, OracleId>, val oracleInfo: Map<OracleId, CardDatabase.OracleCard>) : ServerMessage("oracle_cards")
 
 @Serializable
 sealed class ClientMessage
@@ -63,25 +64,6 @@ data class ChangeCardAttributeMessage(
 data class ChangePlayerAttributeMessage(
     val attribute: PlayerAttribute,
     val newValue: Int) : ClientMessage()
-
-
-/*
-    TODO:
-         Look in deck
-         =====
-             Find cards
-             Scry
-             Extirpate (find in opponent's deck)
-         Cards from outside the game
-         =====
-             Add tokens
-             Clone cards / gain control
-             Play from sideboard
-         Other
-         =====
-         ✓ Reveal cards (to only some players)
-         Ask for permission
- */
 
 @Serializable
 @SerialName("play_card")
@@ -116,6 +98,14 @@ data class ChangeCardIndexMessage(
 data class RevealCardMessage(
     val card: CardId,
     val revealTo: Id?
+) : ClientMessage()
+
+@Serializable
+@SerialName("move_virtual")
+data class MoveCardVirtualMessage(
+    val ids: List<Id>,
+    val zone: Zone,
+    val index: Int
 ) : ClientMessage()
 
 

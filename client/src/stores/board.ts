@@ -1,7 +1,7 @@
 import { reactive } from 'vue'
 import { defineStore } from 'pinia'
 import { ScreenPosition, ZONES, OPPONENT_ZONES, findZoneByName, getZones, zoneNameToId } from '@/zones';
-import type { BoardDiffEvent, BoardCard, ChangeAttributeEvent, ChangeIndexEvent, ChangePlayerAttribute, ChangePositionEvent, ChangeZoneEvent, PlayerState, ScoopDeck, ShuffleDeck, Zone } from '@/api/message';
+import type { BoardDiffEvent, BoardCard, ChangeAttributeEvent, ChangeIndexEvent, ChangePlayerAttribute, ChangePositionEvent, ChangeZoneEvent, PlayerState, ScoopDeck, ShuffleDeck, Zone, Card, OracleCard } from '@/api/message';
 import { useZoneStore } from './zone';
 import { useDataStore } from './data';
 
@@ -58,7 +58,8 @@ function extractPlayerIndex(cardId: CardId): number {
 export const useBoardStore = defineStore('board', () => {
   
   const cards: { [zoneId: number]: BoardCard[] } = reactive({  });
-  const oracleInfo = reactive<{ [cardId: CardId]: OracleId }>({});
+  const cardToOracleId = reactive<{ [cardId: CardId]: OracleId }>({});
+  const oracleInfo = reactive<{ [oracleId: OracleId]: OracleCard }>({});
   const players = reactive<{ [playerId: string]: PlayerAttributes }>({});
   const zones = useZoneStore();
   
@@ -99,11 +100,15 @@ export const useBoardStore = defineStore('board', () => {
       }
 
       // overwrite oracleInfo from message
-      for(const [cardId, oracleId] of Object.entries(state.oracleInfo)) {
-        oracleInfo[Number(cardId)] = oracleId;
+      for(const [cardId, oracleId] of Object.entries(state.cardToOracleId)) {
+        cardToOracleId[Number(cardId)] = oracleId;
+      }
+
+      // overwrite oracleInfo from message
+      for(const [oracleId, card] of Object.entries(state.oracleInfo)) {
+        oracleInfo[oracleId] = card;
       }
     }
-
     
     recalculateHandOrder(cards[ZONES.hand.id], zones.zoneBounds[ZONES.hand.id]);
     recalculateHandOrder(cards[OPPONENT_ZONES.hand.id], zones.zoneBounds[OPPONENT_ZONES.hand.id]);
@@ -154,9 +159,9 @@ export const useBoardStore = defineStore('board', () => {
     resetCardAttributes(card);
     card.id = event.card;
     card.zone = newZoneId;
-    if (event.oldCardId in oracleInfo) {
-      oracleInfo[card.id] = oracleInfo[event.oldCardId];
-      delete oracleInfo[event.oldCardId];
+    if (event.oldCardId in cardToOracleId) {
+      cardToOracleId[card.id] = cardToOracleId[event.oldCardId];
+      delete cardToOracleId[event.oldCardId];
     }
     
     const handId = getZoneId(event.card, 'HAND');
@@ -232,8 +237,8 @@ export const useBoardStore = defineStore('board', () => {
 
     for(let i = 0; i < deck.length; i++) {
       const card = deck[i];
-      if (card.id in oracleInfo) {
-        delete oracleInfo[card.id];
+      if (card.id in cardToOracleId) {
+        delete cardToOracleId[card.id];
       }
       resetCard(card);
       card.id = event.newIds[i];
@@ -250,8 +255,8 @@ export const useBoardStore = defineStore('board', () => {
     const deck = cards[libraryId];
     for(let i = 0; i < deck.length; i++) {
       const card = deck[i];
-      if (card.id in oracleInfo) {
-        delete oracleInfo[card.id];
+      if (card.id in cardToOracleId) {
+        delete cardToOracleId[card.id];
       }
       resetCard(card);
       card.id = event.newIds[i];
@@ -271,7 +276,8 @@ export const useBoardStore = defineStore('board', () => {
     card.transformed = false;
   }
 
-  function processOracleInfo(newOracleInfo: { [cardId: CardId]: string }) {
+  function processOracleInfo(newCards: { [cardId: CardId]: string }, newOracleInfo: { [oracleId: OracleId]: OracleCard }) {
+    Object.assign(cardToOracleId, newCards);
     Object.assign(oracleInfo, newOracleInfo);
   }
 
@@ -338,7 +344,7 @@ export const useBoardStore = defineStore('board', () => {
     return zoneNameToId(zone, pos);
   }
 
-  return { setBoardState, processBoardUpdate, processOracleInfo, oracleInfo, updateHandPos, cards, moveCard, cardIsMovable, getScreenPositionFromCard, players }
+  return { setBoardState, processBoardUpdate, processOracleInfo, cardToOracleId, oracleInfo, updateHandPos, cards, moveCard, cardIsMovable, getScreenPositionFromCard, players }
 });
 
 function recalculateHandOrder(handCards: BoardCard[], handBounds: DOMRect) {

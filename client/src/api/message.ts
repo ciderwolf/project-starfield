@@ -63,7 +63,8 @@ export type PlayerState = {
   id: string;
   name: string;
   board: Partial<{ [key in Zone]: BoardCard[] }>;
-  oracleInfo: { [cardId: CardId]: string };
+  cardToOracleId: { [cardId: CardId]: string };
+  oracleInfo: { [oracleId: string]: OracleCard };
   life: number;
   poison: number;
 }
@@ -109,6 +110,13 @@ export type Card = {
   oracleId: string;
   image: string;
 }
+
+export type OracleCard = {
+  name: string;
+  id: string;
+  hasBackFace: boolean;
+}
+
 export type CardAttributeMap = Partial<Record<CardAttribute, number>>;
 
 export type SpecialAction = 'MULLIGAN' | 'SCOOP' | 'SHUFFLE';
@@ -124,6 +132,7 @@ export type BoardUpdateMessage = {
 export type OracleCardsMessage = {
   type: 'oracle_cards';
   cards: { [cardId: CardId]: string };
+  oracleInfo: { [oracleId: string]: OracleCard };
 }
 
 export type BoardDiffEvent = ChangeZoneEvent | ChangeIndexEvent | ChangePositionEvent | ChangeAttributeEvent | ChangePlayerAttribute | ScoopDeck | ShuffleDeck | RevealCard;
@@ -184,6 +193,7 @@ export type ClientMessage = ChangeCardAttributeMessage
   | ChangeCardIndexMessage 
   | ChangeCardPositionMessage 
   | ChangeCardZoneMessage 
+  | MoveCardVirtualMessage
   | ChangePlayerAttributeMessage 
   | DrawCardMessage 
   | PlayCardMessage 
@@ -248,3 +258,9 @@ type RevealCardMessage = {
   type: "reveal";
 }
 
+type MoveCardVirtualMessage = {
+  ids: string[];
+  zone: Zone;
+  index: number;
+  type: "move_virtual";
+}

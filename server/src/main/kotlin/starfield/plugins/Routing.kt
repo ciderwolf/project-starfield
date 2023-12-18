@@ -9,6 +9,7 @@ import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
 import kotlinx.serialization.Serializable
 import starfield.routing.deckRouting
+import starfield.routing.engineRouting
 import starfield.routing.gameRouting
 
 fun Application.configureRouting() {
@@ -33,6 +34,10 @@ fun Application.configureRouting() {
 
         route("/lobbies") {
             gameRouting()
+        }
+
+        route("/game") {
+            engineRouting()
         }
 
         route("/deck") {

@@ -47,7 +47,7 @@ export class WebSocketConnection {
         break;
       case 'oracle_cards':
         console.log('oracle_cards', message);
-        boardStore.processOracleInfo(message.cards);
+        boardStore.processOracleInfo(message.cards, message.oracleInfo);
         break;
       case 'board_update':
         console.log('board_update', message);

@@ -34,8 +34,8 @@ defineExpose<{ getBounds: () => DOMRect, recomputePosition: () => void, cardPosi
 const board = useBoardStore();
 
 const imageUrl = computed(() => {
-  if (board.oracleInfo[props.card.id] && !props.card.flipped) {
-    const id = board.oracleInfo[props.card.id]
+  if (board.cardToOracleId[props.card.id] && !props.card.flipped) {
+    const id = board.cardToOracleId[props.card.id]
     if (props.card.transformed) {
       return `https://api.scryfall.com/cards/${id}?format=image&version=small&face=back`;
     } else {
