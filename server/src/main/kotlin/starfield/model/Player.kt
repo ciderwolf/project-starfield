@@ -297,7 +297,10 @@ class BoardManager(private val owner: UUID, ownerIndex: Int, private val game: G
             it.virtualId = UUID.randomUUID()
         }
 
-        return cards[Zone.LIBRARY]!!.associate { Pair(it.virtualId!!, it.card.id) }
+        return cards[Zone.LIBRARY]!!
+            .map { Pair(it.virtualId!!, it.card.id) }
+            .shuffled()
+            .toMap()
     }
 
     fun getCardsFromVirtualIds(virtualIds: List<Id>): List<CardId> {

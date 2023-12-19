@@ -1,4 +1,4 @@
-import { createCache } from ".";
+import { createAsyncCache } from ".";
 import { fetchDeck, submitDeck } from "@/api/deck";
 
 type DeckUpdate = {
@@ -7,7 +7,7 @@ type DeckUpdate = {
   side: string[];
 }
 
-export const useDecksCache = createCache(() => {
+export const useDecksCache = createAsyncCache(() => {
   return {
     load: async (id: string) => {
       return await fetchDeck(id);

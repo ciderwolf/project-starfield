@@ -1,9 +1,9 @@
-export class Cache<TCacheEntity, TUpdate> {
+export class AsyncCache<TCacheEntity, TUpdate> {
   private cache: Map<string, TCacheEntity> = new Map<string, TCacheEntity>();
   private loader: (key: string) => Promise<TCacheEntity>;
   private writer: (key: string, value: TUpdate) => Promise<TCacheEntity>;
 
-  constructor(constructor: CacheConstructor<TCacheEntity, TUpdate>) {
+  constructor(constructor: AsyncCacheConstructor<TCacheEntity, TUpdate>) {
     this.loader = constructor.load;
     this.writer = constructor.write;
   }
@@ -30,24 +30,41 @@ export class Cache<TCacheEntity, TUpdate> {
   }
 }
 
-interface CacheConstructor<TCacheEntity, TUpdate> {
+interface AsyncCacheConstructor<TCacheEntity, TUpdate> {
   load: (key: string) => Promise<TCacheEntity>;
   write: (key: string, value: TUpdate) => Promise<TCacheEntity>;
 }
 
-type ConstructorFunction<TEntity, TUpdate> = () => CacheConstructor<TEntity, TUpdate>
+type AsyncConstructorFunction<TEntity, TUpdate> = () => AsyncCacheConstructor<TEntity, TUpdate>
 
-export function createCache<TCacheEntity, TUpdate>(ctor: ConstructorFunction<TCacheEntity, TUpdate>) {
+export function createAsyncCache<TCacheEntity, TUpdate>(ctor: AsyncConstructorFunction<TCacheEntity, TUpdate>) {
   const cacheStorer = (() => {
-    let cache: Cache<TCacheEntity, TUpdate>;
+    let cache: AsyncCache<TCacheEntity, TUpdate>;
   
     function returnCache() {
       if (!cache) {
-        cache = new Cache<TCacheEntity, TUpdate>(ctor());
+        cache = new AsyncCache<TCacheEntity, TUpdate>(ctor());
       }
       return cache;
     }
   
+    return returnCache;
+  })();
+
+  return cacheStorer;
+}
+
+export function createLocalCache<TCacheEntity>(ctor: () => Map<string, TCacheEntity>) {
+  const cacheStorer = (() => {
+    let cache: Map<string, TCacheEntity>;
+
+    function returnCache() {
+      if (!cache) {
+        cache = ctor();
+      }
+      return cache;
+    }
+
     return returnCache;
   })();
 

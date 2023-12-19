@@ -6,19 +6,11 @@ import ContextMenu from '@/components/ContextMenu.vue';
 import { createHandContextMenu, type ContextMenuDefinition } from '@/context-menu';
 import { useBoardStore } from '@/stores/board';
 import { type ComponentExposed } from 'vue-component-type-helpers';
-import { ZONES } from '@/zones';
 import { client } from '@/ws';
 
 const props = defineProps<{ zoneBounds?: DOMRect, card: BoardCardData }>()
 
-const emit = defineEmits<{
-  (event: 'move-zone', zoneId: number, x: number, y: number): void
-  (event: 'reveal', cardId: number): void
-  (event: 'transform'): void
-}>();
-
 const boardCard = ref<ComponentExposed<typeof BoardCard>>();
-
 
 function moveCard(x: number, y: number) {
   const board = useBoardStore();

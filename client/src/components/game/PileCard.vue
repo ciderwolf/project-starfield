@@ -6,14 +6,12 @@ import ContextMenu from '@/components/ContextMenu.vue';
 import { createHandContextMenu, createLibraryContextMenu, type ContextMenuDefinition } from '@/context-menu';
 import { client } from '@/ws';
 import { ZONES } from '@/zones';
+import { useNotificationsCache } from '@/cache/notifications';
+
 
 const props = defineProps<{ zoneBounds?: DOMRect, card: BoardCardData }>()
 
-const emit = defineEmits<{
-  (event: 'move-zone', zoneId: number, x: number, y: number): void
-  (event: 'reveal', cardId: number): void,
-  (event: 'reveal-to', cardId: number, playerId: string): void
-}>()
+const notifications = useNotificationsCache();
 
 function moveZone(zoneId: number, x: number, y: number) {
   client.moveCardToZone(props.card.id, zoneId, x, y);
@@ -62,6 +60,9 @@ function doMenuAction(name: string, ...args: any[]) {
       break;
     case 'shuffle':
       client.shuffle();
+      break;
+    case 'find-card':
+      notifications.get('find-cards')!();
       break;
     default:
       console.error('Unknown action for pile card', name, args);

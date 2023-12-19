@@ -6,18 +6,15 @@ import { client } from '@/ws';
 import { endGame } from '@/api/lobby';
 import { useRoute, useRouter } from 'vue-router';
 import FindCardsModal from '@/components/game/FindCardsModal.vue';
-import { useDecksCache } from '@/cache/decks';
-import { useDecksStore } from '@/stores/decks';
 import { useBoardStore, type OracleId } from '@/stores/board';
 import { getVirtualIds } from '@/api/game';
+import { useNotificationsCache } from '@/cache/notifications';
+import type { ComponentExposed } from 'vue-component-type-helpers';
 
 const myZones = ref<HTMLElement[]>([]);
 const opponentZones = ref<HTMLElement[]>([]);
 const route = useRoute();
 const router = useRouter();
-
-const decks = useDecksCache();
-const decksStore = useDecksStore();
 
 const deck = ref<{ [key: string]: OracleId } | null>(null);
 
@@ -35,22 +32,26 @@ function checkHotkey(e: KeyboardEvent) {
     });
   }
   else if (e.key === '3') {
-    getVirtualIds().then((message) => {
-      deck.value = message.virtualIds;
-      const board = useBoardStore();
-      board.processOracleInfo({}, message.oracleInfo);
-      findCardsModal.value?.open();
-    });
+    notificationsCache.get('find-cards')!();
   }
   else if (e.key === 'm') {
     client.takeSpecialAction('MULLIGAN');
   }
 }
 
-const findCardsModal = ref();
+const findCardsModal = ref<ComponentExposed<typeof FindCardsModal>>();
+const notificationsCache = useNotificationsCache();
 
 onMounted(() => {
   window.addEventListener('keypress', checkHotkey);
+  notificationsCache.set('find-cards', () => {
+    getVirtualIds().then((message) => {
+      deck.value = message.virtualIds;
+      const board = useBoardStore();
+      board.processOracleInfo({}, message.oracleInfo);
+      findCardsModal.value?.open();
+    });
+  });
 });
 
 onUnmounted(() => {

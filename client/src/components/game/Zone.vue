@@ -36,12 +36,6 @@ onUnmounted(() => {
 
 <template>
   <div class="zone-box">
-    <!-- <battlefield-card v-if="zone.type === 'BATTLEFIELD'" v-for="card in board.cards[zone.id]" :key="card.id"
-      :zone-bounds="zoneRect" :card="card" />
-    <hand-card v-else-if="zone.type === 'HAND'" v-for="card in board.cards[zone.id]" :key="card.id + 1"
-      :zone-bounds="zoneRect" :card="card" />
-    <pile-card v-else v-for="card in board.cards[zone.id]" :key="card.id + 2" :zone-bounds="zoneRect" :card="card" /> -->
-
     <card-dispatch v-for="card in board.cards[zone.id]" :key="card.id" :zone="zone.type" :card="card"
       :zone-rect="zoneRect" />
     <div class="zone-bounds" ref="zoneBounds" :style="zone.pos"></div>

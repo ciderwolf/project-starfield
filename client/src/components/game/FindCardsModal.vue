@@ -21,7 +21,7 @@ const expandedCards = computed(() => {
     const card = board.oracleInfo[oracleId];
     expanded.push({ ...card, uid: virtualId });
   }
-  return expanded;
+  return expanded.sort((a, b) => a.name.localeCompare(b.name));
 });
 const visible = ref(false);
 function open() {
