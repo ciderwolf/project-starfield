@@ -1,12 +1,9 @@
 <script setup lang="ts">
-import { type ZoneConfig } from '@/zones';
-import BattlefieldCard from '@/components/game/BattlefieldCard.vue';
-import HandCard from '@/components/game/HandCard.vue';
-import PileCard from '@/components/game/PileCard.vue';
+import type { ZoneConfig } from '@/zones';
 import { onMounted, onUnmounted, ref } from 'vue';
-import { useBoardStore, type CardId, Pivot } from '@/stores/board';
+import { useBoardStore } from '@/stores/board';
 import { useZoneStore } from '@/stores/zone';
-import CardDispatch from './CardDispatch.vue';
+import CardDispatch from '@/components/game/card/CardDispatch.vue';
 
 const props = defineProps<{ zone: ZoneConfig }>();
 

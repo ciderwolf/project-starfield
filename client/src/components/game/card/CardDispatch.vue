@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import type { BoardCard, Zone } from '@/api/message';
 import { useBoardStore } from '@/stores/board';
-import BattlefieldCard from '@/components/game/BattlefieldCard.vue';
-import HandCard from '@/components/game/HandCard.vue';
-import PileCard from '@/components/game/PileCard.vue';
-import CardImage from '@/components/game/CardImage.vue';
+import BattlefieldCard from '@/components/game/card/BattlefieldCard.vue';
+import HandCard from '@/components/game/card/HandCard.vue';
+import PileCard from '@/components/game/card/PileCard.vue';
+import CardImage from '@/components/game/card/CardImage.vue';
 import { computed } from 'vue';
 
 const props = defineProps<{ zoneRect?: DOMRect, card: BoardCard, zone: Zone }>();

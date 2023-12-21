@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { BoardCard as BoardCardData } from '@/api/message';
 import BoardCard from './BoardCard.vue';
-import ContextMenu from '../ContextMenu.vue';
+import ContextMenu from '@/components/ContextMenu.vue';
 import { reactive, ref, watch } from 'vue';
 import { createBattlefieldContextMenu, type ContextMenuDefinition } from '@/context-menu';
 import { ZONES } from '@/zones';

@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import Zone from '@/components/game/Zone.vue';
+import FindCardsModal from '@/components/game/modal/FindCardsModal.vue';
 import { OPPONENT_ZONES, ZONES } from '@/zones';
 import { ref, onMounted, onUnmounted } from 'vue';
 import { client } from '@/ws';
 import { endGame } from '@/api/lobby';
 import { useRoute, useRouter } from 'vue-router';
-import FindCardsModal from '@/components/game/FindCardsModal.vue';
 import { useBoardStore, type OracleId } from '@/stores/board';
 import { getVirtualIds } from '@/api/game';
 import { useNotificationsCache } from '@/cache/notifications';

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { reactive, ref, watch } from 'vue';
 import type { BoardCard as BoardCardData } from '@/api/message';
-import BoardCard from '@/components/game/BoardCard.vue';
+import BoardCard from '@/components/game/card/BoardCard.vue';
 import ContextMenu from '@/components/ContextMenu.vue';
 import { createHandContextMenu, createLibraryContextMenu, type ContextMenuDefinition } from '@/context-menu';
 import { client } from '@/ws';

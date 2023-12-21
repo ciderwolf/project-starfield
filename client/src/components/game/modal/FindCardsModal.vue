@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import Modal from '@/components/Modal.vue'
+import ContextMenu from '@/components/ContextMenu.vue';
 import { computed, reactive, ref } from 'vue';
 import { getMoveZoneActions } from '@/context-menu';
-import ContextMenu from '../ContextMenu.vue';
 import { client } from '@/ws';
 import { useBoardStore, type OracleId } from '@/stores/board';
 import type { OracleCard } from '@/api/message';
