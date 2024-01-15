@@ -88,6 +88,13 @@ data class ChangeCardZoneMessage(
     val index: Int) : ClientMessage()
 
 @Serializable
+@SerialName("change_zones")
+data class ChangeCardZonesMessage(
+    val cards: List<CardId>,
+    val zone: Zone,
+    val index: Int) : ClientMessage()
+
+@Serializable
 @SerialName("change_index")
 data class ChangeCardIndexMessage(
     val card: CardId,

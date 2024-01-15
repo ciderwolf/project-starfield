@@ -21,6 +21,7 @@ export abstract class GameClient {
   abstract changeCardAttribute(cardId: CardId, attribute: CardAttribute, value: number): void;
   abstract changePlayerAttribute(attribute: PlayerAttribute, newValue: number): void;
   abstract moveCardToZone(cardId: CardId, newZoneId: number, x: number, y: number): void;
+  abstract moveCardsToZone(cardId: CardId[], newZoneId: number, index: number): void;
   abstract moveCardToZoneWithIndex(cardId: CardId, newZoneId: number, index: number): void;
   abstract playWithAttributes(cardId: CardId, x: number, y: number, attributes: Record<CardAttribute, number>): void;
   abstract moveCard(zoneId: number, cardId: CardId, x: number, y: number): void;
@@ -81,6 +82,15 @@ export class WebSocketGameClient extends GameClient {
         index: -1,
       });
     }
+  }
+
+  moveCardsToZone(cardIds: number[], newZoneId: number, index: number): void {
+    this.ws.send({
+      type: 'change_zones',
+      cards: cardIds,
+      zone: zoneFromIndex(newZoneId)!.type,
+      index,
+    });
   }
 
   moveCardToZoneWithIndex(cardId: CardId, newZoneId: number, index: number): void {

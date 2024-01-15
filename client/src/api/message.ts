@@ -193,6 +193,7 @@ export type ClientMessage = ChangeCardAttributeMessage
   | ChangeCardIndexMessage 
   | ChangeCardPositionMessage 
   | ChangeCardZoneMessage 
+  | ChangeCardZonesMessage
   | MoveCardVirtualMessage
   | ChangePlayerAttributeMessage 
   | DrawCardMessage 
@@ -225,6 +226,13 @@ type ChangeCardZoneMessage = {
   index: number;
   zone: Zone;
   type: "change_zone";
+}
+
+type ChangeCardZonesMessage = {
+  cards: number[];
+  index: number;
+  zone: Zone;
+  type: "change_zones";
 }
 
 type ChangePlayerAttributeMessage = {

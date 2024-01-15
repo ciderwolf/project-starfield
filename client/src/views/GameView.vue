@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Zone from '@/components/game/Zone.vue';
 import FindCardsModal from '@/components/game/modal/FindCardsModal.vue';
+import ViewZoneModal from '@/components/game/modal/ViewZoneModal.vue';
 import { OPPONENT_ZONES, ZONES } from '@/zones';
 import { ref, onMounted, onUnmounted } from 'vue';
 import { client } from '@/ws';
@@ -20,6 +21,10 @@ const deck = ref<{ [key: string]: OracleId } | null>(null);
 
 
 function checkHotkey(e: KeyboardEvent) {
+  if ((e.target as HTMLElement).nodeName === "INPUT") {
+    return;
+  }
+
   if (e.key === '1') {
     client.takeSpecialAction('SCOOP');
   }
@@ -40,6 +45,9 @@ function checkHotkey(e: KeyboardEvent) {
 }
 
 const findCardsModal = ref<ComponentExposed<typeof FindCardsModal>>();
+const viewGraveyardModal = ref<ComponentExposed<typeof ViewZoneModal>>();
+const viewExileModal = ref<ComponentExposed<typeof ViewZoneModal>>();
+const viewFaceDownModal = ref<ComponentExposed<typeof ViewZoneModal>>();
 const notificationsCache = useNotificationsCache();
 
 onMounted(() => {
@@ -52,6 +60,17 @@ onMounted(() => {
       findCardsModal.value?.open();
     });
   });
+
+  notificationsCache.set('view-graveyard', () => {
+    viewGraveyardModal.value?.open();
+  });
+  notificationsCache.set('view-exile', () => {
+    console.log('view-exile');
+    viewExileModal.value?.open();
+  });
+  notificationsCache.set('view-face-down', () => {
+    viewFaceDownModal.value?.open();
+  });
 });
 
 onUnmounted(() => {
@@ -63,6 +82,9 @@ onUnmounted(() => {
 <template>
   <div id="game">
     <find-cards-modal ref="findCardsModal" :cards="deck ?? {}" />
+    <view-zone-modal ref="viewGraveyardModal" :zone-id="ZONES.graveyard.id" />
+    <view-zone-modal ref="viewExileModal" :zone-id="ZONES.exile.id" />
+    <view-zone-modal ref="viewFaceDownModal" :zone-id="ZONES.faceDown.id" />
     <zone ref="myZones" v-for="zone in ZONES" :zone="zone"></zone>
     <zone ref="opponentZones" v-for="zone in OPPONENT_ZONES" :zone="zone" />
   </div>

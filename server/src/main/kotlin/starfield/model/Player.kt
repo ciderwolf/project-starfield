@@ -379,6 +379,10 @@ class Player(val user: User, userIndex: Int, deck: Deck, game: Game) {
         }
     }
 
+    fun moveCards(cards: List<CardId>, zone: Zone, index: Int): List<BoardDiffEvent> {
+        return cards.flatMap { moveCard(it, zone, index) }
+    }
+
     fun scoop(): List<BoardDiffEvent> {
         return board.reset()
     }

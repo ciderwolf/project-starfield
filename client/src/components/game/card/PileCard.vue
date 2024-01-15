@@ -64,6 +64,15 @@ function doMenuAction(name: string, ...args: any[]) {
     case 'find-card':
       notifications.get('find-cards')!();
       break;
+    case 'view-all-cards':
+      if (props.card.zone === ZONES.graveyard.id) {
+        notifications.get('view-graveyard')!();
+      } else if (props.card.zone === ZONES.exile.id) {
+        notifications.get('view-exile')!();
+      } else if (props.card.zone === ZONES.faceDown.id) {
+        notifications.get('view-face-down')!();
+      }
+      break;
     default:
       console.error('Unknown action for pile card', name, args);
   }
