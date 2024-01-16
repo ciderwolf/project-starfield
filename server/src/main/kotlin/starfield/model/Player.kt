@@ -128,12 +128,23 @@ inline fun <reified T : Enum<T>> Int.toEnum(): T? {
 
 class BoardManager(private val owner: UUID, ownerIndex: Int, private val game: Game, private val deck: Deck) {
     private val cards: Map<Zone, MutableList<BoardCard>> = Zone.entries.associateWith {
-        if (it == Zone.LIBRARY) {
-            deck.maindeck.flatMap { card ->
-                (0..<card.count).map { BoardCard(card, game.cardIdProvider, ownerIndex) }
-            }.toMutableList()
-        } else {
-            mutableListOf()
+        when (it) {
+            Zone.LIBRARY -> {
+                deck.maindeck.flatMap { card ->
+                    (0..<card.count).map { BoardCard(card, game.cardIdProvider, ownerIndex) }
+                }.shuffled().toMutableList()
+            }
+            Zone.SIDEBOARD -> {
+                val cards = deck.sideboard.flatMap { card ->
+                    (0..<card.count).map { BoardCard(card, game.cardIdProvider, ownerIndex) }
+                }.toMutableList()
+                cards.forEach { card ->
+                    card.zone = Zone.SIDEBOARD
+                    card.visibility.add(owner)
+                }
+                cards
+            }
+            else -> mutableListOf()
         }
     }
 
@@ -200,7 +211,7 @@ class BoardManager(private val owner: UUID, ownerIndex: Int, private val game: G
 
     fun reset(): List<BoardDiffEvent> {
         for(entry in cards) {
-            if (entry.key != Zone.LIBRARY) {
+            if (entry.key != Zone.LIBRARY && entry.key != Zone.SIDEBOARD) {
                 cards[Zone.LIBRARY]!!.addAll(entry.value)
                 entry.value.clear()
             }

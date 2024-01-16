@@ -70,6 +70,9 @@ function doMenuAction(name: string, ...args: any[]) {
     case 'scry':
       notifications.scry(args[0]);
       break;
+    case 'show-sideboard':
+      notifications.viewZone(ZONES.sideboard.id);
+      break;
     default:
       console.error('Unknown action for pile card', name, args);
   }

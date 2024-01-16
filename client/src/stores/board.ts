@@ -92,8 +92,9 @@ export const useBoardStore = defineStore('board', () => {
       for(const [zoneName, cardList] of Object.entries(state.board)) {
         const zone = findZoneByName(zoneName, pos);
         // reserialize Zone name as id number
-        if (cardList.length > 0)
-        cardList.forEach(card => card.zone = zoneNameToId(card.zone as unknown as Zone, pos))
+        if (cardList.length > 0) {
+          cardList.forEach(card => card.zone = zoneNameToId(card.zone as unknown as Zone, pos))  
+        }
         if (zone) {
           cards[zone.id] = cardList;
         }

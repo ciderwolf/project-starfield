@@ -32,7 +32,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="zone-box">
+  <div class="zone-box" v-if="zone.type !== 'SIDEBOARD'">
     <card-dispatch v-for="card in board.cards[zone.id]" :key="card.id" :zone="zone.type" :card="card"
       :zone-rect="zoneRect" />
     <div class="zone-bounds" ref="zoneBounds" :style="zone.pos"></div>

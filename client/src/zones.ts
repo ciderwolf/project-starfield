@@ -100,6 +100,17 @@ export const OPPONENT_ZONES: { [name: string] : ZoneConfig } = {
     id: -6, 
     reveal: [false, false]
   },
+  sideboard: {
+    pos: {
+      width: '0',
+      height: '0'
+    },
+    layout: 'stack',
+    type: 'SIDEBOARD',
+    name: 'Sideboard',
+    id: -7,
+    reveal: [true, false]
+  }
 };
 
 export const ZONES: { [name: string] : ZoneConfig } = {
@@ -181,6 +192,17 @@ export const ZONES: { [name: string] : ZoneConfig } = {
     id: 5, 
     reveal: [false, false]
   },
+  sideboard: {
+    pos: {
+      width: '0',
+      height: '0'
+    },
+    layout: 'stack',
+    type: 'SIDEBOARD',
+    name: 'Sideboard',
+    id: 6,
+    reveal: [true, false]
+  }
 };
 
 export enum ScreenPosition {
