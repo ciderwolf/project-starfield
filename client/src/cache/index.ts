@@ -54,9 +54,9 @@ export function createAsyncCache<TCacheEntity, TUpdate>(ctor: AsyncConstructorFu
   return cacheStorer;
 }
 
-export function createLocalCache<TCacheEntity>(ctor: () => Map<string, TCacheEntity>) {
+export function createLocalCache<TCacheEntity>(ctor: () => TCacheEntity) {
   const cacheStorer = (() => {
-    let cache: Map<string, TCacheEntity>;
+    let cache: TCacheEntity;
 
     function returnCache() {
       if (!cache) {

@@ -46,6 +46,7 @@ class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserColle
             is MoveCardVirtualMessage -> player.moveCardsVirtual(message.ids, message.zone, message.index)
             is DrawCardMessage -> player.drawCards(message.count, message.to)
             is RevealCardMessage -> player.revealCard(message.card, message.revealTo)
+            is ScryMessage -> player.scry(message.count)
             is SpecialActionMessage -> when(message.action) {
                 SpecialAction.MULLIGAN -> player.mulligan()
                 SpecialAction.SCOOP -> player.scoop()

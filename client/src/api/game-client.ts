@@ -147,6 +147,13 @@ export class WebSocketGameClient extends GameClient {
     });
   }
 
+  scry(count: number): void {
+    this.ws.send({
+      type: 'scry',
+      count,
+    });
+  }
+
   getVirtualIds(): Promise<{ [key: string]: string }> {
     return getJson('/game/virtual-ids');
   }

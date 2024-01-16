@@ -199,7 +199,8 @@ export type ClientMessage = ChangeCardAttributeMessage
   | DrawCardMessage 
   | PlayCardMessage 
   | SpecialActionMessage 
-  | RevealCardMessage;
+  | RevealCardMessage
+  | ScryMessage;
 
 type ChangeCardAttributeMessage = {
   attribute: CardAttribute;
@@ -264,6 +265,11 @@ type RevealCardMessage = {
   card: CardId;
   revealTo: string | null;
   type: "reveal";
+}
+
+type ScryMessage = {
+  count: number;
+  type: "scry";
 }
 
 type MoveCardVirtualMessage = {

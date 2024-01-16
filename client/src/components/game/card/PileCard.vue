@@ -62,16 +62,13 @@ function doMenuAction(name: string, ...args: any[]) {
       client.shuffle();
       break;
     case 'find-card':
-      notifications.get('find-cards')!();
+      notifications.findCards();
       break;
     case 'view-all-cards':
-      if (props.card.zone === ZONES.graveyard.id) {
-        notifications.get('view-graveyard')!();
-      } else if (props.card.zone === ZONES.exile.id) {
-        notifications.get('view-exile')!();
-      } else if (props.card.zone === ZONES.faceDown.id) {
-        notifications.get('view-face-down')!();
-      }
+      notifications.viewZone(props.card.zone);
+      break;
+    case 'scry':
+      notifications.scry(args[0]);
       break;
     default:
       console.error('Unknown action for pile card', name, args);

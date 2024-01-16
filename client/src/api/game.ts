@@ -8,5 +8,9 @@ type VirtualIdsMessage = {
 }
 
 export function getVirtualIds(): Promise<VirtualIdsMessage> {
-  return getJson('/game/virtual-ids');
+  return getJson('/game/virtual-ids/library');
+}
+
+export function getVirtualScryIds(count: number): Promise<VirtualIdsMessage> {
+  return getJson(`/game/virtual-ids/scry?count=${count}`);
 }

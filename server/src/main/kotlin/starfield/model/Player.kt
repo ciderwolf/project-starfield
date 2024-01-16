@@ -303,6 +303,11 @@ class BoardManager(private val owner: UUID, ownerIndex: Int, private val game: G
             .toMap()
     }
 
+    fun scry(count: Int): List<BoardDiffEvent> {
+        val library = cards[Zone.LIBRARY]!!
+        return (1..count).flatMap { revealTo(library[library.size - it].id, owner) }
+    }
+
     fun getCardsFromVirtualIds(virtualIds: List<Id>): List<CardId> {
         val cards = cards[Zone.LIBRARY]!!.associateBy { it.virtualId }
         return virtualIds.mapNotNull { cards[it]?.id }
@@ -411,6 +416,10 @@ class Player(val user: User, userIndex: Int, deck: Deck, game: Game) {
 
     fun revealCard(card: CardId, revealTo: Id?): List<BoardDiffEvent> {
         return board.revealTo(card, revealTo)
+    }
+
+    fun scry(count: Int): List<BoardDiffEvent> {
+        return board.scry(count)
     }
 
     fun getVirtualIds(): Map<UUID, OracleId> {

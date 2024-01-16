@@ -108,6 +108,12 @@ data class RevealCardMessage(
 ) : ClientMessage()
 
 @Serializable
+@SerialName("scry")
+data class ScryMessage(
+    val count: Int
+) : ClientMessage()
+
+@Serializable
 @SerialName("move_virtual")
 data class MoveCardVirtualMessage(
     val ids: List<Id>,

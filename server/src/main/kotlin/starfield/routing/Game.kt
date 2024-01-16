@@ -20,9 +20,9 @@ data class VirtualIdsMessage(
 )
 
 fun Route.engineRouting() {
-    get("virtual-ids") {
+    get("virtual-ids/library") {
         val session = call.sessions.get<UserSession>() ?: return@get call.respondError(
-            "You must be logged in to end a game",
+            "You must be logged in",
             status = HttpStatusCode.Unauthorized
         )
 

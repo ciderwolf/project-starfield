@@ -23,7 +23,7 @@ const expandedCards = computed(() => {
     const card = board.oracleInfo[oracleId];
     expanded.push({ ...card, uid: virtualId });
   }
-  return expanded.sort((a, b) => a.name.localeCompare(b.name));
+  return expanded.sort((a, b) => a.name?.localeCompare(b.name));
 });
 const visible = ref(false);
 function open() {
@@ -36,13 +36,13 @@ const cardFilter = ref('');
 
 const filteredCards = computed(() => {
   return expandedCards.value.filter((card) => {
-    return card.name.toLowerCase().includes(cardFilter.value.toLowerCase());
+    return card.name?.toLowerCase().includes(cardFilter.value.toLowerCase());
   });
 });
 
 const nonFilteredCards = computed(() => {
   return expandedCards.value.filter((card) => {
-    return !card.name.toLowerCase().includes(cardFilter.value.toLowerCase());
+    return !card.name?.toLowerCase().includes(cardFilter.value.toLowerCase());
   });
 });
 

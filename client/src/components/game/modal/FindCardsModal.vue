@@ -5,13 +5,14 @@ import MoveCardsModal from './MoveCardsModal.vue';
 import { ref } from 'vue';
 import { type ComponentExposed } from 'vue-component-type-helpers';
 
-defineProps<{ cards: { [id: string]: OracleId } }>();
-
 defineExpose({ open });
+
+const cards = ref<{ [id: string]: OracleId }>({});
 
 const modal = ref<ComponentExposed<typeof MoveCardsModal>>();
 
-function open() {
+function open(cardsValue: { [id: string]: OracleId }) {
+  cards.value = cardsValue;
   modal.value?.open();
 }
 

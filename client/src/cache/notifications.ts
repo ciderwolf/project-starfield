@@ -1,4 +1,15 @@
 import { createLocalCache } from ".";
 
-type Callback = () => void;
-export const useNotificationsCache = createLocalCache(() => new Map<string, Callback>());
+interface ModalHooks {
+  findCards: () => void;
+  viewZone: (zoneId: number) => void;
+  scry: (count: number) => void;
+}
+
+export const useNotificationsCache = createLocalCache<ModalHooks>(() => { 
+  return {
+    findCards: () => {},
+    viewZone: () => {},
+    scry: () => {},
+  };
+});
