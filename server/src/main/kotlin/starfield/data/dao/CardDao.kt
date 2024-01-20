@@ -41,7 +41,7 @@ class CardDao {
                 .map(::mapDbCard)
                 .associateBy { it.fuzzyName }
         }
-        
+
         return fuzzyNames.map { result[it] }
     }
 

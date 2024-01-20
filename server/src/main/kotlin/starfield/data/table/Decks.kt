@@ -1,6 +1,7 @@
 package starfield.data.table
 
 import org.jetbrains.exposed.dao.id.UUIDTable
+import org.jetbrains.exposed.sql.ReferenceOption
 import org.jetbrains.exposed.sql.Table
 
 object Decks : UUIDTable("Deck", "DeckId") {
@@ -11,7 +12,7 @@ object Decks : UUIDTable("Deck", "DeckId") {
 }
 
 object DeckCards : Table("DeckCard") {
-    val deckId = uuid("DeckId").references(Decks.id)
+    val deckId = uuid("DeckId").references(Decks.id, onDelete = ReferenceOption.CASCADE)
     val cardId = uuid("CardId").references(Cards.id)
     val count = byte("Count")
     val startingZone = byte("StartingZone")

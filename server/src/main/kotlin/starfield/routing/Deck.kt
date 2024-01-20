@@ -30,6 +30,7 @@ data class Deck(
     val id: Id,
     val owner: Id,
     val name: String,
+    val thumbnailId: Id?,
     val maindeck: List<DeckCard>,
     val sideboard: List<DeckCard>,
 )
@@ -43,8 +44,9 @@ data class DeckUpload(
 
 @Serializable
 data class DeckListing(
+    val id: Id,
     val name: String,
-    val id: Id
+    val thumbnailId: Id?
 )
 
 fun Route.deckRouting() {
@@ -57,7 +59,7 @@ fun Route.deckRouting() {
 
         val deckDao = DeckDao()
         val myDecks = deckDao.getDecks(session.id)
-            .map { DeckListing(it.name, it.id) }
+            .map { DeckListing(it.id, it.name, it.thumbnailId) }
 
         call.respondSuccess(myDecks)
     }
@@ -97,7 +99,6 @@ fun Route.deckRouting() {
         val deckId = tryParseUuid(call.parameters["id"]) ?: return@post call.respondError("Invalid deck")
 
         val deckDao = DeckDao()
-
         val deck = deckDao.getDeck(deckId) ?: return@post call.respondError("Deck not found")
 
         if (deck.owner != session.id) {
@@ -107,16 +108,33 @@ fun Route.deckRouting() {
 
         val upload = call.receive<DeckUpload>()
         val (maindeck, sideboard) = validateDeck(upload.maindeck, upload.sideboard)
+        val thumbnailCard = maindeck
+            .filter { it.backImage == null }
+            .maxByOrNull { it.name.length }
         val updatedDeck = Deck(
             deckId,
             deck.owner,
             upload.name,
+            thumbnailCard?.id,
             maindeck,
             sideboard
         )
         deckDao.updateDeck(updatedDeck)
 
         call.respondSuccess(updatedDeck)
+    }
+
+    delete("/{id}") {
+        val uuid = tryParseUuid(call.parameters["id"]) ?: return@delete call.respondError("Invalid id")
+        val session = call.sessions.get<UserSession>() ?: return@delete call.respondError(
+            "You must be logged to delete a deck",
+            status = HttpStatusCode.Unauthorized
+        )
+
+        val deckDao = DeckDao()
+        val deleteCount = deckDao.deleteDeck(uuid)
+
+        call.respondSuccess(deleteCount == 1)
     }
 }
 

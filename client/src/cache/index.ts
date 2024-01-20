@@ -28,6 +28,10 @@ export class AsyncCache<TCacheEntity, TUpdate> {
   public put(key: string, value: TCacheEntity): void {
     this.cache.set(key, value);
   }
+
+  public remove(key: string): void {
+    this.cache.delete(key);
+  }
 }
 
 interface AsyncCacheConstructor<TCacheEntity, TUpdate> {

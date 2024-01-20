@@ -31,7 +31,7 @@ class DeckDao {
             }
         }
 
-        return Deck(deckId, deckRow[Decks.ownerId], deckRow[Decks.name], main, side)
+        return Deck(deckId, deckRow[Decks.ownerId], deckRow[Decks.name], deckRow[Decks.thumbnailId], main, side)
     }
 
     private fun mapCard(card: ResultRow): DeckCard {
@@ -53,7 +53,7 @@ class DeckDao {
             it[thumbnailId] = null
         }
 
-        Deck(id.value, userId, "New Deck", listOf(), listOf())
+        Deck(id.value, userId, "New Deck", null, listOf(), listOf())
     }
 
     suspend fun getDeck(deckId: UUID) = DatabaseSingleton.dbQuery {
@@ -74,6 +74,7 @@ class DeckDao {
         Decks.upsert {
             it[id] = deck.id
             it[name] = deck.name
+            it[thumbnailId] = deck.thumbnailId
         }
         val allCards = deck.maindeck.map { Pair(it, StartingZone.Main) } +
             deck.sideboard.map { Pair(it, StartingZone.Side) }
@@ -85,5 +86,10 @@ class DeckDao {
             this[DeckCards.count] = card.count.toByte()
             this[DeckCards.startingZone] = zone.ordinal.toByte()
         }
+    }
+
+    suspend fun deleteDeck(deckId: UUID) = DatabaseSingleton.dbQuery {
+        DeckCards.deleteWhere { DeckCards.deckId eq deckId }
+        Decks.deleteWhere { Decks.id eq deckId }
     }
 }

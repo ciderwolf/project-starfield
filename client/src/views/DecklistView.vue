@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import DeckPreview from '@/components/deck/DeckPreview.vue';
+import StyleButton from '@/components/StyleButton.vue';
 import { useRoute } from 'vue-router';
 import { useDecksCache } from '@/cache/decks';
 import type { Deck } from '@/api/message';
@@ -32,9 +33,10 @@ const submitDeckClicked = async () => {
     .map(line => line.trim())
     .filter(line => line.length > 0);
 
-  const store = useDecksStore();
-  store.decks[deck.value!.id] = { name: deck.value!.name, id: deck.value!.id };
   deck.value = await decks.set(deck.value!.id, { name: deck.value!.name, main, side });
+
+  const store = useDecksStore();
+  store.decks[deck.value!.id] = { name: deck.value!.name, id: deck.value!.id, thumbnailId: deck.value!.thumbnailId };
 
   const decklist = deck.value;
   maindeck.value = decklist.maindeck.map(card => `${card.count} ${card.name}`).join('\n');
@@ -51,7 +53,7 @@ const submitDeckClicked = async () => {
         <textarea v-model="maindeck" placeholder="Maindeck (60 cards)"></textarea>
         <textarea v-model="sideboard" id="sideboard-input" placeholder="Sideboard (15 cards)"></textarea>
         <div class="submit-controls">
-          <button @click="submitDeckClicked">Save deck</button>
+          <style-button @click="submitDeckClicked">Save deck</style-button>
         </div>
       </div>
       <deck-preview v-if="deck" :deckData="deck" />

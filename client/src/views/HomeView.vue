@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { createGame, joinGame, login } from '@/api';
 import Modal from '@/components/Modal.vue';
+import StyleButton from '@/components/StyleButton.vue';
 import { useGameStore } from '@/stores/games';
 import { useDataStore } from '@/stores/data';
 import { ref } from 'vue';
@@ -47,21 +48,23 @@ async function loginClicked() {
 <template>
   <main>
     <h1>Home</h1>
-    <button @click="loginClicked">Login</button>
-    <router-link to="/decks"><button>Decks</button></router-link>
+    <StyleButton @click="loginClicked">Login</StyleButton>
+    <router-link to="/decks">
+      <StyleButton>Decks</StyleButton>
+    </router-link>
     <h2>Games</h2>
     <Modal :visible="showCreateGameModal" @close="showCreateGameModal = false">
       <h2>Create Game</h2>
       <label>Name: <input type="text" v-model="gameName"></label>
-      <button type="submit" @click="submitGame">Create Game</button>
+      <StyleButton type="submit" @click="submitGame">Create Game</StyleButton>
     </Modal>
-    <button @click="showCreateGameModal = true">Create Game</button>
+    <StyleButton @click="showCreateGameModal = true">Create Game</StyleButton>
     <ul>
       <li v-for="game in games.games" :key="game.id">
         <router-link v-if="game.inProgress" :to="`/game/${game.id}`">{{ game.name }}</router-link>
         <div v-else>
           <router-link :to="`/lobby/${game.id}`">{{ game.name }}</router-link>
-          <button @click="joinGameClicked(game.id)">Join</button>
+          <StyleButton @click="joinGameClicked(game.id)">Join</StyleButton>
         </div>
       </li>
     </ul>

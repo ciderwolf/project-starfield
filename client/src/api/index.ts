@@ -36,3 +36,11 @@ export async function postJson(path: string, payload: any): Promise<any> {
   });
   return (await response.json()).content;
 }
+
+export async function deleteJson(path: string): Promise<any> {
+  const response = await fetch('/api/' + path,
+  {
+    method: 'DELETE',
+  });
+  return (await response.json()).content;
+}
