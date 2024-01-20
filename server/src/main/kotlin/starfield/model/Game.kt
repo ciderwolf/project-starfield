@@ -2,7 +2,7 @@ package starfield.model
 
 import kotlinx.serialization.Serializable
 import starfield.*
-import starfield.data.CardDatabase
+import starfield.data.dao.CardDao
 import starfield.plugins.UserCollection
 import starfield.routing.Deck
 import java.util.*
@@ -29,7 +29,7 @@ class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserColle
         return players.map { it.user }
     }
 
-    override fun currentState(playerId: UUID): GameState {
+    override suspend fun currentState(playerId: UUID): GameState {
         return GameState(name, players.map { it.getState(playerId) })
     }
 
@@ -60,27 +60,22 @@ class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserColle
 
         broadcast(BoardUpdateMessage(messages))
 
-        val playerReveals = mutableMapOf<Id, MutableMap<CardId, OracleId>>()
-        val oracleCards = mutableMapOf<Id, MutableMap<OracleId, CardDatabase.OracleCard>>()
-        val db = CardDatabase.instance()
-        for(msg in messages) {
-            if (msg is BoardDiffEvent.RevealCard) {
-                for(p in msg.players) {
-                    if (!playerReveals.containsKey(p)) {
-                        playerReveals[p] = mutableMapOf()
-                        oracleCards[p] = mutableMapOf()
-                    }
+        val revealedCardIds = messages.filterIsInstance<BoardDiffEvent.RevealCard>()
+            .map { player.getOracleCard(it.card) }
+        val revealedCards = CardDao().getCards(revealedCardIds).map { it.toOracleCard() }
 
-                    val oracleId = player.getOracleCard(msg.card)
-                    playerReveals[p]!![msg.card] = oracleId
-                    oracleCards[p]!![oracleId] = db[oracleId]!!.toOracleCard()
+        users().forEach { user ->
+            val playerReveals = mutableMapOf<CardId, OracleId>()
+            val oracleCards = mutableMapOf<OracleId, CardDao.OracleCard>()
+            messages.filterIsInstance<BoardDiffEvent.RevealCard>()
+                .filter { it.players.contains(user.id) }
+                .forEachIndexed { index, msg ->
+                    playerReveals[msg.card] = revealedCardIds[index]
+                    oracleCards[revealedCardIds[index]] = revealedCards[index]
                 }
-            }
-        }
 
-        for(user in users()) {
-            if (playerReveals.containsKey(user.id)) {
-                user.connection?.send(OracleCardInfoMessage(playerReveals[user.id]!!, oracleCards[user.id]!!))
+            if (playerReveals.isNotEmpty()) {
+                user.connection?.send(OracleCardInfoMessage(playerReveals, oracleCards))
             }
         }
     }

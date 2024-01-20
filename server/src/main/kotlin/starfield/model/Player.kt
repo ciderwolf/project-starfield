@@ -3,7 +3,7 @@ package starfield.model
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import starfield.Id
-import starfield.data.CardDatabase
+import starfield.data.dao.CardDao
 import starfield.plugins.PivotSerializer
 import starfield.routing.Deck
 import starfield.routing.DeckCard
@@ -125,6 +125,11 @@ enum class CardAttribute {
 inline fun <reified T : Enum<T>> Int.toEnum(): T? {
     return enumValues<T>().firstOrNull { it.ordinal == this }
 }
+
+inline fun <reified T : Enum<T>> Byte.toEnum(): T? {
+    return this.toInt().toEnum<T>()
+}
+
 
 class BoardManager(private val owner: UUID, ownerIndex: Int, private val game: Game, private val deck: Deck) {
     private val cards: Map<Zone, MutableList<BoardCard>> = Zone.entries.associateWith {
@@ -278,12 +283,15 @@ class BoardManager(private val owner: UUID, ownerIndex: Int, private val game: G
         return findCard(card)!!.card.id
     }
 
-    fun getOracleInfo(playerId: UUID): Pair<Map<CardId, OracleId>, Map<OracleId, CardDatabase.OracleCard>> {
+    suspend fun getOracleInfo(playerId: UUID): Pair<Map<CardId, OracleId>, Map<OracleId, CardDao.OracleCard>> {
         val cardToOracle = cards.values.flatten()
             .filter { it.visibility.contains(playerId) }
             .associate { Pair(it.id, it.card.id) }
-        val db = CardDatabase.instance()
-        val oracleInfo = cardToOracle.values.associateWith { db[it]!!.toOracleCard() }
+
+        val oracleInfo = CardDao().getCards(cardToOracle.values).associate {
+            val card = it.toOracleCard()
+            Pair(card.id, card)
+        }
 
         return Pair(cardToOracle, oracleInfo)
     }
@@ -331,7 +339,7 @@ data class PlayerState(
     val id: Id,
     val board: Map<Zone, List<CardState>>,
     val cardToOracleId: Map<CardId, OracleId>,
-    val oracleInfo: Map<OracleId, CardDatabase.OracleCard>,
+    val oracleInfo: Map<OracleId, CardDao.OracleCard>,
     val life: Int,
     val poison: Int
 )
@@ -346,7 +354,7 @@ class Player(val user: User, userIndex: Int, deck: Deck, game: Game) {
         return board.reset() + board.drawCards(7, to = Zone.HAND)
     }
 
-    fun getState(playerId: UUID): PlayerState {
+    suspend fun getState(playerId: UUID): PlayerState {
         val oracleInfo = board.getOracleInfo(playerId)
         return PlayerState(
             user.name,

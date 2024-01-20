@@ -6,7 +6,7 @@ import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
 import kotlinx.serialization.Serializable
 import starfield.Id
-import starfield.data.CardDatabase
+import starfield.data.dao.CardDao
 import starfield.findGame
 import starfield.model.OracleId
 import starfield.plugins.UserSession
@@ -16,7 +16,7 @@ import starfield.plugins.respondSuccess
 @Serializable
 data class VirtualIdsMessage(
     val virtualIds: Map<Id, OracleId>,
-    val oracleInfo: Map<OracleId, CardDatabase.OracleCard>
+    val oracleInfo: Map<OracleId, CardDao.OracleCard>
 )
 
 fun Route.engineRouting() {
@@ -28,8 +28,10 @@ fun Route.engineRouting() {
 
         val game = findGame(session.id) ?: return@get call.respondError("Not in a game")
         val ids = game.getVirtualIds(session.id)
-        val db = CardDatabase.instance()
-        val oracleInfo = ids.values.associateWith { db[it]!!.toOracleCard() }
+        val oracleInfo = CardDao().getCards(ids.values).associate {
+            val card = it.toOracleCard()
+            Pair(card.id, card)
+        }
 
         call.respondSuccess(VirtualIdsMessage(ids, oracleInfo))
     }

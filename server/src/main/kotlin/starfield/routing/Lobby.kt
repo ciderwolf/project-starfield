@@ -7,6 +7,7 @@ import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
 import kotlinx.serialization.Serializable
 import starfield.*
+import starfield.data.dao.DeckDao
 import starfield.model.Lobby
 import starfield.plugins.*
 import java.util.*
@@ -57,7 +58,8 @@ fun Route.gameRouting() {
             "You must be in a lobby to chose a deck")
 
         val body = call.receive<DeckSelection>()
-        val deck = decks[body.deckId] ?: return@post call.respondError("Deck not found")
+        val deckDao = DeckDao()
+        val deck = deckDao.getDeck(body.deckId) ?: return@post call.respondError("Deck not found")
 
         lobby.setDeck(session.user(), deck)
         call.respondSuccess(body)

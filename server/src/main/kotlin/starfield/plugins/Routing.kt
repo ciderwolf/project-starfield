@@ -8,6 +8,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
 import kotlinx.serialization.Serializable
+import starfield.data.dao.UserDao
 import starfield.routing.deckRouting
 import starfield.routing.engineRouting
 import starfield.routing.gameRouting
@@ -21,9 +22,11 @@ fun Application.configureRouting() {
             val currentSession = call.sessions.get<UserSession>()
             if (currentSession == null) {
                 val session = UserSession.createNew(name)
+                UserDao().login(name, session.id)
                 call.sessions.set(session)
                 call.respondSuccess(session)
             } else {
+                UserDao().login(currentSession.username, currentSession.id)
                 call.respondSuccess(currentSession)
             }
         }

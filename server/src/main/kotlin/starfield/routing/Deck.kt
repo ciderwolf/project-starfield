@@ -7,7 +7,8 @@ import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
 import kotlinx.serialization.Serializable
 import starfield.Id
-import starfield.data.CardDatabase
+import starfield.data.dao.CardDao
+import starfield.data.dao.DeckDao
 import starfield.plugins.UserSession
 import starfield.plugins.respondError
 import starfield.plugins.respondSuccess
@@ -46,8 +47,6 @@ data class DeckListing(
     val id: Id
 )
 
-val decks: MutableMap<Id, Deck> = Collections.synchronizedMap(mutableMapOf())
-
 fun Route.deckRouting() {
 
     get("/") {
@@ -56,7 +55,8 @@ fun Route.deckRouting() {
             status = HttpStatusCode.Unauthorized
         )
 
-        val myDecks = decks.values.filter { it.owner == session.id }
+        val deckDao = DeckDao()
+        val myDecks = deckDao.getDecks(session.id)
             .map { DeckListing(it.name, it.id) }
 
         call.respondSuccess(myDecks)
@@ -69,7 +69,8 @@ fun Route.deckRouting() {
             status = HttpStatusCode.Unauthorized
         )
 
-        val deck = decks[uuid] ?: return@get call.respondError("Deck not found")
+        val deckDao = DeckDao()
+        val deck = deckDao.getDeck(uuid) ?: return@get call.respondError("Deck not found")
         if (deck.owner != session.id) {
             return@get call.respondError("You don't have access to that deck",
             status = HttpStatusCode.Forbidden)
@@ -83,14 +84,8 @@ fun Route.deckRouting() {
             "You must be logged to create a deck",
             status = HttpStatusCode.Unauthorized
         )
-        val deck = Deck(
-            UUID.randomUUID(),
-            session.id,
-            "New Deck",
-            listOf(),
-            listOf(),
-        )
-        decks[deck.id] = deck
+        val deckDao = DeckDao()
+        val deck = deckDao.createDeck(session.id)
         call.respondSuccess(deck)
     }
 
@@ -100,7 +95,10 @@ fun Route.deckRouting() {
             status = HttpStatusCode.Unauthorized
         )
         val deckId = tryParseUuid(call.parameters["id"]) ?: return@post call.respondError("Invalid deck")
-        val deck = decks[deckId] ?: return@post call.respondError("Deck not found")
+
+        val deckDao = DeckDao()
+
+        val deck = deckDao.getDeck(deckId) ?: return@post call.respondError("Deck not found")
 
         if (deck.owner != session.id) {
             return@post call.respondError("This deck does not belong to you",
@@ -109,44 +107,48 @@ fun Route.deckRouting() {
 
         val upload = call.receive<DeckUpload>()
         val (maindeck, sideboard) = validateDeck(upload.maindeck, upload.sideboard)
-        decks[deckId] = Deck(
+        val updatedDeck = Deck(
             deckId,
             deck.owner,
             upload.name,
             maindeck,
             sideboard
         )
+        deckDao.updateDeck(updatedDeck)
 
-        call.respondSuccess(decks[deckId]!!)
+        call.respondSuccess(updatedDeck)
     }
 }
 
-fun validateDeck(main: List<String>, side: List<String>): Pair<List<DeckCard>, List<DeckCard>> {
-    val mainCards = main.map(::splitCardLine).map(::lookupCard)
-    val sideCards = side.map(::splitCardLine).map(::lookupCard)
+suspend fun validateDeck(main: List<String>, side: List<String>): Pair<List<DeckCard>, List<DeckCard>> {
+    val mainCards = lookupCards(main.map(::splitCardLine))
+    val sideCards = lookupCards(side.map(::splitCardLine))
 
     return Pair(mainCards, sideCards)
 }
 
-fun lookupCard(card: Pair<Int, String>): DeckCard {
-    val (count, name) = card
+suspend fun lookupCards(cards: List<Pair<Int, String>>): List<DeckCard> {
+    val dao = CardDao()
+    val cardData = dao.tryFindCards(cards.map { it.second })
 
-    val normalizedName = CardDatabase.normalizeName(name)
-    val cardData = CardDatabase.instance()[normalizedName]
+    return cards.zip(cardData).map {
+        val (entry, card) = it
+        val (count, name) = entry
 
-    val type = cardData?.type ?: ""
-    val image = cardData?.image ?: ""
-    val fullName = cardData?.name ?: name
-    val id = cardData?.id ?: UUID.randomUUID()
+        val type = card?.type ?: ""
+        val image = card?.image ?: ""
+        val fullName = card?.name ?: name
+        val id = card?.id ?: UUID.randomUUID()
 
-    return DeckCard(
-        fullName,
-        type,
-        image,
-        id,
-        cardData?.backImage,
-        count
-    )
+        DeckCard(
+            fullName,
+            type,
+            image,
+            id,
+            card?.backImage,
+            count
+        )
+    }
 }
 
 fun splitCardLine(line: String): Pair<Int, String> {

@@ -8,10 +8,9 @@ import io.ktor.server.routing.*
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import starfield.data.CardDatabase
+import starfield.data.dao.CardDao
 import starfield.model.Pivot
 import starfield.model.toEnum
 import java.lang.IllegalArgumentException
@@ -24,8 +23,7 @@ fun Application.configureSerialization() {
 
     routing {
         get("/cards/download") {
-            CardDatabase.download()
-            call.respond(CardDatabase.instance().size)
+            call.respond(CardDao().download())
         }
     }
 }

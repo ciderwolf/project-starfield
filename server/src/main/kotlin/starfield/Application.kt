@@ -5,6 +5,7 @@ import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import io.ktor.server.routing.*
 import kotlinx.serialization.Serializable
+import starfield.data.dao.DatabaseSingleton
 import starfield.plugins.*
 import java.util.UUID
 
@@ -16,6 +17,7 @@ fun main() {
 }
 
 fun Application.module() {
+    DatabaseSingleton.init()
     configureSerialization()
     configureSessions()
     configureSockets()

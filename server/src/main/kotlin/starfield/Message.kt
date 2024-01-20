@@ -2,7 +2,7 @@ package starfield
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import starfield.data.CardDatabase
+import starfield.data.dao.CardDao
 import starfield.model.*
 import starfield.plugins.Location
 import java.util.*
@@ -35,7 +35,7 @@ data class StateMessage<T>(val roomState: T, val room: String): ServerMessage("s
 data class BoardUpdateMessage(val events: List<BoardDiffEvent>) : ServerMessage("board_update")
 
 @Serializable
-data class OracleCardInfoMessage(val cards: Map<CardId, OracleId>, val oracleInfo: Map<OracleId, CardDatabase.OracleCard>) : ServerMessage("oracle_cards")
+data class OracleCardInfoMessage(val cards: Map<CardId, OracleId>, val oracleInfo: Map<OracleId, CardDao.OracleCard>) : ServerMessage("oracle_cards")
 
 @Serializable
 sealed class ClientMessage
