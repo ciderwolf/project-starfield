@@ -3,7 +3,7 @@ import DeckPreview from '@/components/deck/DeckPreview.vue';
 import { submitDeckChoice, leaveGame, kickPlayer, startGame } from '@/api/lobby';
 import { useDecksStore } from '@/stores/decks';
 import { useGameStore } from '@/stores/games';
-import { computed, ref, watch, watchEffect } from 'vue';
+import { computed, ref, watchEffect } from 'vue';
 import { useDecksCache } from '@/cache/decks';
 import { type Deck } from '@/api/message';
 import { useDataStore } from '@/stores/data';
@@ -18,11 +18,11 @@ const decks = useDecksStore();
 
 
 const currentUser = useDataStore().userId;
-const isOwner = computed(() => game.value?.users[0] == currentUser);
+const isOwner = computed(() => game.value?.users[0].id == currentUser);
 const deckChoice = ref('none');
 watchEffect(() => {
   if (game.value && currentUser) {
-    deckChoice.value = game.value.decks[game.value.users.indexOf(currentUser)] ?? 'none';
+    deckChoice.value = game.value.decks[game.value.users.findIndex(u => u.id === currentUser)] ?? 'none';
   }
 });
 
@@ -67,10 +67,10 @@ async function startGameClicked() {
     <button v-if="isOwner && game && game.decks.every(d => d !== null)" @click="startGameClicked">Start game</button>
     <p>Players:</p>
     <div v-if="game">
-      <div class="player-status" v-for="player, i in game.users" :key="player">
+      <div class="player-status" v-for="player, i in game.users" :key="player.id">
         <p>{{ player }}</p>
         <p>({{ game.decks[i] !== null ? 'Ready' : 'Waiting' }})</p>
-        <button v-if="isOwner && player != currentUser" @click="kickPlayerClicked(player)">Kick Player</button>
+        <button v-if="isOwner && player.id != currentUser" @click="kickPlayerClicked(player.id)">Kick Player</button>
       </div>
     </div>
     <h3>Select a deck</h3>

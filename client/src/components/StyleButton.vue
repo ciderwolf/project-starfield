@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { computed } from 'vue';
 
-const props = withDefaults(defineProps<{ type?: string, disabled?: boolean }>(), {
+withDefaults(defineProps<{ type?: string, disabled?: boolean, small?: boolean }>(), {
   type: 'default',
-  disabled: false
+  disabled: false,
+  small: false,
 });
 
 </script>
 
 <template>
-  <button class="button" draggable="false" :class="type">
+  <button class="button" :class="type + (small ? ' small' : '')" :disabled="disabled" draggable="false">
     <slot></slot>
   </button>
 </template>
@@ -22,8 +22,12 @@ const props = withDefaults(defineProps<{ type?: string, disabled?: boolean }>(),
   color: #666;
   cursor: pointer;
   font-size: 1.25em;
-  margin: 0 0.5em;
   padding: 0.5em 1em;
+}
+
+.button.small {
+  font-size: 1em;
+  padding: 0.25em 0.5em;
 }
 
 .button:hover {
@@ -32,6 +36,11 @@ const props = withDefaults(defineProps<{ type?: string, disabled?: boolean }>(),
 
 .button:active {
   background-color: #ddd;
+}
+
+.button:disabled {
+  opacity: 0.8;
+  cursor: not-allowed;
 }
 
 .button.default {

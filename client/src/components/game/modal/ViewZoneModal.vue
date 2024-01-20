@@ -12,6 +12,10 @@ const zoneName = computed(() => zoneFromIndex(zoneId.value)?.name);
 const board = useBoardStore();
 const cards = computed(() => {
   const cardIdMap: { [id: number]: OracleId } = {};
+  if (!board.cards[zoneId.value]) {
+    return cardIdMap;
+  }
+
   for (const card of board.cards[zoneId.value]) {
     cardIdMap[card.id] = board.cardToOracleId[card.id];
   }

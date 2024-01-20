@@ -31,6 +31,10 @@ abstract class UserCollection<S> {
         }
     }
 
+    fun userListings(): List<UserListing> {
+        return users().map { UserListing(it.id, it.name) }
+    }
+
     protected suspend inline fun <reified T : ServerMessage> broadcast(message: T) {
         users().forEach {
             it.connection?.send(message)

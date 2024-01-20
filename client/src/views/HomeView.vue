@@ -2,6 +2,7 @@
 import { createGame, joinGame, login } from '@/api';
 import Modal from '@/components/Modal.vue';
 import StyleButton from '@/components/StyleButton.vue';
+import GameListingRow from '@/components/GameListingRow.vue';
 import { useGameStore } from '@/stores/games';
 import { useDataStore } from '@/stores/data';
 import { ref } from 'vue';
@@ -22,14 +23,6 @@ function submitGame() {
   });
 }
 
-function joinGameClicked(id: string) {
-  joinGame(id).then((state) => {
-    if (state) {
-      games.processState({ type: 'state', room: 'lobby', roomState: state });
-      router.push(`/lobby/${id}`);
-    }
-  });
-}
 
 async function loginClicked() {
   const userInfo = await login('myname');
@@ -48,25 +41,23 @@ async function loginClicked() {
 <template>
   <main>
     <h1>Home</h1>
-    <StyleButton @click="loginClicked">Login</StyleButton>
+    <style-button @click="loginClicked">Login</style-button>
     <router-link to="/decks">
-      <StyleButton>Decks</StyleButton>
+      <style-button>Decks</style-button>
     </router-link>
     <h2>Games</h2>
-    <Modal :visible="showCreateGameModal" @close="showCreateGameModal = false">
+    <Modal :visible="showCreateGameModal" @close="showCreateGameModal = false" title="Create Game">
       <h2>Create Game</h2>
       <label>Name: <input type="text" v-model="gameName"></label>
-      <StyleButton type="submit" @click="submitGame">Create Game</StyleButton>
+      <br>
+      <br>
+      <style-button @click="submitGame">Create Game</style-button>
     </Modal>
-    <StyleButton @click="showCreateGameModal = true">Create Game</StyleButton>
-    <ul>
-      <li v-for="game in games.games" :key="game.id">
-        <router-link v-if="game.inProgress" :to="`/game/${game.id}`">{{ game.name }}</router-link>
-        <div v-else>
-          <router-link :to="`/lobby/${game.id}`">{{ game.name }}</router-link>
-          <StyleButton @click="joinGameClicked(game.id)">Join</StyleButton>
-        </div>
-      </li>
-    </ul>
+    <style-button @click="showCreateGameModal = true">Create Game</style-button>
+    <div>
+      <div v-for="game in games.games" :key="game.id">
+        <game-listing-row :game="game"></game-listing-row>
+      </div>
+    </div>
   </main>
 </template>

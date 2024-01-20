@@ -27,8 +27,13 @@ type DeleteListingMessage = {
 export interface GameListing {
   id: string,
   name: string,
-  players: string[],
+  players: PlayerListing[],
   inProgress: boolean,
+}
+
+export interface PlayerListing {
+  id: string;
+  name: string;
 }
 
 export type RoomStateMessage = GameStateMessage | LobbyStateMessage;
@@ -48,7 +53,7 @@ type LobbyStateMessage = {
 export type LobbyState = {
   id: string;
   name: string;
-  users: string[];
+  users: PlayerListing[];
   decks: (string | null)[];
 }
 

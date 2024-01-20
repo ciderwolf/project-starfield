@@ -19,9 +19,9 @@ fun Route.gameRouting() {
 
     get("/") {
         val listings = games.values.map { game ->
-            GameListing(game.id, game.name, game.users().map { it.id }, true)
+            GameListing(game.id, game.name, game.userListings(), true)
         } + lobbies.values.map { lobby ->
-            GameListing(lobby.id, lobby.name, lobby.users().map { it.id }, false)
+            GameListing(lobby.id, lobby.name, lobby.userListings(), false)
         }
 
         call.respondSuccess(listings)
@@ -39,7 +39,7 @@ fun Route.gameRouting() {
         val definition = call.receive<CreateGameMessage>()
         val lobby = Lobby(UUID.randomUUID(), session.user(), definition.name, definition.players)
         lobbies[lobby.id] = lobby
-        val listing = GameListing(lobby.id, lobby.name, lobby.users().map { it.id }, false)
+        val listing = GameListing(lobby.id, lobby.name, lobby.userListings(), false)
         val message = ListingUpdateMessage(listing)
         connections.forEach {
             it.send(message)
@@ -111,7 +111,7 @@ fun Route.gameRouting() {
                     it.send(DeleteListingMessage(lobby.id))
                 }
             } else {
-                val listing = GameListing(lobby.id, lobby.name, lobby.users().map { it.id }, false)
+                val listing = GameListing(lobby.id, lobby.name, lobby.userListings(), false)
                 connections.forEach {
                     it.send(ListingUpdateMessage(listing))
                 }
@@ -186,7 +186,7 @@ fun Route.gameRouting() {
         lobbies.remove(lobby.id)
         games[game.id] = game
 
-        val listing = ListingUpdateMessage(GameListing(game.id, game.name, game.users().map { it.id }, true))
+        val listing = ListingUpdateMessage(GameListing(game.id, game.name, game.userListings(), true))
         connections.forEach {
             it.send(listing)
         }

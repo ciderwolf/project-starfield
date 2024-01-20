@@ -3,6 +3,7 @@ package starfield.model
 import kotlinx.serialization.Serializable
 import starfield.Id
 import starfield.StateMessage
+import starfield.UserListing
 import starfield.plugins.UserCollection
 import starfield.routing.Deck
 import java.util.*
@@ -11,7 +12,7 @@ import java.util.*
 data class LobbyState(
     val id: Id,
     val name: String,
-    val users: List<Id>,
+    val users: List<UserListing>,
     val decks: List<Id?>,
 )
 
@@ -93,11 +94,11 @@ class Lobby(val id: UUID, val owner: User, val name: String, val players: Int): 
     override suspend fun currentState(playerId: UUID): LobbyState {
         if (players == 1) {
             return LobbyState(
-                id, name, users().map { it.id }, listOf(ownerDeck).map { it?.id }
+                id, name, userListings(), listOf(ownerDeck).map { it?.id }
             )
         }
         return LobbyState(
-            id, name, users().map { it.id }, listOf(ownerDeck, otherDeck).map { it?.id }
+            id, name, userListings(), listOf(ownerDeck, otherDeck).map { it?.id }
         )
     }
 }

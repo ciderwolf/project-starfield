@@ -8,7 +8,10 @@ import starfield.plugins.Location
 import java.util.*
 
 @Serializable
-data class GameListing(val id: Id, val name: String, val players: List<Id>, val inProgress: Boolean)
+data class UserListing(val id: Id, val name: String)
+
+@Serializable
+data class GameListing(val id: Id, val name: String, val players: List<UserListing>, val inProgress: Boolean)
 
 @Serializable
 sealed class ServerMessage(val type: String)
