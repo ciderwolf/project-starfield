@@ -230,9 +230,13 @@ export const useBoardStore = defineStore('board', () => {
     const pos = getScreenPosition(player.index);
     const zones = getZones(pos);
     const libraryId = zones.find(z => z.type === 'LIBRARY')!.id;
-    for(const zone of zones.map(zone => zone.id)) {
-      const cardList = cards[zone];
-      cards[zone] = [];
+    for(const zone of zones) {
+      if (zone.type === 'SIDEBOARD') {
+        continue;
+      }
+      const zoneId = zone.id;
+      const cardList = cards[zoneId];
+      cards[zoneId] = [];
       deck.push(...cardList);
     }
 

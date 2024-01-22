@@ -70,7 +70,7 @@ async function deleteDeckClicked(e: MouseEvent, id: string) {
 
 .delete-deck-button {
   display: none;
-  margin-bottom: 0.5em;
+  margin: 0 0.5em 0.5em 0.5em;
 }
 
 .deck-card:hover .delete-deck-button {

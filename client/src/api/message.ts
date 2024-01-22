@@ -58,6 +58,7 @@ export type LobbyState = {
 }
 
 export type GameState = {
+  id: string;
   name: string;
   players: PlayerState[];
 }

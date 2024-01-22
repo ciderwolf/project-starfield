@@ -1,12 +1,13 @@
-import { ref, computed, reactive } from 'vue'
+import { ref, reactive } from 'vue'
 import { defineStore } from 'pinia'
 import { getGames } from '@/api';
 import type { GameListing, GameState, LobbyState, RoomStateMessage } from '@/api/message';
+import { useRouter } from 'vue-router';
 
 type GameMap = { [id: string]: GameListing }
 
 export const useGameStore = defineStore('games', () => {
-
+  const router = useRouter();
   getGames().then((gameInfo) => {
     for(const game of gameInfo) {
       games[game.id] = game;
@@ -18,6 +19,11 @@ export const useGameStore = defineStore('games', () => {
   }
 
   function processDeleteListing(id: string) {
+    if (gameState.value?.id === id || lobbyState.value?.id === id) {
+      gameState.value = null;
+      lobbyState.value = null;
+      router.push('/');
+    }
     delete games[id];
   }
 

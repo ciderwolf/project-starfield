@@ -8,7 +8,7 @@ import starfield.routing.Deck
 import java.util.*
 
 @Serializable
-data class GameState(val name: String, val players: List<PlayerState>)
+data class GameState(val id: Id, val name: String, val players: List<PlayerState>)
 
 class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserCollection<GameState>() {
 
@@ -30,7 +30,7 @@ class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserColle
     }
 
     override suspend fun currentState(playerId: UUID): GameState {
-        return GameState(name, players.map { it.getState(playerId) })
+        return GameState(id, name, players.map { it.getState(playerId) })
     }
 
     suspend fun handleMessage(userId: UUID, message: ClientMessage) {
@@ -68,12 +68,12 @@ class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserColle
             val playerReveals = mutableMapOf<CardId, OracleId>()
             val oracleCards = mutableMapOf<OracleId, CardDao.OracleCard>()
             messages.filterIsInstance<BoardDiffEvent.RevealCard>()
-                .filter { it.players.contains(user.id) }
                 .forEachIndexed { index, msg ->
-                    playerReveals[msg.card] = revealedCardIds[index]
-                    oracleCards[revealedCardIds[index]] = revealedCards[index]
+                    if (msg.players.contains(user.id)) {
+                        playerReveals[msg.card] = revealedCardIds[index]
+                        oracleCards[revealedCardIds[index]] = revealedCards[index]
+                    }
                 }
-
             if (playerReveals.isNotEmpty()) {
                 user.connection?.send(OracleCardInfoMessage(playerReveals, oracleCards))
             }
