@@ -283,13 +283,14 @@ class BoardManager(private val owner: UUID, ownerIndex: Int, private val game: G
         return findCard(card)!!.card.id
     }
 
-    suspend fun getOracleInfo(playerId: UUID): Pair<Map<CardId, OracleId>, Map<OracleId, CardDao.OracleCard>> {
+    fun getOracleInfo(playerId: UUID): Pair<Map<CardId, OracleId>, Map<OracleId, CardDao.OracleCard>> {
         val cardToOracle = cards.values.flatten()
             .filter { it.visibility.contains(playerId) }
             .associate { Pair(it.id, it.card.id) }
 
-        val oracleInfo = CardDao().getCards(cardToOracle.values).associate {
-            val card = it.toOracleCard()
+
+        val oracleInfo = cardToOracle.values.associate {
+            val card = game.cardInfoProvider[it]!!.toOracleCard()
             Pair(card.id, card)
         }
 
@@ -354,7 +355,7 @@ class Player(val user: User, userIndex: Int, deck: Deck, game: Game) {
         return board.reset() + board.drawCards(7, to = Zone.HAND)
     }
 
-    suspend fun getState(playerId: UUID): PlayerState {
+    fun getState(playerId: UUID): PlayerState {
         val oracleInfo = board.getOracleInfo(playerId)
         return PlayerState(
             user.name,

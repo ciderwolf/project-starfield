@@ -91,7 +91,7 @@ class Lobby(val id: UUID, val owner: User, val name: String, val players: Int): 
         }
     }
 
-    override suspend fun currentState(playerId: UUID): LobbyState {
+    override fun currentState(playerId: UUID): LobbyState {
         if (players == 1) {
             return LobbyState(
                 id, name, userListings(), listOf(ownerDeck).map { it?.id }

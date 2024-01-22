@@ -15,7 +15,7 @@ import java.util.*
 
 abstract class UserCollection<S> {
     abstract fun users(): List<User>
-    abstract suspend fun currentState(playerId: UUID): S
+    abstract fun currentState(playerId: UUID): S
 
     open fun reconnectUser(connection: WSConnection) {
         val user = users().find { it.id == connection.id }

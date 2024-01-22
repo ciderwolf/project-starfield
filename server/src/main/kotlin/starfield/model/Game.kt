@@ -1,19 +1,36 @@
 package starfield.model
 
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
 import starfield.*
 import starfield.data.dao.CardDao
 import starfield.plugins.UserCollection
 import starfield.routing.Deck
+import starfield.routing.DeckCard
 import java.util.*
 
 @Serializable
 data class GameState(val id: Id, val name: String, val players: List<PlayerState>)
 
+class CardInfoProvider(sourceCards: List<DeckCard>) {
+    val cards: Map<OracleId, CardDao.Card>
+
+    init {
+        val dao = CardDao()
+        val cards = runBlocking {
+            dao.getCards(sourceCards.map { it.id }.distinct())
+        }
+        this.cards = cards.associateBy { it.id }
+    }
+
+    operator fun get(id: OracleId) = cards[id]
+}
+
 class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserCollection<GameState>() {
 
     private val players: List<Player>
     val cardIdProvider = CardIdProvider()
+    val cardInfoProvider = CardInfoProvider(players.values.flatMap { it.maindeck + it.sideboard })
 
     init {
         this.players = players.entries.mapIndexed { index, it ->
@@ -29,7 +46,7 @@ class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserColle
         return players.map { it.user }
     }
 
-    override suspend fun currentState(playerId: UUID): GameState {
+    override fun currentState(playerId: UUID): GameState {
         return GameState(id, name, players.map { it.getState(playerId) })
     }
 
@@ -61,18 +78,19 @@ class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserColle
         broadcast(BoardUpdateMessage(messages))
 
         val revealedCardIds = messages.filterIsInstance<BoardDiffEvent.RevealCard>()
-            .map { player.getOracleCard(it.card) }
-        val revealedCards = CardDao().getCards(revealedCardIds).map { it.toOracleCard() }
+            .associate { Pair(it.card, player.getOracleCard(it.card)) }
+        val revealedCards = revealedCardIds.values
+            .associateWith { cardInfoProvider[it]!!.toOracleCard() }
 
         users().forEach { user ->
             val playerReveals = mutableMapOf<CardId, OracleId>()
             val oracleCards = mutableMapOf<OracleId, CardDao.OracleCard>()
             messages.filterIsInstance<BoardDiffEvent.RevealCard>()
-                .forEachIndexed { index, msg ->
-                    if (msg.players.contains(user.id)) {
-                        playerReveals[msg.card] = revealedCardIds[index]
-                        oracleCards[revealedCardIds[index]] = revealedCards[index]
-                    }
+                .filter { it.players.contains(user.id) }
+                .forEach { msg ->
+                    val card = revealedCardIds[msg.card]!!
+                    playerReveals[msg.card] = card
+                    oracleCards[card] = revealedCards[card]!!
                 }
             if (playerReveals.isNotEmpty()) {
                 user.connection?.send(OracleCardInfoMessage(playerReveals, oracleCards))

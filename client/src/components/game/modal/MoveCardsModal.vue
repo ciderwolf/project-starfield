@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Modal from '@/components/Modal.vue'
 import ContextMenu from '@/components/ContextMenu.vue';
+import StyleButton from '@/components/StyleButton.vue';
 import { computed, reactive, ref } from 'vue';
 import { getMoveZoneActions } from '@/context-menu';
 import { useBoardStore, type OracleId } from '@/stores/board';
@@ -46,6 +47,13 @@ const nonFilteredCards = computed(() => {
   });
 });
 
+function getCardUrl(card: IdentifiedDeckCard) {
+  if (card.id === undefined) {
+    return '/back.png';
+  }
+  return `https://api.scryfall.com/cards/${card.id}?format=image`;
+}
+
 function selectCard(e: MouseEvent, id: string) {
   if (props.multiSelect) {
     if (selected.value.has(id)) {
@@ -80,17 +88,15 @@ function doMenuAction(_: string, ...args: any[]) {
 <template>
   <ContextMenu v-if="showMenu" v-click-outside="() => showMenu = false" :menu="menuOptions" :real-pos="contextMenuPos"
     :z-index="2000" />
-  <Modal :visible="visible" @close="visible = false">
+  <Modal :visible="visible" @close="visible = false" :title="title">
     <h2>{{ title }}</h2>
     <input type="text" placeholder="Filter cards..." v-model="cardFilter">
-    <button @click="moveSelected" :disabled="selected.size === 0" v-if="multiSelect">Move to...</button>
+    <style-button @click="moveSelected" :disabled="selected.size === 0" v-if="multiSelect" small>Move to...</style-button>
 
     <div class="cards">
-      <img v-for="card in filteredCards" :src="`https://api.scryfall.com/cards/${card.id}?format=image`"
-        @click="selectCard($event, card.uid)" class="card"
+      <img v-for="card in filteredCards" :src="getCardUrl(card)" @click="selectCard($event, card.uid)" class="card"
         :class="{ selected: selected.has(card.uid), filtered: true }" />
-      <img v-for="card in nonFilteredCards" :src="`https://api.scryfall.com/cards/${card.id}?format=image`"
-        @click="selectCard($event, card.uid)" class="card"
+      <img v-for="card in nonFilteredCards" :src="getCardUrl(card)" @click="selectCard($event, card.uid)" class="card"
         :class="{ selected: selected.has(card.uid), filtered: false }" />
     </div>
   </Modal>

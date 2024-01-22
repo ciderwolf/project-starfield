@@ -12,7 +12,8 @@ const board = useBoardStore();
 const cards = computed(() => {
   const cardIdMap: { [id: number]: OracleId } = {};
   const library = board.cards[ZONES.library.id];
-  for (let i = count.value; i > 0; i--) {
+  const cardsToScry = Math.min(count.value, board.cards[ZONES.library.id]?.length ?? 0);
+  for (let i = cardsToScry; i > 0; i--) {
     const card = library[library.length - i];
     cardIdMap[card.id] = board.cardToOracleId[card.id];
   }
