@@ -35,4 +35,25 @@ fun Route.engineRouting() {
 
         call.respondSuccess(VirtualIdsMessage(ids, oracleInfo))
     }
+
+    get("search/tokens") {
+        val dao = CardDao()
+        val name = call.parameters["name"]
+        val type = call.parameters["type"]
+        val pt = call.parameters["pt"]
+        val text = call.parameters["text"]
+        val color = call.parameters["colors"]
+
+        val subTypes = mutableListOf<String>()
+        val superTypes = mutableListOf<String>()
+
+        if (type != null) {
+            val types = type.split(" - ")
+            subTypes.addAll(types.getOrElse(1) { "" }.split(" "))
+            superTypes.addAll(types[0].split(" "))
+        }
+
+        val tokens = dao.searchForTokens(name, color, superTypes, subTypes, text, pt)
+        call.respondSuccess(tokens.map { it.toOracleCard() })
+    }
 }

@@ -12,6 +12,7 @@ import { useBoardStore, type OracleId } from '@/stores/board';
 import { getVirtualIds, getVirtualScryIds } from '@/api/game';
 import { useNotificationsCache } from '@/cache/notifications';
 import type { ComponentExposed } from 'vue-component-type-helpers';
+import CreateTokenModal from '@/components/game/modal/CreateTokenModal.vue';
 
 const myZones = ref<HTMLElement[]>([]);
 const opponentZones = ref<HTMLElement[]>([]);
@@ -42,12 +43,15 @@ function checkHotkey(e: KeyboardEvent) {
   }
   else if (e.key === 'v') {
     client.takeSpecialAction('SHUFFLE');
+  } else if (e.key === 'w') {
+    createTokenModal.value?.open();
   }
 }
 
 const findCardsModal = ref<ComponentExposed<typeof FindCardsModal>>();
 const scryModal = ref<ComponentExposed<typeof ScryModal>>();
 const viewZoneModal = ref<ComponentExposed<typeof ViewZoneModal>>();
+const createTokenModal = ref<ComponentExposed<typeof CreateTokenModal>>();
 const notificationsCache = useNotificationsCache();
 
 
@@ -82,6 +86,7 @@ onUnmounted(() => {
     <find-cards-modal ref="findCardsModal" />
     <scry-modal ref="scryModal" />
     <view-zone-modal ref="viewZoneModal" />
+    <create-token-modal ref="createTokenModal" />
     <zone ref="myZones" v-for="zone in ZONES" :zone="zone"></zone>
     <zone ref="opponentZones" v-for="zone in OPPONENT_ZONES" :zone="zone" />
   </div>

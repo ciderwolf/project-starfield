@@ -7,6 +7,8 @@ import kotlinx.serialization.json.*
 import org.jetbrains.exposed.sql.*
 import starfield.Id
 import starfield.data.table.Cards
+import starfield.data.table.Tokens
+import starfield.model.OracleId
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
@@ -27,7 +29,26 @@ class CardDao {
         )
     }
 
-    suspend fun getCards(ids: Iterable<UUID>): List<Card> {
+    private fun mapToken(row: ResultRow): Token {
+        return Token (
+            id = row[Tokens.id],
+            name = row[Tokens.name],
+            fuzzyName = row[Tokens.fuzzyName],
+            colors = row[Tokens.colors],
+            superTypes = row[Tokens.superTypes].split(" "),
+            subTypes = row[Tokens.subTypes].split(" "),
+            text = row[Tokens.text],
+            pt = row[Tokens.pt],
+            image = row[Tokens.image],
+            backImage = row[Tokens.backImage]
+        )
+    }
+
+    suspend fun getCard(id: OracleId) = DatabaseSingleton.dbQuery {
+        Cards.selectAll().where { Cards.id eq id}.single().let(::mapDbCard)
+    }
+
+    suspend fun getCards(ids: Iterable<OracleId>): List<Card> {
         return DatabaseSingleton.dbQuery {
             Cards.selectAll().where { Cards.id inList ids }
                 .map(::mapDbCard)
@@ -43,6 +64,27 @@ class CardDao {
         }
 
         return fuzzyNames.map { result[it] }
+    }
+
+    suspend fun searchForTokens(name: String?, color: String?, superTypes: List<String>, subTypes: List<String>, text: String?, pt: String?) = DatabaseSingleton.dbQuery {
+        val sortedColor = color?.toList()?.sorted()?.joinToString("")
+        val columns = mapOf(Tokens.fuzzyName to name, Tokens.colors to sortedColor, Tokens.text to text, Tokens.pt to pt)
+        var query = Tokens.selectAll()
+        for(column in columns) {
+            val param = column.value?.let(::normalizeName)
+            if (param != null) {
+                query = query.andWhere { column.key like "%${param}%" }
+            }
+        }
+
+        for(type in superTypes) {
+            query = query.andWhere { Tokens.superTypes like "%${normalizeName(type)}%" }
+        }
+        for(type in subTypes) {
+            query = query.andWhere { Tokens.subTypes like "%${normalizeName(type)}%" }
+        }
+
+        return@dbQuery query.map(::mapToken)
     }
 
     suspend fun download(): Int {
@@ -62,18 +104,21 @@ class CardDao {
                 HttpResponse.BodyHandlers.ofLines()
             )
         }
-        val cards = bulkResponse.body()
+        val allCardEntities = bulkResponse.body()
             .filter { it != "[" && it != "]" }
             .map { Json.decodeFromString<JsonObject>(it.trim(',')) }
             .filter {
-                it["set_type"]!!.jsonPrimitive.content !in listOf("token", "funny", "memorabilia")
-                        && !it["type_line"]!!.jsonPrimitive.content.contains("Token")
+                it["set_type"]!!.jsonPrimitive.content !in listOf("funny", "memorabilia")
+                     //&& !it["type_line"]!!.jsonPrimitive.content.contains("Token")
             }
-            .map { parseCard(it) }
+            .map { parseScryfallEntity(it) }
             .collect(Collectors.toList())
 
+        val cards = allCardEntities.filterIsInstance<Card>()
+        val tokens = allCardEntities.filterIsInstance<Token>()
+
         DatabaseSingleton.dbQuery {
-            Cards.batchReplace(cards) {
+            Cards.batchUpsert(cards) {
                 this[Cards.id] = it.id
                 this[Cards.name] = it.name
                 this[Cards.fuzzyName] = normalizeName(it.name)
@@ -83,7 +128,102 @@ class CardDao {
                 this[Cards.src] = CardSource.Scryfall.ordinal
             }
         }
+
+        DatabaseSingleton.dbQuery {
+            Tokens.deleteAll()
+            Tokens.batchInsert(tokens) {
+                this[Tokens.id] = it.id
+                this[Tokens.name] = it.name
+                this[Tokens.fuzzyName] = it.fuzzyName
+                this[Tokens.colors] = it.colors
+                this[Tokens.superTypes] = it.superTypes.joinToString(" ")
+                this[Tokens.subTypes] = it.subTypes.joinToString(" ")
+                this[Tokens.text] = it.text
+                this[Tokens.pt] = it.pt
+                this[Tokens.image] = it.image
+                this[Tokens.backImage] = it.backImage
+            }
+        }
+
         return cards.size
+    }
+
+    private fun parseScryfallEntity(card: JsonObject): CardEntity {
+        return if (card["set_type"]!!.jsonPrimitive.content == "token" || card["type_line"]!!.jsonPrimitive.content.contains("Token")) {
+            parseToken(card)
+        } else {
+            parseCard(card)
+        }
+    }
+
+    private fun parseToken(card: JsonObject): Token {
+        val id = UUID.fromString(card["id"]!!.jsonPrimitive.content)
+        val name = card["name"]!!.jsonPrimitive.content
+
+        val types = card["type_line"]!!.jsonPrimitive.content.split(" // ")
+            .map { it.split(" — ") }
+            .map { Pair(it[0].trim().split(" "), it.getOrElse(1) { "" }.trim().split(" ")) }
+            .reduce { acc, pair -> Pair(acc.first + pair.first, acc.second + pair.second) }
+        val superTypes = types.first.distinct().map(::normalizeName)
+        val subTypes = types.second.distinct().map(::normalizeName)
+        val pt = if ("power" in card && "toughness" in card) {
+            card["power"]!!.jsonPrimitive.content + "/" + card["toughness"]!!.jsonPrimitive.content
+        } else {
+            null
+        }
+        val text = if ("oracle_text" in card) {
+            card["oracle_text"]!!.jsonPrimitive.content
+        } else {
+            val faces =card["card_faces"]!!.jsonArray
+            faces[0].jsonObject["oracle_text"]!!.jsonPrimitive.content +
+                    " // " +
+                    faces[1].jsonObject["oracle_text"]!!.jsonPrimitive.content
+        }
+
+        val image = if ("image_uris" !in card) {
+            card["card_faces"]!!
+                .jsonArray[0]
+                .jsonObject["image_uris"]!!
+                .jsonObject["normal"]!!
+                .jsonPrimitive.content
+        } else {
+            card["image_uris"]!!
+                .jsonObject["normal"]!!
+                .jsonPrimitive.content
+        }
+
+        val backImage = if ("image_uris" !in card) {
+            card["card_faces"]!!
+                .jsonArray[1]
+                .jsonObject["image_uris"]!!
+                .jsonObject["normal"]!!
+                .jsonPrimitive.content
+        } else {
+            null
+        }
+
+        val colors = card["color_identity"]!!
+            .jsonArray.let {
+                if (it.size == 0) {
+                    "C"
+                } else {
+                    it.map { c -> c.jsonPrimitive.content }
+                        .distinct().sorted().joinToString("")
+                }
+            }
+
+        return Token(
+            id,
+            name,
+            normalizeName(name),
+            colors.lowercase(),
+            superTypes,
+            subTypes,
+            pt?.let(::normalizeName),
+            normalizeName(text),
+            image,
+            backImage,
+        )
     }
 
     private fun parseCard(card: JsonObject): Card {
@@ -133,6 +273,27 @@ class CardDao {
         return normalizedName.lowercase().replace(Regex("[^\\w ]"), "").trim()
     }
 
+
+
+    abstract class CardEntity {
+        abstract fun toOracleCard(): OracleCard
+    }
+
+    data class Token(
+        val id: Id,
+        val name: String,
+        val fuzzyName: String,
+        val colors: String,
+        val superTypes: List<String>,
+        val subTypes: List<String>,
+        val pt: String?,
+        val text: String,
+        val image: String,
+        val backImage: String?
+    ) : CardEntity() {
+        override fun toOracleCard() = OracleCard(name, id, false)
+    }
+
     data class Card(
         val name: String,
         val fuzzyName: String,
@@ -140,14 +301,8 @@ class CardDao {
         val id: Id,
         val image: String,
         val backImage: String?
-    ) {
-        fun toOracleCard(): OracleCard {
-            return OracleCard(
-                name,
-                id,
-                backImage != null
-            )
-        }
+    ) : CardEntity() {
+        override fun toOracleCard() = OracleCard(name, id, backImage != null)
     }
 
     @Serializable

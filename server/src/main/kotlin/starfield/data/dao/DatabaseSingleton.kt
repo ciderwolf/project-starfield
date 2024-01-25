@@ -4,10 +4,7 @@ import kotlinx.coroutines.*
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.*
 import org.jetbrains.exposed.sql.transactions.experimental.*
-import starfield.data.table.Cards
-import starfield.data.table.DeckCards
-import starfield.data.table.Decks
-import starfield.data.table.Users
+import starfield.data.table.*
 
 object DatabaseSingleton {
     fun init() {
@@ -15,7 +12,7 @@ object DatabaseSingleton {
         val jdbcURL = "jdbc:h2:./build/db;AUTO_SERVER=TRUE"
         val database = Database.connect(jdbcURL, driverClassName)
         transaction(database) {
-            SchemaUtils.create(Cards, Users, Decks, DeckCards)
+            SchemaUtils.create(Cards, Tokens, Users, Decks, DeckCards)
 
         }
     }
