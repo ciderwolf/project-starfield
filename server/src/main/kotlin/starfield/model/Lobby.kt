@@ -1,7 +1,7 @@
 package starfield.model
 
 import kotlinx.serialization.Serializable
-import starfield.Id
+import starfield.plugins.Id
 import starfield.StateMessage
 import starfield.UserListing
 import starfield.plugins.UserCollection

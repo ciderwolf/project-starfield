@@ -6,7 +6,7 @@ import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
 import kotlinx.serialization.Serializable
-import starfield.Id
+import starfield.plugins.Id
 import starfield.data.dao.CardDao
 import starfield.data.dao.DeckDao
 import starfield.plugins.UserSession

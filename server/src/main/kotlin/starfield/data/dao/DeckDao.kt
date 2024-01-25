@@ -5,7 +5,7 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import starfield.data.table.Cards
 import starfield.data.table.DeckCards
 import starfield.data.table.Decks
-import starfield.model.toEnum
+import starfield.plugins.toEnum
 import starfield.routing.Deck
 import starfield.routing.DeckCard
 import java.lang.IllegalStateException

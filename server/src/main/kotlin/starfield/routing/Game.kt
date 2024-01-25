@@ -5,10 +5,10 @@ import io.ktor.server.application.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
 import kotlinx.serialization.Serializable
-import starfield.Id
+import starfield.plugins.Id
 import starfield.data.dao.CardDao
 import starfield.findGame
-import starfield.model.OracleId
+import starfield.engine.OracleId
 import starfield.plugins.UserSession
 import starfield.plugins.respondError
 import starfield.plugins.respondSuccess

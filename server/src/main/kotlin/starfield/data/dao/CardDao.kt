@@ -5,10 +5,10 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
 import org.jetbrains.exposed.sql.*
-import starfield.Id
+import starfield.plugins.Id
 import starfield.data.table.Cards
 import starfield.data.table.Tokens
-import starfield.model.OracleId
+import starfield.engine.OracleId
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest

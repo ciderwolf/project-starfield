@@ -6,13 +6,13 @@ import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import starfield.data.dao.CardDao
-import starfield.model.Pivot
-import starfield.model.toEnum
+import starfield.engine.Pivot
 import java.lang.IllegalArgumentException
 import java.util.*
 
@@ -62,4 +62,13 @@ fun tryParseUuid(value: String?): UUID? {
     } catch (e: IllegalArgumentException) {
         null
     }
+}
+typealias Id = @Serializable(with= UUIDSerializer::class) UUID
+
+inline fun <reified T : Enum<T>> Int.toEnum(): T? {
+    return enumValues<T>().firstOrNull { it.ordinal == this }
+}
+
+inline fun <reified T : Enum<T>> Byte.toEnum(): T? {
+    return this.toInt().toEnum<T>()
 }
