@@ -13,17 +13,20 @@ import java.util.*
 data class GameState(val id: Id, val name: String, val players: List<PlayerState>)
 
 class CardInfoProvider(sourceCards: List<DeckCard>) {
-    val cards: Map<OracleId, CardDao.Card>
+    private val cards: MutableMap<OracleId, CardDao.CardEntity>
 
     init {
         val dao = CardDao()
         val cards = runBlocking {
             dao.getCards(sourceCards.map { it.id }.distinct())
         }
-        this.cards = cards.associateBy { it.id }
+        this.cards = cards.associateBy { it.id }.toMutableMap()
     }
 
     operator fun get(id: OracleId) = cards[id]
+    fun registerCard(card: CardDao.CardEntity) {
+        cards[card.id] = card
+    }
 }
 
 class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserCollection<GameState>() {
@@ -64,6 +67,9 @@ class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserColle
             is DrawCardMessage -> player.drawCards(message.count, message.to)
             is RevealCardMessage -> player.revealCard(message.card, message.revealTo)
             is ScryMessage -> player.scry(message.count)
+            is CreateTokenMessage -> player.createToken(message.id)
+            is CreateCardMessage -> player.createCard(message.id)
+            is CloneCardMessage -> player.cloneCard(message.id)
             is SpecialActionMessage -> when(message.action) {
                 SpecialAction.MULLIGAN -> player.mulligan()
                 SpecialAction.SCOOP -> player.scoop()

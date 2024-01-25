@@ -6,11 +6,9 @@ import starfield.Id
 import starfield.data.dao.CardDao
 import starfield.plugins.PivotSerializer
 import starfield.routing.Deck
-import starfield.routing.DeckCard
 import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
 
-typealias Card = DeckCard
 typealias CardId = Int
 typealias OracleId = Id
 
@@ -36,7 +34,7 @@ data class CardState(
     val zone: Zone
 )
 
-class BoardCard(val card: Card, private val idProvider: CardIdProvider, private val playerIndex: Int) {
+class BoardCard(val card: CardDao.CardEntity, private val idProvider: CardIdProvider, private val playerIndex: Int) {
     var virtualId: UUID? = null
     val visibility = mutableSetOf<Id>()
     var x = 0.0
@@ -70,6 +68,19 @@ class BoardCard(val card: Card, private val idProvider: CardIdProvider, private 
     fun getState(index: Int): CardState {
         return CardState(id, x, y, index, pivot, counter, transformed, flipped, zone)
     }
+
+    fun clone(): BoardCard {
+        val card = BoardCard(this.card, idProvider, playerIndex)
+        card.visibility.addAll(visibility)
+        card.x = x
+        card.y = y
+        card.pivot = pivot
+        card.counter = counter
+        card.transformed = transformed
+        card.flipped = flipped
+        card.zone = zone
+        return card
+    }
 }
 
 @Serializable
@@ -101,6 +112,14 @@ sealed class BoardDiffEvent {
     @Serializable
     @SerialName("scoop_deck")
     data class ScoopDeck(val playerId: Id, val newIds: List<CardId>) : BoardDiffEvent()
+
+    @Serializable
+    @SerialName("create_card")
+    data class CreateCard(val state: CardState) : BoardDiffEvent()
+
+    @Serializable
+    @SerialName("destroy_card")
+    data class DestroyCard(val card: CardId) : BoardDiffEvent()
 }
 
 enum class PlayerAttribute {
@@ -130,18 +149,26 @@ inline fun <reified T : Enum<T>> Byte.toEnum(): T? {
     return this.toInt().toEnum<T>()
 }
 
+data class MoveZoneResult(val events: List<BoardDiffEvent>, val newCardId: CardId) {
 
-class BoardManager(private val owner: UUID, ownerIndex: Int, private val game: Game, private val deck: Deck) {
+    val cardWasMoved: Boolean
+        get() = events.getOrNull(0) is BoardDiffEvent.ChangeZone
+}
+
+
+class BoardManager(private val owner: UUID, private val ownerIndex: Int, private val game: Game, private val deck: Deck) {
     private val cards: Map<Zone, MutableList<BoardCard>> = Zone.entries.associateWith {
         when (it) {
             Zone.LIBRARY -> {
                 deck.maindeck.flatMap { card ->
-                    (0..<card.count).map { BoardCard(card, game.cardIdProvider, ownerIndex) }
+                    val oracleCard = game.cardInfoProvider[card.id]!!
+                    (0..<card.count).map { BoardCard(oracleCard, game.cardIdProvider, ownerIndex) }
                 }.shuffled().toMutableList()
             }
             Zone.SIDEBOARD -> {
                 val cards = deck.sideboard.flatMap { card ->
-                    (0..<card.count).map { BoardCard(card, game.cardIdProvider, ownerIndex) }
+                    val oracleCard = game.cardInfoProvider[card.id]!!
+                    (0..<card.count).map { BoardCard(oracleCard, game.cardIdProvider, ownerIndex) }
                 }.toMutableList()
                 cards.forEach { card ->
                     card.zone = Zone.SIDEBOARD
@@ -159,7 +186,7 @@ class BoardManager(private val owner: UUID, ownerIndex: Int, private val game: G
 
     private fun drawCard(to: Zone): List<BoardDiffEvent> {
         if (cards[Zone.LIBRARY]!!.size > 0) {
-            return changeZone(cards[Zone.LIBRARY]!!.last().id, to).first
+            return changeZone(cards[Zone.LIBRARY]!!.last().id, to).events
         }
         return listOf()
     }
@@ -234,9 +261,14 @@ class BoardManager(private val owner: UUID, ownerIndex: Int, private val game: G
         return cards.map { Pair(it.key, it.value.mapIndexed { index, card -> card.getState(index) }) }.toMap()
     }
 
-    fun changeZone(cardId: CardId, newZone: Zone, playFaceDown: Boolean = false): Pair<List<BoardDiffEvent>, CardId> {
+    fun changeZone(cardId: CardId, newZone: Zone, playFaceDown: Boolean = false): MoveZoneResult {
         val events = mutableListOf<BoardDiffEvent>()
-        val card = findCard(cardId) ?: return Pair(events, cardId)
+        val card = findCard(cardId) ?: return MoveZoneResult(events, cardId)
+
+        if (card.card is CardDao.Token) {
+            events.add(BoardDiffEvent.DestroyCard(cardId))
+            return MoveZoneResult(events, cardId)
+        }
 
         val oldZone = card.zone
         val oldCardId = card.id
@@ -261,7 +293,7 @@ class BoardManager(private val owner: UUID, ownerIndex: Int, private val game: G
         events.add(BoardDiffEvent.ChangeZone(card.id, newZone, oldCardId))
 //        events.add(BoardDiffEvent.ChangeIndex(cardId, cards[newZone]!!.size - 1))
 
-        return Pair(events, card.id)
+        return MoveZoneResult(events, card.id)
     }
 
     private fun revealToAll(card: BoardCard): List<BoardDiffEvent> {
@@ -332,6 +364,26 @@ class BoardManager(private val owner: UUID, ownerIndex: Int, private val game: G
         val cards = cards[Zone.LIBRARY]!!.associateBy { it.virtualId }
         return virtualIds.mapNotNull { cards[it]?.id }
     }
+
+    fun createCard(oracleCard: CardDao.CardEntity): List<BoardDiffEvent> {
+        game.cardInfoProvider.registerCard(oracleCard)
+        val boardCard = BoardCard(oracleCard, game.cardIdProvider, ownerIndex)
+        boardCard.zone = Zone.BATTLEFIELD
+        cards[Zone.BATTLEFIELD]!!.add(boardCard)
+        return listOf(BoardDiffEvent.CreateCard(boardCard.getState(cards[Zone.BATTLEFIELD]!!.size - 1))) +
+                revealToAll(boardCard)
+    }
+
+    fun cloneCard(id: CardId): List<BoardDiffEvent> {
+        val card = findCard(id) ?: return listOf()
+        val newCard = card.clone()
+        val index = cards[card.zone]!!.indexOfFirst { it.id == id }
+        cards[card.zone]!!.add(index + 1, newCard)
+        return listOf(
+            BoardDiffEvent.CreateCard(newCard.getState(index + 1)),
+            BoardDiffEvent.RevealCard(newCard.id, newCard.visibility.toList())
+        )
+    }
 }
 
 @Serializable
@@ -376,14 +428,14 @@ class Player(val user: User, userIndex: Int, deck: Deck, game: Game) {
                 && attributes[CardAttribute.FLIPPED]!! == 1
         val changeZoneResult = board.changeZone(card, Zone.BATTLEFIELD, playFaceDown)
 
-        return if (changeZoneResult.first.isNotEmpty()) {
-            val updatedCardId = changeZoneResult.second
+        return if (changeZoneResult.cardWasMoved) {
+            val updatedCardId = changeZoneResult.newCardId
 
-            changeZoneResult.first +
+            changeZoneResult.events +
                     board.moveCard(updatedCardId, x, y) +
                     attributes.flatMap { board.setAttribute(updatedCardId, it.key, it.value) }
         } else {
-            changeZoneResult.first
+            changeZoneResult.events
         }
     }
 
@@ -397,10 +449,10 @@ class Player(val user: User, userIndex: Int, deck: Deck, game: Game) {
 
     fun moveCard(card: CardId, zone: Zone, index: Int): List<BoardDiffEvent> {
         val changeZoneResult = board.changeZone(card, zone)
-        return if (index != -1) {
-            changeZoneResult.first + board.moveCard(changeZoneResult.second, index)
+        return if (index != -1 && changeZoneResult.cardWasMoved) {
+            changeZoneResult.events + board.moveCard(changeZoneResult.newCardId, index)
         } else {
-            changeZoneResult.first
+            changeZoneResult.events
         }
     }
 
@@ -448,6 +500,22 @@ class Player(val user: User, userIndex: Int, deck: Deck, game: Game) {
 
     fun moveCardsVirtual(virtualIds: List<Id>, zone: Zone, index: Int): List<BoardDiffEvent> {
         return board.getCardsFromVirtualIds(virtualIds).flatMap { moveCard(it, zone, index) }
+    }
+
+    suspend fun createToken(id: OracleId): List<BoardDiffEvent> {
+        val dao = CardDao()
+        val card = dao.getToken(id)
+        return board.createCard(card)
+    }
+
+    suspend fun createCard(id: OracleId): List<BoardDiffEvent> {
+        val dao = CardDao()
+        val card = dao.getCard(id)
+        return board.createCard(card)
+    }
+
+    fun cloneCard(card: CardId): List<BoardDiffEvent> {
+        return board.cloneCard(card)
     }
 }
 

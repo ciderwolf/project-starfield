@@ -1,6 +1,6 @@
 import { ZONES, zoneFromIndex } from "@/zones";
 import type { WebSocketConnection } from "./websocket";
-import { type CardId } from "@/stores/board";
+import { type CardId, type OracleId } from "@/stores/board";
 import type { PlayerAttribute, SpecialAction, CardAttribute, CardAttributeMap, Zone } from "./message";
 import { getJson } from ".";
 
@@ -26,6 +26,10 @@ export abstract class GameClient {
   abstract playWithAttributes(cardId: CardId, x: number, y: number, attributes: Record<CardAttribute, number>): void;
   abstract moveCard(zoneId: number, cardId: CardId, x: number, y: number): void;
   abstract revealCard(cardId: CardId, playerId?: string): void;
+  abstract scry(count: number): void;
+  abstract createToken(id: OracleId): void;
+  abstract createCard(id: OracleId): void;
+  abstract cloneCard(id: CardId): void;
 }
 
 export class WebSocketGameClient extends GameClient {
@@ -151,6 +155,27 @@ export class WebSocketGameClient extends GameClient {
     this.ws.send({
       type: 'scry',
       count,
+    });
+  }
+
+  createToken(id: OracleId): void {
+    this.ws.send({
+      type: 'create_token',
+      id,
+    });
+  }
+
+  createCard(id: OracleId): void {
+    this.ws.send({
+      type: 'create_card',
+      id,
+    });
+  }
+
+  cloneCard(id: CardId): void {
+    this.ws.send({
+      type: 'clone_card',
+      id,
     });
   }
 

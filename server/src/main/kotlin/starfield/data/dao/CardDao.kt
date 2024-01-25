@@ -66,6 +66,10 @@ class CardDao {
         return fuzzyNames.map { result[it] }
     }
 
+    suspend fun getToken(id: OracleId) = DatabaseSingleton.dbQuery {
+        Tokens.selectAll().where { Tokens.id eq id }.single().let(::mapToken)
+    }
+
     suspend fun searchForTokens(name: String?, color: String?, superTypes: List<String>, subTypes: List<String>, text: String?, pt: String?) = DatabaseSingleton.dbQuery {
         val sortedColor = color?.toList()?.sorted()?.joinToString("")
         val columns = mapOf(Tokens.fuzzyName to name, Tokens.colors to sortedColor, Tokens.text to text, Tokens.pt to pt)
@@ -276,11 +280,13 @@ class CardDao {
 
 
     abstract class CardEntity {
+        abstract val id: OracleId
+
         abstract fun toOracleCard(): OracleCard
     }
 
     data class Token(
-        val id: Id,
+        override val id: Id,
         val name: String,
         val fuzzyName: String,
         val colors: String,
@@ -298,7 +304,7 @@ class CardDao {
         val name: String,
         val fuzzyName: String,
         val type: String,
-        val id: Id,
+        override val id: Id,
         val image: String,
         val backImage: String?
     ) : CardEntity() {

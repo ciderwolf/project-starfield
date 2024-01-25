@@ -143,7 +143,7 @@ export type OracleCardsMessage = {
   oracleInfo: { [oracleId: string]: OracleCard };
 }
 
-export type BoardDiffEvent = ChangeZoneEvent | ChangeIndexEvent | ChangePositionEvent | ChangeAttributeEvent | ChangePlayerAttribute | ScoopDeck | ShuffleDeck | RevealCard;
+export type BoardDiffEvent = ChangeZoneEvent | ChangeIndexEvent | ChangePositionEvent | ChangeAttributeEvent | ChangePlayerAttribute | ScoopDeck | ShuffleDeck | RevealCard | CreateCard | DestroyCard;
 
 export type ChangeZoneEvent = {
   type: 'change_zone';
@@ -197,6 +197,16 @@ export type RevealCard = {
   type: 'reveal_card';
 }
 
+export type CreateCard = {
+  card: BoardCard;
+  type: 'create_card';
+}
+
+export type DestroyCard = {
+  card: CardId;
+  type: 'destroy_card';
+}
+
 export type ClientMessage = ChangeCardAttributeMessage 
   | ChangeCardIndexMessage 
   | ChangeCardPositionMessage 
@@ -208,7 +218,10 @@ export type ClientMessage = ChangeCardAttributeMessage
   | PlayCardMessage 
   | SpecialActionMessage 
   | RevealCardMessage
-  | ScryMessage;
+  | ScryMessage
+  | CreateTokenMessage
+  | CreateCardMessage
+  | CloneCardMessage;
 
 type ChangeCardAttributeMessage = {
   attribute: CardAttribute;
@@ -279,6 +292,22 @@ type ScryMessage = {
   count: number;
   type: "scry";
 }
+
+type CreateTokenMessage = {
+  id: string;
+  type: "create_token";
+}
+
+type CreateCardMessage = {
+  id: string;
+  type: "create_card";
+}
+
+type CloneCardMessage = {
+  id: CardId;
+  type: "clone_card";
+}
+
 
 type MoveCardVirtualMessage = {
   ids: string[];

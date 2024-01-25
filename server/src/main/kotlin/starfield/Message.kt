@@ -117,6 +117,24 @@ data class ScryMessage(
 ) : ClientMessage()
 
 @Serializable
+@SerialName("create_card")
+data class CreateCardMessage(
+    val id: OracleId
+) : ClientMessage()
+
+@Serializable
+@SerialName("clone_card")
+data class CloneCardMessage(
+    val id: CardId
+) : ClientMessage()
+
+@Serializable
+@SerialName("create_token")
+data class CreateTokenMessage(
+    val id: OracleId
+) : ClientMessage()
+
+@Serializable
 @SerialName("move_virtual")
 data class MoveCardVirtualMessage(
     val ids: List<Id>,
