@@ -7,6 +7,10 @@ import starfield.plugins.PivotSerializer
 typealias CardId = Int
 typealias OracleId = Id
 
+enum class CardOrigin {
+    DECK, SIDEBOARD, TOKEN
+}
+
 enum class PlayerAttribute {
     LIFE, POISON
 }

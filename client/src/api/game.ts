@@ -8,11 +8,11 @@ type VirtualIdsMessage = {
 }
 
 export function getVirtualIds(): Promise<VirtualIdsMessage> {
-  return getJson('/game/virtual-ids/library');
+  return getJson('game/virtual-ids/library');
 }
 
 export function getVirtualScryIds(count: number): Promise<VirtualIdsMessage> {
-  return getJson(`/game/virtual-ids/scry?count=${count}`);
+  return getJson(`game/virtual-ids/scry?count=${count}`);
 }
 
 export function searchForTokens(name?: string, type?: string, colors?: string, text?: string, pt?: string): Promise<OracleCard[]> {
@@ -25,5 +25,9 @@ export function searchForTokens(name?: string, type?: string, colors?: string, t
     }
   }
 
-  return getJson(`/game/search/tokens?${searchParams.toString()}`);
+  return getJson(`game/search/tokens?${searchParams.toString()}`);
+}
+
+export function searchForCards(name: string): Promise<OracleCard[]> {
+  return getJson(`game/search/cards?name=${name}`);
 }

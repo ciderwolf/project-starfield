@@ -88,6 +88,13 @@ export function createBattlefieldContextMenu(card: BoardCard, emit: ActionEmit):
       }
     },
     {
+      type: 'text',
+      title: 'Copy card',
+      effect: () => {
+        emit('copy');
+      }
+    },
+    {
       type: 'seperator'
     },
     {

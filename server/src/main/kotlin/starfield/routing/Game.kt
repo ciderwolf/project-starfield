@@ -56,4 +56,11 @@ fun Route.engineRouting() {
         val tokens = dao.searchForTokens(name, color, superTypes, subTypes, text, pt)
         call.respondSuccess(tokens.map { it.toOracleCard() })
     }
+
+    get("search/cards") {
+        val dao = CardDao()
+        val name = call.parameters["name"] ?: return@get call.respondError("Must specify a name")
+        val cards = dao.searchForCards(name)
+        call.respondSuccess(cards.map { it.toOracleCard() })
+    }
 }

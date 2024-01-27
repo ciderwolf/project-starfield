@@ -1,7 +1,7 @@
 import { reactive } from 'vue'
 import { defineStore } from 'pinia'
 import { ScreenPosition, ZONES, OPPONENT_ZONES, findZoneByName, getZones, zoneNameToId } from '@/zones';
-import type { BoardDiffEvent, BoardCard, ChangeAttributeEvent, ChangeIndexEvent, ChangePlayerAttribute, ChangePositionEvent, ChangeZoneEvent, PlayerState, ScoopDeck, ShuffleDeck, Zone, Card, OracleCard } from '@/api/message';
+import type { BoardDiffEvent, BoardCard, ChangeAttributeEvent, ChangeIndexEvent, ChangePlayerAttribute, ChangePositionEvent, ChangeZoneEvent, PlayerState, ScoopDeck, ShuffleDeck, Zone, Card, OracleCard, CreateCard, DestroyCard } from '@/api/message';
 import { useZoneStore } from './zone';
 import { useDataStore } from './data';
 
@@ -146,6 +146,12 @@ export const useBoardStore = defineStore('board', () => {
         break;
       case 'reveal_card':
         break;
+      case 'create_card':
+        processCreateCard(event);
+        break;
+      case 'destroy_card':
+        processDestroyCard(event);
+        break;
       default:
         const _exhaustiveCheck: never = event;
         console.error(_exhaustiveCheck);
@@ -266,6 +272,21 @@ export const useBoardStore = defineStore('board', () => {
       resetCard(card);
       card.id = event.newIds[i];
     }
+  }
+
+  function processCreateCard(event: CreateCard) {
+    const card = event.state;
+    card.zone = getZoneId(card.id, card.zone as unknown as Zone);
+    const cardList = cards[card.zone];
+    cardList.splice(card.index, 0, card);
+  }
+
+  function processDestroyCard(event: DestroyCard) {
+    const card = event.card;
+    const zoneId = extractZone(card);
+    const cardList = cards[zoneId];
+    const index = cardList.findIndex(c => c.id === card);
+    cardList.splice(index, 1);
   }
 
   function resetCard(card: BoardCard) {

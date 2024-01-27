@@ -88,6 +88,7 @@ export type BoardCard = Card & {
   pivot: Pivot;
   counter: number;
   transformed: boolean;
+  index: number;
   flipped: boolean;
   zone: number;
   id: CardId;
@@ -198,7 +199,7 @@ export type RevealCard = {
 }
 
 export type CreateCard = {
-  card: BoardCard;
+  state: BoardCard;
   type: 'create_card';
 }
 

@@ -66,6 +66,11 @@ class CardDao {
         return fuzzyNames.map { result[it] }
     }
 
+    suspend fun searchForCards(name: String): List<Card> = DatabaseSingleton.dbQuery {
+        val normalizedName = normalizeName(name)
+        Cards.selectAll().where { Cards.fuzzyName like "%${normalizedName}%" }.map(::mapDbCard)
+    }
+
     suspend fun getToken(id: OracleId) = DatabaseSingleton.dbQuery {
         Tokens.selectAll().where { Tokens.id eq id }.single().let(::mapToken)
     }
@@ -276,8 +281,6 @@ class CardDao {
         }
         return normalizedName.lowercase().replace(Regex("[^\\w ]"), "").trim()
     }
-
-
 
     abstract class CardEntity {
         abstract val id: OracleId

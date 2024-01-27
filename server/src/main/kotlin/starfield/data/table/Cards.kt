@@ -2,7 +2,6 @@ package starfield.data.table
 
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.sql.Table
-import org.jetbrains.exposed.sql.json.json
 
 
 object Cards : Table("Card") {

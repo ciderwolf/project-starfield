@@ -98,6 +98,9 @@ function doMenuAction(name: string, ...args: any[]) {
     case 'reveal-to':
       client.revealCard(props.card.id, args[0]);
       break;
+    case 'copy':
+      client.cloneCard(props.card.id);
+      break;
     default:
       console.error('Unknown action for battlefield card', name, args);
   }

@@ -3,16 +3,18 @@ import Zone from '@/components/game/Zone.vue';
 import FindCardsModal from '@/components/game/modal/FindCardsModal.vue';
 import ScryModal from '@/components/game/modal/ScryModal.vue';
 import ViewZoneModal from '@/components/game/modal/ViewZoneModal.vue';
+import CreateTokenModal from '@/components/game/modal/CreateTokenModal.vue';
+import CreateCardModal from '@/components/game/modal/CreateCardModal.vue';
 import { OPPONENT_ZONES, ZONES } from '@/zones';
 import { ref, onMounted, onUnmounted } from 'vue';
 import { client } from '@/ws';
 import { endGame } from '@/api/lobby';
 import { useRoute, useRouter } from 'vue-router';
-import { useBoardStore, type OracleId } from '@/stores/board';
-import { getVirtualIds, getVirtualScryIds } from '@/api/game';
+import { useBoardStore } from '@/stores/board';
+import { getVirtualIds } from '@/api/game';
 import { useNotificationsCache } from '@/cache/notifications';
 import type { ComponentExposed } from 'vue-component-type-helpers';
-import CreateTokenModal from '@/components/game/modal/CreateTokenModal.vue';
+
 
 const myZones = ref<HTMLElement[]>([]);
 const opponentZones = ref<HTMLElement[]>([]);
@@ -45,6 +47,8 @@ function checkHotkey(e: KeyboardEvent) {
     client.takeSpecialAction('SHUFFLE');
   } else if (e.key === 'w') {
     createTokenModal.value?.open();
+  } else if (e.key === 'n') {
+    createCardModal.value?.open();
   }
 }
 
@@ -52,6 +56,7 @@ const findCardsModal = ref<ComponentExposed<typeof FindCardsModal>>();
 const scryModal = ref<ComponentExposed<typeof ScryModal>>();
 const viewZoneModal = ref<ComponentExposed<typeof ViewZoneModal>>();
 const createTokenModal = ref<ComponentExposed<typeof CreateTokenModal>>();
+const createCardModal = ref<ComponentExposed<typeof CreateCardModal>>();
 const notificationsCache = useNotificationsCache();
 
 
@@ -87,6 +92,7 @@ onUnmounted(() => {
     <scry-modal ref="scryModal" />
     <view-zone-modal ref="viewZoneModal" />
     <create-token-modal ref="createTokenModal" />
+    <create-card-modal ref="createCardModal" />
     <zone ref="myZones" v-for="zone in ZONES" :zone="zone"></zone>
     <zone ref="opponentZones" v-for="zone in OPPONENT_ZONES" :zone="zone" />
   </div>
