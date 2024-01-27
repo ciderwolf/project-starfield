@@ -4,6 +4,7 @@ import { onMounted, onUnmounted, reactive, ref } from 'vue';
 import { type ComponentExposed } from 'vue-component-type-helpers';
 import type { BoardCard } from '@/api/message';
 import CardImage from './CardImage.vue';
+import { useNotificationsCache } from '@/cache/notifications';
 
 interface Position {
   x: number;
@@ -22,6 +23,7 @@ const emit = defineEmits<{
 }>()
 
 const zones = useZoneStore();
+const notifications = useNotificationsCache();
 
 const imagePos = reactive<Position>({ x: 0, y: 0 });
 const offsetPos = reactive<Position>({ x: 0, y: 0 });
@@ -82,6 +84,7 @@ function onMouseDown(e: MouseEvent) {
 
 function onMouseMove(e: MouseEvent) {
   if (moving.value) {
+    notifications.hideCardPreview();
     hasMoved = true;
     imagePos.x = e.clientX - offsetPos.x;
     imagePos.y = e.clientY - offsetPos.y;

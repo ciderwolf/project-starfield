@@ -5,6 +5,7 @@ import ScryModal from '@/components/game/modal/ScryModal.vue';
 import ViewZoneModal from '@/components/game/modal/ViewZoneModal.vue';
 import CreateTokenModal from '@/components/game/modal/CreateTokenModal.vue';
 import CreateCardModal from '@/components/game/modal/CreateCardModal.vue';
+import CardPreview from '@/components/game/CardPreview.vue';
 import { OPPONENT_ZONES, ZONES } from '@/zones';
 import { ref, onMounted, onUnmounted } from 'vue';
 import { client } from '@/ws';
@@ -57,6 +58,7 @@ const scryModal = ref<ComponentExposed<typeof ScryModal>>();
 const viewZoneModal = ref<ComponentExposed<typeof ViewZoneModal>>();
 const createTokenModal = ref<ComponentExposed<typeof CreateTokenModal>>();
 const createCardModal = ref<ComponentExposed<typeof CreateCardModal>>();
+const cardPreview = ref<ComponentExposed<typeof CardPreview>>();
 const notificationsCache = useNotificationsCache();
 
 
@@ -78,6 +80,14 @@ onMounted(() => {
     client.scry(count);
     scryModal.value?.open(count);
   }
+
+  notificationsCache.showCardPreview = (id: string, backFace: boolean) => {
+    cardPreview.value?.showPreview(id, backFace);
+  }
+
+  notificationsCache.hideCardPreview = () => {
+    cardPreview.value?.hidePreview();
+  }
 });
 
 onUnmounted(() => {
@@ -93,6 +103,7 @@ onUnmounted(() => {
     <view-zone-modal ref="viewZoneModal" />
     <create-token-modal ref="createTokenModal" />
     <create-card-modal ref="createCardModal" />
+    <card-preview ref="cardPreview" />
     <zone ref="myZones" v-for="zone in ZONES" :zone="zone"></zone>
     <zone ref="opponentZones" v-for="zone in OPPONENT_ZONES" :zone="zone" />
   </div>

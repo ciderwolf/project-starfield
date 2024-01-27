@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { BoardCard } from '@/api/message';
+import { useNotificationsCache } from '@/cache/notifications';
 import { pivotToAngle, useBoardStore } from '@/stores/board';
 import { ScreenPosition } from '@/zones';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
@@ -32,6 +33,7 @@ defineExpose<{ getBounds: () => DOMRect, recomputePosition: () => void, cardPosi
 });
 
 const board = useBoardStore();
+const notifications = useNotificationsCache();
 
 const imageUrl = computed(() => {
   if (board.cardToOracleId[props.card.id] && !props.card.flipped) {
@@ -98,6 +100,24 @@ function clampToBounds(x: number, y: number, rect: DOMRect, parentRect: DOMRect)
   return { x, y };
 }
 
+let showPreviewTimerHandle: number | undefined;
+function mouseEnter() {
+  const id = board.cardToOracleId[props.card.id];
+  if (id && showPreviewTimerHandle === undefined) {
+    showPreviewTimerHandle = window.setTimeout(() => {
+      notifications.showCardPreview(id, props.card.transformed);
+    }, 250);
+  }
+}
+
+function mouseLeave() {
+  if (showPreviewTimerHandle) {
+    window.clearTimeout(showPreviewTimerHandle);
+    showPreviewTimerHandle = undefined;
+  }
+  notifications.hideCardPreview();
+}
+
 onMounted(() => {
   if (props.zoneRect) {
     updateScreenPosFromVirtualCoords();
@@ -114,7 +134,8 @@ watch([() => props.zoneRect, () => props.card.x, () => props.card.y], () => {
 
 <template>
   <figure class="board-card" :style="positionInfo" draggable="false" @dblclick="$emit('dblclick')"
-    @mousedown="$emit('mousedown', $event)" @mouseup="$emit('mouseup', $event)" ref="image" :data-counter="card.counter">
+    @mousedown="$emit('mousedown', $event)" @mouseup="$emit('mouseup', $event)" @mouseenter="mouseEnter"
+    @mouseleave="mouseLeave" ref="image">
     <span v-if="card.counter > 0" class="board-card-counter">{{ card.counter }}</span>
   </figure>
   <img v-if="showGhost" class="board-card board-card-ghost" :style="ghostPositionInfo" draggable="false" :src="imageUrl">
