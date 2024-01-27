@@ -53,7 +53,7 @@ const positionInfo = computed(() => {
     return {
       left: `${props.imagePos.x}px`,
       top: `${props.imagePos.y}px`,
-      zIndex: props.moving ? 1 : 0,
+      zIndex: props.moving ? 3 : 1,
       transform: `rotate(${pivotToAngle(props.card.pivot)})`,
       backgroundImage: `url(${imageUrl.value})`
     };
@@ -130,6 +130,7 @@ watch([() => props.zoneRect, () => props.card.x, () => props.card.y], () => {
   margin: 0;
   pointer-events: all;
   border-radius: 3px;
+  z-index: 1;
 }
 
 .board-card-ghost {

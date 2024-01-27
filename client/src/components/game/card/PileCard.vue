@@ -64,9 +64,6 @@ function doMenuAction(name: string, ...args: any[]) {
     case 'find-card':
       notifications.findCards();
       break;
-    case 'view-all-cards':
-      notifications.viewZone(props.card.zone);
-      break;
     case 'scry':
       notifications.scry(args[0]);
       break;

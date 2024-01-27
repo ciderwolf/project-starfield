@@ -7,6 +7,7 @@ import { zoneFromIndex } from '@/zones';
 import { client } from '@/ws';
 
 const zoneId = ref(0);
+const readOnly = ref(false);
 const zoneName = computed(() => zoneFromIndex(zoneId.value)?.name);
 
 const board = useBoardStore();
@@ -25,8 +26,9 @@ const cards = computed(() => {
 const modal = ref<ComponentExposed<typeof MoveCardsModal>>();
 defineExpose({ open });
 
-function open(zoneIdValue: number) {
+function open(zoneIdValue: number, readOnlyValue = false) {
   zoneId.value = zoneIdValue;
+  readOnly.value = readOnlyValue;
   modal.value?.open();
 }
 
@@ -37,5 +39,6 @@ function select(ids: string[], zoneId: number, index: number) {
 </script>
 
 <template>
-  <MoveCardsModal ref="modal" multi-select :title="`Viewing ${zoneName}`" :cards="cards" @select="select" />
+  <MoveCardsModal ref="modal" multi-select :title="`Viewing ${zoneName}`" :cards="cards" :read-only="readOnly"
+    @select="select" />
 </template>

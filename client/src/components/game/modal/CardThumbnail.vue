@@ -3,25 +3,28 @@ import type { OracleCard } from '@/api/message';
 import { computed, ref } from 'vue';
 
 
-const props = defineProps<{ card?: OracleCard }>();
+const props = defineProps<{ card?: OracleCard, class?: string }>();
 
 const imageUrl = computed(() => {
-  if (!props.card) return '/back.png';
+  if (!props.card?.id) return '/back.png';
   return `https://api.scryfall.com/cards/${props.card.id}?format=image&version=small`;
 });
 
 const previewUrl = computed(() => {
-  if (!props.card) return '/back.png';
+  if (!props.card?.id) return '/back.png';
   return `https://api.scryfall.com/cards/${props.card.id}?format=image&version=normal`;
 });
 
+defineEmits<{
+  (event: 'click', e: MouseEvent): void
+}>()
 
 const left = ref(0);
 const top = ref(0);
 const display = ref("none");
 const cardImage = ref<HTMLInputElement>();
 
-const style = computed(() => ({
+const hoverStyle = computed(() => ({
   display: display.value,
   left: `${left.value}px`,
   top: `${top.value}px`
@@ -62,10 +65,11 @@ function mouseMove(e: MouseEvent) {
 
 <template>
   <Teleport to="body">
-    <img ref="cardImage" class="card-preview" :style="style" :src="previewUrl" />
+    <img ref="cardImage" class="card-preview" :style="hoverStyle" :src="previewUrl" />
   </Teleport>
 
-  <img :src="imageUrl" class="card-thumbnail" @mouseleave="mouseLeave" @mouseover="mouseOver" @mousemove="mouseMove" />
+  <img :src="imageUrl" class="card-thumbnail" @mouseleave="mouseLeave" @mouseover="mouseOver" @mousemove="mouseMove"
+    :class="class" @click="$emit('click', $event)" />
 </template>
 
 <style scoped>

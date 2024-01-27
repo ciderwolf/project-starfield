@@ -2,12 +2,13 @@
 import Modal from '@/components/Modal.vue'
 import ContextMenu from '@/components/ContextMenu.vue';
 import StyleButton from '@/components/StyleButton.vue';
+import CardThumbnail from '@/components/game/modal/CardThumbnail.vue';
 import { computed, reactive, ref } from 'vue';
 import { getMoveZoneActions } from '@/context-menu';
 import { useBoardStore, type OracleId } from '@/stores/board';
 import type { OracleCard } from '@/api/message';
 
-const props = defineProps<{ cards: { [id: string]: OracleId }, multiSelect: boolean, title: string }>();
+const props = defineProps<{ cards: { [id: string]: OracleId }, multiSelect: boolean, title: string, readOnly?: boolean }>();
 
 type IdentifiedDeckCard = { uid: string } & OracleCard;
 
@@ -47,14 +48,22 @@ const nonFilteredCards = computed(() => {
   });
 });
 
-function getCardUrl(card: IdentifiedDeckCard) {
-  if (card.id === undefined) {
-    return '/back.png';
+function getClassString(card: IdentifiedDeckCard, filter: boolean) {
+  const classes = ['card-thumbnail__card'];
+  if (selected.value.has(card.uid)) {
+    classes.push('selected');
   }
-  return `https://api.scryfall.com/cards/${card.id}?format=image`;
-}
+  if (filter) {
+    classes.push('filtered');
+  }
 
+  return classes.join(' ');
+}
 function selectCard(e: MouseEvent, id: string) {
+  if (props.readOnly) {
+    return;
+  }
+
   if (props.multiSelect) {
     if (selected.value.has(id)) {
       selected.value.delete(id);
@@ -91,13 +100,14 @@ function doMenuAction(_: string, ...args: any[]) {
   <Modal :visible="visible" @close="visible = false" :title="title">
     <h2>{{ title }}</h2>
     <input type="text" placeholder="Filter cards..." v-model="cardFilter">
-    <style-button @click="moveSelected" :disabled="selected.size === 0" v-if="multiSelect" small>Move to...</style-button>
+    <style-button @click="moveSelected" :disabled="selected.size === 0" v-if="multiSelect && !readOnly" small>Move
+      to...</style-button>
 
     <div class="cards">
-      <img v-for="card in filteredCards" :src="getCardUrl(card)" @click="selectCard($event, card.uid)" class="card"
-        :class="{ selected: selected.has(card.uid), filtered: true }" />
-      <img v-for="card in nonFilteredCards" :src="getCardUrl(card)" @click="selectCard($event, card.uid)" class="card"
-        :class="{ selected: selected.has(card.uid), filtered: false }" />
+      <card-thumbnail v-for="card in filteredCards" :class="getClassString(card, true)" :card="card"
+        @click="selectCard($event, card.uid)" />
+      <card-thumbnail v-for="card in nonFilteredCards" :class="getClassString(card, false)" :card="card"
+        @click="selectCard($event, card.uid)" />
     </div>
   </Modal>
 </template>
@@ -109,21 +119,23 @@ function doMenuAction(_: string, ...args: any[]) {
   justify-content: center;
   overflow: scroll;
 }
+</style>
 
-.card {
+<style>
+img.card-thumbnail__card {
   width: 10rem;
   margin: 0.5rem;
   border: 3px solid black;
-  border-radius: 15px;
+  border-radius: 10px;
   cursor: pointer;
   filter: grayscale(50%) brightness(75%);
 }
 
-.card.filtered {
+.card-thumbnail__card.filtered {
   filter: none;
 }
 
-.selected {
+.card-thumbnail__card.selected {
   border-color: red;
   box-shadow: 0 0 1rem rgb(206, 131, 131);
 }

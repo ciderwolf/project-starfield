@@ -233,14 +233,6 @@ export function createHandContextMenu(card: BoardCard, emit: ActionEmit): Contex
   const options: ContextMenuOption[] = [
     {
       type: 'text',
-      title: 'View all cards',
-      effect: () => emit('view-all-cards')
-    },
-    {
-      type: 'seperator'
-    },
-    {
-      type: 'text',
       title: 'Reveal',
       effect: () => {
         emit('reveal');
@@ -349,17 +341,25 @@ export function getZoneContextMenu(zoneId: number, emit: ActionEmit): ContextMen
   return {
     options: [
       {
-        type: 'submenu',
-        title: 'Reveal all to...',
-        options: getRevealToPlayersSubmenu(emit)
-      },
-      {
         type: 'text',
-        title: 'Reveal all',
-        effect: () => {
-          emit('reveal-all')
-        }
+        title: 'View all cards',
+        effect: () => emit('view-all-cards')
       },
+      // {
+      //   type: 'seperator'
+      // },
+      // {
+      //   type: 'submenu',
+      //   title: 'Reveal all to...',
+      //   options: getRevealToPlayersSubmenu(emit)
+      // },
+      // {
+      //   type: 'text',
+      //   title: 'Reveal all',
+      //   effect: () => {
+      //     emit('reveal-all')
+      //   }
+      // },
       {
         type: 'submenu',
         title: 'Move all to zone...',

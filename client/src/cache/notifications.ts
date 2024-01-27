@@ -2,7 +2,7 @@ import { createLocalCache } from ".";
 
 interface ModalHooks {
   findCards: () => void;
-  viewZone: (zoneId: number) => void;
+  viewZone: (zoneId: number, readOnly?: boolean) => void;
   scry: (count: number) => void;
 }
 
