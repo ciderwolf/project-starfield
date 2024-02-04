@@ -8,7 +8,7 @@ import { getMoveZoneActions } from '@/context-menu';
 import { useBoardStore, type OracleId } from '@/stores/board';
 import type { OracleCard } from '@/api/message';
 
-const props = defineProps<{ cards: { [id: string]: OracleId }, multiSelect: boolean, title: string, readOnly?: boolean }>();
+const props = defineProps<{ cards: { [id: string]: OracleId }, multiSelect: boolean, title: string, readOnly?: boolean, order?: string[] }>();
 
 type IdentifiedDeckCard = { uid: string } & OracleCard;
 
@@ -21,14 +21,23 @@ const board = useBoardStore();
 
 const expandedCards = computed(() => {
   const expanded: IdentifiedDeckCard[] = [];
-  for (const [virtualId, oracleId] of Object.entries(props.cards)) {
+  const keys = props.order === undefined ? Object.keys(props.cards) : props.order;
+  for (const virtualId of keys) {
+    const oracleId = props.cards[virtualId];
     const card = board.oracleInfo[oracleId];
     expanded.push({ ...card, uid: virtualId });
   }
-  return expanded.sort((a, b) => a.name?.localeCompare(b.name));
+  if (props.order !== undefined) {
+    return expanded;
+  } else {
+    return expanded.sort((a, b) => a.name?.localeCompare(b.name));
+  }
+
 });
 const visible = ref(false);
 function open() {
+  selected.value.clear();
+  cardFilter.value = '';
   visible.value = true;
 }
 
@@ -126,7 +135,7 @@ img.card-thumbnail__card {
   width: 10rem;
   margin: 0.5rem;
   border: 3px solid black;
-  border-radius: 10px;
+  border-radius: 10px !important;
   cursor: pointer;
   filter: grayscale(50%) brightness(75%);
 }

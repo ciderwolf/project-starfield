@@ -18,7 +18,15 @@ const cards = computed(() => {
     cardIdMap[card.id] = board.cardToOracleId[card.id];
   }
   return cardIdMap;
-})
+});
+
+const cardOrder = computed(() => {
+  const library = board.cards[ZONES.library.id];
+  const cardsToScry = Math.min(count.value, board.cards[ZONES.library.id]?.length ?? 0);
+  return library.slice(-cardsToScry)
+    .map(card => card.id.toString())
+    .reverse();
+});
 
 const modal = ref<ComponentExposed<typeof MoveCardsModal>>();
 defineExpose({ open });
@@ -43,5 +51,5 @@ const title = computed(() => {
 </script>
 
 <template>
-  <MoveCardsModal ref="modal" multi-select :title="title" :cards="cards" @select="select" />
+  <MoveCardsModal ref="modal" multi-select :title="title" :cards="cards" @select="select" :order="cardOrder" />
 </template>

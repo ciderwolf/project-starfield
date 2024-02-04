@@ -6,6 +6,7 @@ import starfield.model.*
 import starfield.plugins.toEnum
 import starfield.routing.Deck
 import java.util.*
+import kotlin.math.max
 
 
 class BoardManager(private val owner: UUID, private val ownerIndex: Int, private val game: Game, private val deck: Deck) {
@@ -107,9 +108,13 @@ class BoardManager(private val owner: UUID, private val ownerIndex: Int, private
                         }
                     }
                     CardOrigin.SIDEBOARD -> {
-                        events.addAll(changeZone(card.id, Zone.SIDEBOARD).events)
+                        // move cards played from sideboard back
+                        if (card.zone != Zone.SIDEBOARD) {
+                            events.addAll(changeZone(card.id, Zone.SIDEBOARD).events)
+                        }
                     }
                     CardOrigin.TOKEN -> {
+                        // destroy tokens or cards inserted from outside the game
                         events.add(BoardDiffEvent.DestroyCard(card.id))
                         zoneCards.remove(card)
                     }
@@ -121,6 +126,10 @@ class BoardManager(private val owner: UUID, private val ownerIndex: Int, private
                 zoneCards.clear()
             }
         }
+
+        // make sure all sideboard cards are visible
+        events.addAll(cards[Zone.SIDEBOARD]!!.flatMap { revealTo(it.id, owner) })
+
         cards[Zone.LIBRARY]!!.forEach { it.reset(clearVisibility = true) }
         cards[Zone.LIBRARY]!!.shuffle()
         events.add(BoardDiffEvent.ScoopDeck(owner, cards[Zone.LIBRARY]!!.map { it.id }))
@@ -128,7 +137,6 @@ class BoardManager(private val owner: UUID, private val ownerIndex: Int, private
     }
 
     private fun findCard(id: CardId): BoardCard? {
-//        return cards.values.flatten().find { it.id == id }
         val zone = CardIdProvider.getZone(id)
         return cards[zone]!!.find { it.id == id }
     }
@@ -140,10 +148,6 @@ class BoardManager(private val owner: UUID, private val ownerIndex: Int, private
     fun changeZone(cardId: CardId, newZone: Zone, playFaceDown: Boolean = false): MoveZoneResult {
         val events = mutableListOf<BoardDiffEvent>()
         val card = findCard(cardId) ?: return MoveZoneResult(events, cardId)
-
-        if (card.zone == newZone) {
-            return MoveZoneResult(events, cardId)
-        }
 
         if (card.origin == CardOrigin.TOKEN) {
             cards[card.zone]!!.remove(card)
@@ -172,7 +176,6 @@ class BoardManager(private val owner: UUID, private val ownerIndex: Int, private
         }
 
         events.add(BoardDiffEvent.ChangeZone(card.id, newZone, oldCardId))
-//        events.add(BoardDiffEvent.ChangeIndex(cardId, cards[newZone]!!.size - 1))
 
         return MoveZoneResult(events, card.id)
     }
@@ -240,7 +243,8 @@ class BoardManager(private val owner: UUID, private val ownerIndex: Int, private
 
     fun scry(count: Int): List<BoardDiffEvent> {
         val library = cards[Zone.LIBRARY]!!
-        return (1..count).flatMap { revealTo(library[library.size - it].id, owner) }
+        val maxCount = max(count, library.size)
+        return (1..maxCount).flatMap { revealTo(library[library.size - it].id, owner) }
     }
 
     fun getCardsFromVirtualIds(virtualIds: List<Id>): List<BoardCard> {
