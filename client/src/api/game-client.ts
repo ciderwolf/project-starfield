@@ -8,7 +8,7 @@ export abstract class GameClient {
   abstract drawCards(count: number, to?: Zone): void;
 
   abstract takeSpecialAction(action: SpecialAction): void;
-  muligan() {
+  mulligan() {
     this.takeSpecialAction('MULLIGAN');
   }
   shuffle() {
@@ -17,11 +17,15 @@ export abstract class GameClient {
   scoop() {
     this.takeSpecialAction('SCOOP');
   }
+  untapAll() {
+    this.takeSpecialAction('UNTAP_ALL');
+  }
 
   abstract changeCardAttribute(cardId: CardId, attribute: CardAttribute, value: number): void;
   abstract changePlayerAttribute(attribute: PlayerAttribute, newValue: number): void;
   abstract moveCardToZone(cardId: CardId, newZoneId: number, x: number, y: number): void;
   abstract moveCardsToZone(cardId: CardId[], newZoneId: number, index: number): void;
+  abstract moveCardsVirtual(ids: string[], zoneId: number, index: number): void;
   abstract moveCardToZoneWithIndex(cardId: CardId, newZoneId: number, index: number): void;
   abstract playWithAttributes(cardId: CardId, x: number, y: number, attributes: Record<CardAttribute, number>): void;
   abstract moveCard(zoneId: number, cardId: CardId, x: number, y: number): void;
@@ -30,6 +34,7 @@ export abstract class GameClient {
   abstract createToken(id: OracleId): void;
   abstract createCard(id: OracleId): void;
   abstract cloneCard(id: CardId): void;
+  abstract sideboard(main: string[], side: string[]): void;
 }
 
 export class WebSocketGameClient extends GameClient {
@@ -176,6 +181,14 @@ export class WebSocketGameClient extends GameClient {
     this.ws.send({
       type: 'clone_card',
       id,
+    });
+  }
+
+  sideboard(main: string[], side: string[]): void {
+    this.ws.send({
+      type: 'sideboard',
+      main,
+      side,
     });
   }
 

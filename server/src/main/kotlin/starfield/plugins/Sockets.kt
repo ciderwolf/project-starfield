@@ -46,6 +46,7 @@ abstract class UserCollection<S> {
             it.connection?.send(messageFactory(it))
         }
     }
+
 }
 
 

@@ -116,12 +116,12 @@ class Player(val user: User, userIndex: Int, deck: Deck, game: Game) {
         return board.scry(count)
     }
 
-    fun getVirtualIds(): Map<UUID, OracleId> {
+    fun getVirtualIds(): Map<Zone, Map<Id, OracleId>> {
         return board.getVirtualIds()
     }
 
     fun moveCardsVirtual(virtualIds: List<Id>, zone: Zone, index: Int): List<BoardDiffEvent> {
-        return board.getCardsFromVirtualIds(virtualIds).flatMap { moveCard(it, zone, index) }
+        return board.getCardsFromVirtualIds(virtualIds).flatMap { moveCard(it.id, zone, index) }
     }
 
     suspend fun createToken(id: OracleId): List<BoardDiffEvent> {
@@ -138,6 +138,14 @@ class Player(val user: User, userIndex: Int, deck: Deck, game: Game) {
 
     fun cloneCard(card: CardId): List<BoardDiffEvent> {
         return board.cloneCard(card)
+    }
+
+    fun untapAll(): List<BoardDiffEvent> {
+        return board.untapAll()
+    }
+
+    fun sideboard(main: List<Id>, side: List<Id>): List<BoardDiffEvent> {
+        return board.sideboard(main, side)
     }
 }
 

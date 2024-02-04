@@ -399,4 +399,4 @@ function recalculateHandOrder(handCards: BoardCard[], handBounds: DOMRect) {
   for(const card of handCards) {
     card.x = handOrder[card.id].pos;
   }
-}``
+}

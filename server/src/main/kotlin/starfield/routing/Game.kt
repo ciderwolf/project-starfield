@@ -2,6 +2,7 @@ package starfield.routing
 
 import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
 import kotlinx.serialization.Serializable
@@ -9,6 +10,7 @@ import starfield.plugins.Id
 import starfield.data.dao.CardDao
 import starfield.findGame
 import starfield.engine.OracleId
+import starfield.engine.Zone
 import starfield.plugins.UserSession
 import starfield.plugins.respondError
 import starfield.plugins.respondSuccess
@@ -16,6 +18,13 @@ import starfield.plugins.respondSuccess
 @Serializable
 data class VirtualIdsMessage(
     val virtualIds: Map<Id, OracleId>,
+    val oracleInfo: Map<OracleId, CardDao.OracleCard>
+)
+
+@Serializable
+data class SideboardingVirtualIdsMessage(
+    val main: Map<Id, OracleId>,
+    val side: Map<Id, OracleId>,
     val oracleInfo: Map<OracleId, CardDao.OracleCard>
 )
 
@@ -27,13 +36,37 @@ fun Route.engineRouting() {
         )
 
         val game = findGame(session.id) ?: return@get call.respondError("Not in a game")
-        val ids = game.getVirtualIds(session.id)
+        val ids = game.assignVirtualIds(session.id)[Zone.LIBRARY]!!
         val oracleInfo = CardDao().getCards(ids.values).associate {
             val card = it.toOracleCard()
             Pair(card.id, card)
         }
 
         call.respondSuccess(VirtualIdsMessage(ids, oracleInfo))
+    }
+
+    get("virtual-ids/sideboarding") {
+        val session = call.sessions.get<UserSession>() ?: return@get call.respondError(
+            "You must be logged in",
+            status = HttpStatusCode.Unauthorized
+        )
+
+        val game = findGame(session.id) ?: return@get call.respondError("Not in a game")
+        val ids = game.assignVirtualIds(session.id)
+        val oracleInfo = CardDao().getCards(ids.values.flatMap { it.values }).associate {
+            val card = it.toOracleCard()
+            Pair(card.id, card)
+        }
+
+        val main = ids.entries
+            .filter { it.key != Zone.SIDEBOARD }
+            .map { it.value.entries }
+            .flatten()
+            .associate { Pair(it.key, it.value) }
+
+        val side = ids[Zone.SIDEBOARD]!!
+
+        call.respondSuccess(SideboardingVirtualIdsMessage(main, side, oracleInfo))
     }
 
     get("search/tokens") {

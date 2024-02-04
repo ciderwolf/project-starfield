@@ -53,10 +53,12 @@ class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserColle
             is CreateTokenMessage -> player.createToken(message.id)
             is CreateCardMessage -> player.createCard(message.id)
             is CloneCardMessage -> player.cloneCard(message.id)
+            is SideboardMessage -> player.sideboard(message.main, message.side)
             is SpecialActionMessage -> when(message.action) {
                 SpecialAction.MULLIGAN -> player.mulligan()
                 SpecialAction.SCOOP -> player.scoop()
                 SpecialAction.SHUFFLE -> player.shuffle()
+                SpecialAction.UNTAP_ALL -> player.untapAll()
             }
             is ChangePlayerAttributeMessage -> when (message.attribute) {
                 PlayerAttribute.LIFE -> player.setLife(message.newValue)
@@ -94,9 +96,14 @@ class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserColle
         return false
     }
 
-    fun getVirtualIds(userId: UUID): Map<UUID, OracleId> {
+    fun assignVirtualIds(userId: UUID): Map<Zone, Map<UUID, OracleId>> {
         val player = players.find { it.user.id == userId } ?: return mapOf()
         return player.getVirtualIds()
+    }
+
+    fun sideboardPlayer(userId: UUID, main: List<Id>, side: List<Id>) {
+        val player = players.find { it.user.id == userId } ?: return
+        player.sideboard(main, side)
     }
 }
 

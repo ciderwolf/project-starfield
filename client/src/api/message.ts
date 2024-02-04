@@ -128,7 +128,7 @@ export type OracleCard = {
 
 export type CardAttributeMap = Partial<Record<CardAttribute, number>>;
 
-export type SpecialAction = 'MULLIGAN' | 'SCOOP' | 'SHUFFLE';
+export type SpecialAction = 'MULLIGAN' | 'SCOOP' | 'SHUFFLE' | 'UNTAP_ALL';
 export type CardAttribute = 'PIVOT' | 'COUNTER' | 'TRANSFORMED' | 'FLIPPED';
 export type PlayerAttribute = 'LIFE' | 'POISON';
 
@@ -222,7 +222,8 @@ export type ClientMessage = ChangeCardAttributeMessage
   | ScryMessage
   | CreateTokenMessage
   | CreateCardMessage
-  | CloneCardMessage;
+  | CloneCardMessage
+  | SideboardMessage;
 
 type ChangeCardAttributeMessage = {
   attribute: CardAttribute;
@@ -309,6 +310,11 @@ type CloneCardMessage = {
   type: "clone_card";
 }
 
+type SideboardMessage = {
+  main: string[];
+  side: string[];
+  type: "sideboard";
+}
 
 type MoveCardVirtualMessage = {
   ids: string[];

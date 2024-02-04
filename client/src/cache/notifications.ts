@@ -7,7 +7,7 @@ interface ModalHooks {
   scry: (count: number) => void;
   showCardPreview: (oracleId: OracleId, backFace: boolean) => void;
   hideCardPreview: () => void;
-
+  sideboard(): void;
 }
 
 export const useNotificationsCache = createLocalCache<ModalHooks>(() => { 
@@ -17,5 +17,6 @@ export const useNotificationsCache = createLocalCache<ModalHooks>(() => {
     scry: () => {},
     showCardPreview: () => {},
     hideCardPreview: () => {},
+    sideboard: () => {},
   };
 });

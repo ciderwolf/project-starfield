@@ -54,7 +54,7 @@ data class DrawCardMessage(val count: Int, val to: Zone) : ClientMessage()
 data class SpecialActionMessage(val action: SpecialAction) : ClientMessage()
 
 enum class SpecialAction {
-    MULLIGAN, SCOOP, SHUFFLE
+    MULLIGAN, SCOOP, SHUFFLE, UNTAP_ALL
 }
 
 @Serializable
@@ -144,5 +144,10 @@ data class MoveCardVirtualMessage(
     val index: Int
 ) : ClientMessage()
 
-
+@Serializable
+@SerialName("sideboard")
+data class SideboardMessage(
+    val main: List<Id>,
+    val side: List<Id>
+) : ClientMessage()
 

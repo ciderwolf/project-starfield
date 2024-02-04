@@ -21,7 +21,7 @@ data class CardState(
 class BoardCard(val card: CardDao.CardEntity,
                 private val idProvider: CardIdProvider,
                 private val playerIndex: Int,
-                val origin: CardOrigin) {
+                var origin: CardOrigin) {
     var virtualId: UUID? = null
     val visibility = mutableSetOf<Id>()
     var x = 0.0

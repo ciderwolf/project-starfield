@@ -67,8 +67,10 @@ onUnmounted(() => {
     <card-dispatch v-for="card in board.cards[zone.id]" :key="card.id" :zone="zone.type" :card="card"
       :zone-rect="zoneRect" />
     <div class="zone-bounds" ref="zoneBounds" :style="zone.pos">
-      <span class="zone-bubble zone-count" v-if="zone.layout === 'stack'">{{ board.cards[zone.id].length }}</span>
-      <span class="zone-bubble zone-options" v-if="zone.layout === 'stack' && zone.type != 'LIBRARY'"
+      <span class="zone-bubble zone-count" v-if="zone.layout === 'stack' && board.cards[zone.id].length > 0">
+        {{ board.cards[zone.id].length }}</span>
+      <span class="zone-bubble zone-options"
+        v-if="zone.layout === 'stack' && zone.type != 'LIBRARY' && board.cards[zone.id].length > 0"
         @click="showOptions">≡</span>
     </div>
     <context-menu v-if="showMenu" v-click-outside="() => showMenu = false" :real-pos="menuPos" :menu="menuDefinition" />

@@ -97,12 +97,23 @@ class BoardManager(private val owner: UUID, private val ownerIndex: Int, private
         val events = mutableListOf<BoardDiffEvent>()
         for(key in cards.keys) {
             val zoneCards = cards[key]!!
-            
-            // filter out tokens / created cards
-            // TODO: should keep cards that were sideboarded in
-            cards[key]!!.filter { it.origin != CardOrigin.DECK }.forEach {
-                events.add(BoardDiffEvent.DestroyCard(it.id))
-                zoneCards.remove(it)
+            for(i in zoneCards.size - 1 downTo 0) {
+                val card = zoneCards[i]
+                when(card.origin) {
+                    CardOrigin.DECK -> {
+                        // move sideboarded cards back to deck
+                        if (key == Zone.SIDEBOARD) {
+                            events.addAll(changeZone(card.id, Zone.LIBRARY).events)
+                        }
+                    }
+                    CardOrigin.SIDEBOARD -> {
+                        events.addAll(changeZone(card.id, Zone.SIDEBOARD).events)
+                    }
+                    CardOrigin.TOKEN -> {
+                        events.add(BoardDiffEvent.DestroyCard(card.id))
+                        zoneCards.remove(card)
+                    }
+                }
             }
 
             if (key != Zone.LIBRARY && key != Zone.SIDEBOARD) {
@@ -117,7 +128,9 @@ class BoardManager(private val owner: UUID, private val ownerIndex: Int, private
     }
 
     private fun findCard(id: CardId): BoardCard? {
-        return cards.values.flatten().find { it.id == id }
+//        return cards.values.flatten().find { it.id == id }
+        val zone = CardIdProvider.getZone(id)
+        return cards[zone]!!.find { it.id == id }
     }
 
     fun getState(): Map<Zone, List<CardState>> {
@@ -127,6 +140,10 @@ class BoardManager(private val owner: UUID, private val ownerIndex: Int, private
     fun changeZone(cardId: CardId, newZone: Zone, playFaceDown: Boolean = false): MoveZoneResult {
         val events = mutableListOf<BoardDiffEvent>()
         val card = findCard(cardId) ?: return MoveZoneResult(events, cardId)
+
+        if (card.zone == newZone) {
+            return MoveZoneResult(events, cardId)
+        }
 
         if (card.origin == CardOrigin.TOKEN) {
             cards[card.zone]!!.remove(card)
@@ -208,15 +225,17 @@ class BoardManager(private val owner: UUID, private val ownerIndex: Int, private
         return events
     }
 
-    fun getVirtualIds(): Map<UUID, OracleId> {
-        cards[Zone.LIBRARY]!!.forEach {
+    fun getVirtualIds(): Map<Zone, Map<Id, OracleId>> {
+        cards.values.flatten().forEach {
             it.virtualId = UUID.randomUUID()
         }
 
-        return cards[Zone.LIBRARY]!!
-            .map { Pair(it.virtualId!!, it.card.id) }
-            .shuffled()
-            .toMap()
+        return cards.entries.associate { (zone, cards) ->
+            val cardMap = cards.map { Pair(it.virtualId!!, it.card.id) }
+                .shuffled()
+                .toMap()
+            Pair(zone, cardMap)
+        }
     }
 
     fun scry(count: Int): List<BoardDiffEvent> {
@@ -224,9 +243,9 @@ class BoardManager(private val owner: UUID, private val ownerIndex: Int, private
         return (1..count).flatMap { revealTo(library[library.size - it].id, owner) }
     }
 
-    fun getCardsFromVirtualIds(virtualIds: List<Id>): List<CardId> {
-        val cards = cards[Zone.LIBRARY]!!.associateBy { it.virtualId }
-        return virtualIds.mapNotNull { cards[it]?.id }
+    fun getCardsFromVirtualIds(virtualIds: List<Id>): List<BoardCard> {
+        val cards = cards.values.flatten().associateBy { it.virtualId }
+        return virtualIds.mapNotNull { cards[it] }
     }
 
     fun createCard(oracleCard: CardDao.CardEntity): List<BoardDiffEvent> {
@@ -247,6 +266,25 @@ class BoardManager(private val owner: UUID, private val ownerIndex: Int, private
             BoardDiffEvent.CreateCard(newCard.getState(index + 1)),
             BoardDiffEvent.RevealCard(newCard.id, newCard.visibility.toList())
         )
+    }
+
+    fun untapAll(): List<BoardDiffEvent> {
+        return cards[Zone.BATTLEFIELD]!!
+            .filter { it.pivot != Pivot.UNTAPPED }
+            .flatMap { setAttribute(it.id, CardAttribute.PIVOT,  Pivot.UNTAPPED.ordinal) }
+
+    }
+
+    fun sideboard(main: List<Id>, side: List<Id>): List<BoardDiffEvent> {
+        val mainCards = getCardsFromVirtualIds(main)
+        val sideCards = getCardsFromVirtualIds(side)
+        mainCards.forEach {
+            it.origin = CardOrigin.DECK
+        }
+        sideCards.forEach {
+            it.origin = CardOrigin.SIDEBOARD
+        }
+        return reset()
     }
 
     data class MoveZoneResult(val events: List<BoardDiffEvent>, val newCardId: CardId) {
