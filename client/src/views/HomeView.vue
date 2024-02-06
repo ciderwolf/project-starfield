@@ -1,14 +1,11 @@
 <script setup lang="ts">
-import { createGame, joinGame, login } from '@/api';
+import { createGame } from '@/api';
 import Modal from '@/components/Modal.vue';
 import StyleButton from '@/components/StyleButton.vue';
 import GameListingRow from '@/components/GameListingRow.vue';
 import { useGameStore } from '@/stores/games';
-import { useDataStore } from '@/stores/data';
 import { ref } from 'vue';
-import { getDecks, newDeck, submitDeck } from '@/api/deck';
 import { useRouter } from 'vue-router';
-import { ws } from '@/ws';
 
 const showCreateGameModal = ref(false);
 const gameName = ref('');
@@ -23,25 +20,11 @@ function submitGame() {
   });
 }
 
-
-async function loginClicked() {
-  const userInfo = await login('myname');
-  const data = useDataStore();
-  data.login(userInfo.username, userInfo.id);
-  ws.reconnect();
-  const listings = await getDecks();
-  if (!listings.some(d => d.name === 'TestDeck')) {
-    const created = await newDeck();
-    await submitDeck(created.id, 'TestDeck', ['Serum Visions', 'Lightning Bolt', 'Path to Exile'], []);
-  }
-}
-
 </script>
 
 <template>
   <main>
     <h1>Home</h1>
-    <style-button @click="loginClicked">Login</style-button>
     <router-link to="/decks">
       <style-button>Decks</style-button>
     </router-link>

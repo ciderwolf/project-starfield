@@ -1,11 +1,24 @@
 <script setup lang="ts">
-import { RouterView } from 'vue-router'
+import { RouterView, useRouter } from 'vue-router'
 import { ws } from './ws'
+import { authenticate } from './api';
+import { ref } from 'vue';
 console.log(ws);
+
+const router = useRouter();
+const loaded = ref(false)
+authenticate().then((isLoggedIn) => {
+  if (!isLoggedIn) {
+    router.push('/login');
+  }
+  loaded.value = true;
+});
+
 </script>
 
 <template>
-  <RouterView />
+  <RouterView v-if="loaded" />
+  <div v-else>Loading...</div>
 </template>
 
 <style>

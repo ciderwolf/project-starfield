@@ -7,27 +7,51 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
+import io.ktor.util.pipeline.*
 import kotlinx.serialization.Serializable
 import starfield.data.dao.UserDao
 import starfield.routing.deckRouting
 import starfield.routing.engineRouting
 import starfield.routing.gameRouting
+import java.util.*
 
 fun Application.configureRouting() {
     routing {
 
         post("/login") {
-            val name = call.receive<Map<String, String>>()["name"] ?: return@post call.respondError(
-                "A name parameter must be specified")
+            val params = call.receive<Map<String, String>>()
+            val username = params["name"]
+            val password = params["password"]
+            if (username == null || password == null) {
+                return@post call.respondError("Username and password must be supplied")
+            }
+            val result = UserDao().login(username, password) ?: return@post call.respondError("Invalid username or password")
+
+            initSession(username, result)
+        }
+
+        post("/create-account") {
+            val params = call.receive<Map<String, String>>()
+            val username = params["name"]
+            val password = params["password"]
+            if (username == null || password == null) {
+                return@post call.respondError("Username and password must be supplied")
+            }
+            if (username == "" || password == "") {
+                return@post call.respondError("Username and password must be supplied")
+            }
+
+            val dao = UserDao()
+            val uid = dao.registerUser(username, password) ?: return@post call.respondError("That username is already taken")
+            initSession(username, uid)
+        }
+
+        get("/authenticate") {
             val currentSession = call.sessions.get<UserSession>()
             if (currentSession == null) {
-                val session = UserSession.createNew(name)
-                UserDao().login(name, session.id)
-                call.sessions.set(session)
-                call.respondSuccess(session)
+                call.respondSuccess(false)
             } else {
-                UserDao().login(currentSession.username, currentSession.id)
-                call.respondSuccess(currentSession)
+                call.respondSuccess(true)
             }
         }
 
@@ -51,6 +75,17 @@ fun Application.configureRouting() {
         static("/static") {
             resources("static")
         }
+    }
+}
+
+suspend fun PipelineContext<Unit, ApplicationCall>.initSession(username: String, userId: UUID) {
+    val currentSession = call.sessions.get<UserSession>()
+    if (currentSession == null) {
+        val session = UserSession.createNew(username, userId)
+        call.sessions.set(session)
+        call.respondSuccess(session)
+    } else {
+        call.respondSuccess(currentSession)
     }
 }
 

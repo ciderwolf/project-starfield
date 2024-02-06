@@ -16,7 +16,7 @@ class UserSession(val username: String, @Serializable(with = UUIDSerializer::cla
     companion object {
         private var lastId = AtomicLong(0)
 
-        fun createNew(username: String) = UserSession(username, UUID.randomUUID())
+        fun createNew(username: String, userId: UUID) = UserSession(username, userId)
     }
 
     override fun equals(other: Any?): Boolean {

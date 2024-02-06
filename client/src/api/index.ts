@@ -15,8 +15,21 @@ export async function getGames(): Promise<GameListing[]> {
   return response;
 }
 
-export async function login(name: string) {
-  const response = await postJson('login', { name });
+interface UserInfo {
+  username: string;
+  id: string;
+}
+
+export async function login(name: string, password: string): Promise<JsonResponse<UserInfo>> {
+  return postJsonRaw<UserInfo>('login', { name, password });
+}
+
+export async function createAccount(name: string, password: string): Promise<JsonResponse<UserInfo>> {
+  return postJsonRaw<UserInfo>('create-account', { name, password });
+}
+
+export async function authenticate(): Promise<boolean> {
+  const response = await getJson('authenticate');
   return response;
 }
 
@@ -35,6 +48,26 @@ export async function postJson(path: string, payload: any): Promise<any> {
     body: JSON.stringify(payload),
   });
   return (await response.json()).content;
+}
+
+type JsonResponse<T> = {
+  success: true;
+  content: T;
+} | {
+  success: false;
+  message: string;
+}
+
+export async function postJsonRaw<T>(path: string, payload: any): Promise<JsonResponse<T>> {
+  const response = await fetch('/api/' + path,
+  {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload),
+  });
+  return response.json();
 }
 
 export async function deleteJson(path: string): Promise<any> {
