@@ -30,9 +30,11 @@ async function deleteDeckClicked(e: MouseEvent, id: string) {
 
 <template>
   <div id="decks">
-    <h1>Decks</h1>
-    <style-button @click="createDeck">+ New Deck</style-button>
-    <div class="deck-cards">
+    <div class="title">
+      <h2>Decks</h2>
+      <style-button @click="createDeck" small>+ New Deck</style-button>
+    </div>
+    <div class="deck-cards" v-if="Object.keys(decks.decks).length > 0">
       <div v-for="deck in decks.decks" :key="deck.id">
         <router-link :to="{ name: 'deckbuilder', params: { id: deck.id } }" class="deck-card">
           <img :alt="`${deck.name} Thumnail`" class="deck-card-thumnail"
@@ -43,20 +45,46 @@ async function deleteDeckClicked(e: MouseEvent, id: string) {
         </router-link>
       </div>
     </div>
+    <div v-else class="empty-container-title">
+      <h3>You have no decks.</h3>
+      <p>Click on '+ New Deck' to create one.</p>
+    </div>
   </div>
 </template>
 
 <style scoped>
+.title {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.empty-container-title {
+  margin-top: 1em;
+  text-align: center;
+  color: #333;
+  font-style: italic;
+}
+
 .deck-cards {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
+  background-color: #eee;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  max-width: 80%;
+  width: fit-content;
+  margin: 0 auto;
+  padding: 1em 5em;
+  margin-bottom: 200px;
 }
 
 .deck-card {
   display: flex;
   flex-direction: column;
   text-decoration: none;
+  text-align: center;
   color: #000;
   margin: 0.5em;
   box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.5);

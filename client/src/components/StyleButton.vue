@@ -23,6 +23,9 @@ withDefaults(defineProps<{ type?: string, disabled?: boolean, small?: boolean }>
   cursor: pointer;
   font-size: 1.25em;
   padding: 0.5em 1em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .button.small {

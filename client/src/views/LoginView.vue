@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import StyleButton from '@/components/StyleButton.vue';
+import LoadingButton from '@/components/LoadingButton.vue';
 import { login } from '@/api';
 import { useDataStore } from '@/stores/data';
 import { ws } from '@/ws';
@@ -35,7 +35,7 @@ async function loginClicked(e: Event) {
       <input type="text" id="username" v-model="username">
       <label for="password">Password</label>
       <input type="password" id="password" v-model="password">
-      <style-button @click="loginClicked">Log In</style-button>
+      <loading-button :on-click="loginClicked">Log In</loading-button>
       <span class="create-account-text">or, <router-link to="/create-account">create an account</router-link>.</span>
     </form>
   </div>

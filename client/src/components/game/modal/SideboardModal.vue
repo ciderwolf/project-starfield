@@ -3,6 +3,7 @@ import { getVirtualSideboardingIds } from '@/api/game';
 import type { OracleCard } from '@/api/message';
 import Modal from '@/components/Modal.vue'
 import StyleButton from '@/components/StyleButton.vue';
+import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import CardPreview from '@/components/deck/CardPreview.vue';
 import { client } from '@/ws';
 import { ref } from 'vue';
@@ -65,7 +66,7 @@ async function submitSideboardChoices() {
 <template>
   <Modal :visible="visible" title="Sideboard" @close="visible = false">
     <h2>Sideboard</h2>
-    <div class="deck-chooser">
+    <div class="deck-chooser" v-if="maindeckCards.length > 0 || sideboardCards.length > 0">
       <div class="deck-column">
         <h3>Maindeck ({{ maindeckCards.length }})</h3>
         <div class="card" v-for="card of maindeckCards" :key="card.virtualId">
@@ -81,6 +82,7 @@ async function submitSideboardChoices() {
         </div>
       </div>
     </div>
+    <div class="loading-screen" v-else><loading-spinner /> Loading...</div>
     <style-button @click="submitSideboardChoices">Confirm Deck</style-button>
   </Modal>
 </template>
@@ -108,5 +110,12 @@ async function submitSideboardChoices() {
   overflow: hidden;
   white-space: nowrap;
   width: 300px;
+}
+
+.loading-screen {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
 }
 </style>

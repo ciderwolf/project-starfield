@@ -3,6 +3,7 @@ import { RouterView, useRouter } from 'vue-router'
 import { ws } from './ws'
 import { authenticate } from './api';
 import { ref } from 'vue';
+import LoadingSpinner from './components/LoadingSpinner.vue';
 console.log(ws);
 
 const router = useRouter();
@@ -18,8 +19,21 @@ authenticate().then((isLoggedIn) => {
 
 <template>
   <RouterView v-if="loaded" />
-  <div v-else>Loading...</div>
+  <div v-else class="loading-view"><loading-spinner /> Loading...</div>
 </template>
+
+<style scoped>
+.loading-view {
+  margin: 0 auto;
+  margin-top: 25%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: fit-content;
+  font-size: 2.5em;
+  font-weight: 300;
+}
+</style>
 
 <style>
 body {
@@ -40,5 +54,9 @@ select {
 input:focus,
 select:focus {
   border-color: rgb(78, 128, 220);
+}
+
+a {
+  text-decoration: none;
 }
 </style>

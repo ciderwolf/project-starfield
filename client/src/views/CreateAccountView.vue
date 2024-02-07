@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import StyleButton from '@/components/StyleButton.vue';
+import LoadingButton from '@/components/LoadingButton.vue';
 import { createAccount, login } from '@/api';
 import { useDataStore } from '@/stores/data';
 import { ws } from '@/ws';
@@ -44,7 +44,7 @@ async function createAccountClicked(e: Event) {
       <label for="repeat-password">Repeat Password</label>
       <input type="password" id="repeat-password" v-model="repeatPassword">
 
-      <style-button @click="createAccountClicked">Create Account</style-button>
+      <loading-button :on-click="createAccountClicked">Create Account</loading-button>
     </form>
   </div>
 </template>
