@@ -111,6 +111,7 @@ export type DeckListing = {
 export type DeckCard = Card & {
   type: string;
   count: number;
+  id: string;
 }
 
 
@@ -118,6 +119,7 @@ export type Card = {
   name: string;
   oracleId: string;
   image: string;
+  backImage: string | null;
 }
 
 export type OracleCard = {

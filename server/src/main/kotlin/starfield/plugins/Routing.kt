@@ -17,63 +17,59 @@ import java.util.*
 
 fun Application.configureRouting() {
     routing {
+        route("/api") {
+            post("/login") {
+                val params = call.receive<Map<String, String>>()
+                val username = params["name"]
+                val password = params["password"]
+                if (username == null || password == null) {
+                    return@post call.respondError("Username and password must be supplied")
+                }
+                val result = UserDao().login(username, password) ?: return@post call.respondError("Invalid username or password")
 
-        post("/login") {
-            val params = call.receive<Map<String, String>>()
-            val username = params["name"]
-            val password = params["password"]
-            if (username == null || password == null) {
-                return@post call.respondError("Username and password must be supplied")
-            }
-            val result = UserDao().login(username, password) ?: return@post call.respondError("Invalid username or password")
-
-            initSession(username, result)
-        }
-
-        post("/create-account") {
-            val params = call.receive<Map<String, String>>()
-            val username = params["name"]
-            val password = params["password"]
-            if (username == null || password == null) {
-                return@post call.respondError("Username and password must be supplied")
-            }
-            if (username == "" || password == "") {
-                return@post call.respondError("Username and password must be supplied")
+                initSession(username, result)
             }
 
-            val dao = UserDao()
-            val uid = dao.registerUser(username, password) ?: return@post call.respondError("That username is already taken")
-            initSession(username, uid)
-        }
+            post("/create-account") {
+                val params = call.receive<Map<String, String>>()
+                val username = params["name"]
+                val password = params["password"]
+                if (username == null || password == null) {
+                    return@post call.respondError("Username and password must be supplied")
+                }
+                if (username == "" || password == "") {
+                    return@post call.respondError("Username and password must be supplied")
+                }
 
-        get("/authenticate") {
-            val currentSession = call.sessions.get<UserSession>()
-            if (currentSession == null) {
-                call.respondSuccess(false)
-            } else {
-                call.respondSuccess(true)
+                val dao = UserDao()
+                val uid = dao.registerUser(username, password) ?: return@post call.respondError("That username is already taken")
+                initSession(username, uid)
+            }
+
+            get("/authenticate") {
+                val currentSession = call.sessions.get<UserSession>()
+                if (currentSession == null) {
+                    call.respondSuccess(false)
+                } else {
+                    call.respondSuccess(true)
+                }
+            }
+
+            route("/lobbies") {
+                gameRouting()
+            }
+
+            route("/game") {
+                engineRouting()
+            }
+
+            route("/deck") {
+                deckRouting()
             }
         }
 
-        get("/") {
-            call.respondText("Hello World!")
-        }
-
-        route("/lobbies") {
-            gameRouting()
-        }
-
-        route("/game") {
-            engineRouting()
-        }
-
-        route("/deck") {
-            deckRouting()
-        }
-
-        // Static plugin. Try to access `/static/index.html`
-        static("/static") {
-            resources("static")
+        singlePageApplication {
+            vue("client-app")
         }
     }
 }

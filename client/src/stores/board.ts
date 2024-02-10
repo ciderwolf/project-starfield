@@ -1,7 +1,7 @@
 import { reactive } from 'vue'
 import { defineStore } from 'pinia'
 import { ScreenPosition, ZONES, OPPONENT_ZONES, findZoneByName, getZones, zoneNameToId } from '@/zones';
-import type { BoardDiffEvent, BoardCard, ChangeAttributeEvent, ChangeIndexEvent, ChangePlayerAttribute, ChangePositionEvent, ChangeZoneEvent, PlayerState, ScoopDeck, ShuffleDeck, Zone, Card, OracleCard, CreateCard, DestroyCard } from '@/api/message';
+import type { BoardDiffEvent, BoardCard, ChangeAttributeEvent, ChangeIndexEvent, ChangePlayerAttribute, ChangePositionEvent, ChangeZoneEvent, PlayerState, ScoopDeck, ShuffleDeck, Zone, OracleCard, CreateCard, DestroyCard } from '@/api/message';
 import { useZoneStore } from './zone';
 import { useDataStore } from './data';
 

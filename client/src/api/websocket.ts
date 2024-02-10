@@ -1,18 +1,20 @@
 import { useGameStore } from "@/stores/games";
 import type { ClientMessage, WebSocketMessage } from "./message";
 import { useDataStore } from "@/stores/data";
-import router from '@/router';
 import { useBoardStore } from "@/stores/board";
 import { useAlertsStore } from "@/stores/alerts";
 
+function websocketUrl() {
+  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  return `${protocol}//${window.location.host}/ws`;
+}
+
 export class WebSocketConnection {
 
-  private ws: WebSocket;
+  private ws!: WebSocket;
 
   constructor() {
-    this.ws = new WebSocket('ws://127.0.0.1:8080/ws');
-    this.ws.onmessage = this.onMessage;
-    this.ws.onclose = this.attemptReconnect;
+    this.reconnect();
   }
 
   onMessage(event: MessageEvent) {
@@ -69,7 +71,7 @@ export class WebSocketConnection {
   }
 
   reconnect() {
-    this.ws = new WebSocket('ws://127.0.0.1:8080/ws');
+    this.ws = new WebSocket(websocketUrl());
     this.ws.onmessage = this.onMessage;
     this.ws.onclose = this.attemptReconnect;
   }
