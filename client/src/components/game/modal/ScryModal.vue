@@ -21,7 +21,7 @@ const cards = computed(() => {
 });
 
 const cardOrder = computed(() => {
-  const library = board.cards[ZONES.library.id];
+  const library = board.cards[ZONES.library.id] ?? [];
   const cardsToScry = Math.min(count.value, board.cards[ZONES.library.id]?.length ?? 0);
   return library.slice(-cardsToScry)
     .map(card => card.id.toString())

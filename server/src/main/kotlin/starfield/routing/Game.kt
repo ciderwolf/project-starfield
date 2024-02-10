@@ -2,18 +2,15 @@ package starfield.routing
 
 import io.ktor.http.*
 import io.ktor.server.application.*
-import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
 import kotlinx.serialization.Serializable
-import starfield.plugins.Id
 import starfield.data.dao.CardDao
 import starfield.findGame
 import starfield.engine.OracleId
 import starfield.engine.Zone
-import starfield.plugins.UserSession
-import starfield.plugins.respondError
-import starfield.plugins.respondSuccess
+import starfield.games
+import starfield.plugins.*
 
 @Serializable
 data class VirtualIdsMessage(
@@ -67,6 +64,32 @@ fun Route.engineRouting() {
         val side = ids[Zone.SIDEBOARD]!!
 
         call.respondSuccess(SideboardingVirtualIdsMessage(main, side, oracleInfo))
+    }
+
+    post("{id}/spectate") {
+        val session = call.sessions.get<UserSession>() ?: return@post call.respondError(
+            "You must be logged in",
+            status = HttpStatusCode.Unauthorized
+        )
+        val preexistingGame = findGame(session.id)
+        if (preexistingGame != null) {
+            return@post call.respondError("Can't spectate while in another game")
+        }
+        val gameId = tryParseUuid(call.parameters["id"]) ?: return@post call.respondError("Invalid game id")
+        val game = games[gameId] ?: return@post call.respondError("Game not found", HttpStatusCode.NotFound)
+        game.addSpectator(session.user())
+        call.respondSuccess(true)
+    }
+
+    delete("{id}/spectate") {
+        val session = call.sessions.get<UserSession>() ?: return@delete call.respondError(
+            "You must be logged in",
+            status = HttpStatusCode.Unauthorized
+        )
+        val gameId = tryParseUuid(call.parameters["id"]) ?: return@delete call.respondError("Invalid game id")
+        val game = games[gameId] ?: return@delete call.respondError("Game not found", HttpStatusCode.NotFound)
+        game.removeSpectator(session.id)
+        call.respondSuccess(true)
     }
 
     get("search/tokens") {

@@ -300,6 +300,7 @@ export const useBoardStore = defineStore('board', () => {
     card.pivot = Pivot.UNTAPPED;
     card.counter = 0;
     card.transformed = false;
+    card.flipped = false;
   }
 
   function processOracleInfo(newCards: { [cardId: CardId]: string }, newOracleInfo: { [oracleId: OracleId]: OracleCard }) {
@@ -316,6 +317,14 @@ export const useBoardStore = defineStore('board', () => {
     } else {
       return false;
     }
+  }
+
+  function zoneIsMovable(zoneId: number): boolean {
+    const pos = zoneId < 0 ? ScreenPosition.SECONDARY : ScreenPosition.PRIMARY;
+    const data = useDataStore();
+    const myAttributes = players[data.userId!];
+    
+    return pos == ScreenPosition.PRIMARY && myAttributes?.index === 0;
   }
 
   function updateHandPos(id: number, bounds: DOMRect) {
@@ -370,7 +379,7 @@ export const useBoardStore = defineStore('board', () => {
     return zoneNameToId(zone, pos);
   }
 
-  return { setBoardState, processBoardUpdate, processOracleInfo, cardToOracleId, oracleInfo, updateHandPos, cards, moveCard, cardIsMovable, getScreenPositionFromCard, players }
+  return { setBoardState, processBoardUpdate, processOracleInfo, cardToOracleId, oracleInfo, updateHandPos, cards, moveCard, cardIsMovable, zoneIsMovable, getScreenPositionFromCard, players }
 });
 
 function recalculateHandOrder(handCards: BoardCard[], handBounds: DOMRect) {

@@ -34,7 +34,7 @@ function rejoinGameClicked(game: GameListing) {
 }
 
 function spectateGameClicked(id: string) {
-  console.log('spectate game', id);
+  router.push(`/game/${id}`);
 }
 
 </script>

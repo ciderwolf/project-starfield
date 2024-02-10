@@ -15,3 +15,7 @@ fun findLobby(userId: UUID): Lobby? {
 fun findGame(userId: UUID): Game? {
     return games.values.find { it.hasPlayer(userId) }
 }
+
+fun findGameSpectating(userId: UUID): Game? {
+    return games.values.find { it.hasSpectator(userId) }
+}

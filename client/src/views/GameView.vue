@@ -9,20 +9,32 @@ import SideboardModal from '@/components/game/modal/SideboardModal.vue';
 import CreateCardModal from '@/components/game/modal/CreateCardModal.vue';
 import CardPreview from '@/components/game/CardPreview.vue';
 import { OPPONENT_ZONES, ZONES } from '@/zones';
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, watchEffect, computed } from 'vue';
 import { client } from '@/ws';
-import { endGame } from '@/api/lobby';
-import { useRoute, useRouter } from 'vue-router';
 import { useBoardStore } from '@/stores/board';
-import { getVirtualIds } from '@/api/game';
+import { beginSpectating, getVirtualIds, stopSpectating } from '@/api/game';
 import { useNotificationsCache } from '@/cache/notifications';
 import type { ComponentExposed } from 'vue-component-type-helpers';
+import { useGameStore } from '@/stores/games';
+import { useDataStore } from '@/stores/data';
+import { useRouter, useRoute } from 'vue-router';
 
 
 const myZones = ref<HTMLElement[]>([]);
 const opponentZones = ref<HTMLElement[]>([]);
-const route = useRoute();
 const router = useRouter();
+const route = useRoute();
+const data = useDataStore();
+const games = useGameStore();
+const gameId = ref('');
+const isSpectator = computed(() => {
+  if (games.isLoaded === false) {
+    return true;
+  }
+  const game = games.getGame(gameId.value);
+  return game?.players.find(p => p.id === data.userId) === undefined;
+});
+
 
 function checkHotkey(e: KeyboardEvent) {
   if ((e.target as HTMLElement).nodeName === "INPUT") {
@@ -117,7 +129,35 @@ onMounted(() => {
   }
 });
 
+watchEffect(() => {
+  console.log('watchEffect', games.isLoaded);
+  if (games.isLoaded) {
+    gameId.value = route.params.id as string;
+
+    const game = games.getGame(gameId.value);
+    console.log('watchEffect', game, gameId, route.params.id, games.games);
+    if (game === undefined) {
+      router.push('/');
+      return;
+    }
+    handleSpectatorJoin();
+  }
+});
+
+function handleSpectatorJoin() {
+  if (isSpectator.value) {
+    beginSpectating(gameId.value);
+  }
+}
+
+function handleSpectatorLeave() {
+  if (isSpectator.value) {
+    stopSpectating(gameId.value);
+  }
+}
+
 onUnmounted(() => {
+  handleSpectatorLeave();
   window.removeEventListener('keypress', checkHotkey);
 });
 
@@ -133,7 +173,10 @@ onUnmounted(() => {
     <sideboard-modal ref="sideboardModal" />
     <create-card-modal ref="createCardModal" />
     <card-preview ref="cardPreview" />
-    <div class="game-options">
+    <div class="game-options" v-if="isSpectator">
+      <router-link to="/"><button>Go Home</button></router-link>
+    </div>
+    <div class="game-options" v-else>
       <router-link to="/"><button>Go Home</button></router-link>
       <hr>
       <button @click="endGameClicked">End Game</button>

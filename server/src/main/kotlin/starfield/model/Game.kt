@@ -15,6 +15,7 @@ data class GameState(val id: Id, val name: String, val players: List<PlayerState
 class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserCollection<GameState>() {
 
     private val players: List<Player>
+    private val spectators: MutableList<User> = mutableListOf()
     val cardIdProvider = CardIdProvider()
     val cardInfoProvider = CardInfoProvider(players.values.flatMap { it.maindeck + it.sideboard })
 
@@ -26,6 +27,10 @@ class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserColle
 
     fun hasPlayer(userId: UUID): Boolean {
         return players.any { it.user.id == userId }
+    }
+
+    fun subscribers(): List<User> {
+        return users() + spectators
     }
 
     override fun users(): List<User> {
@@ -66,14 +71,14 @@ class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserColle
             }
         }
 
-        broadcast(BoardUpdateMessage(messages))
+        broadcastBoardUpdate(messages)
 
         val revealedCardIds = messages.filterIsInstance<BoardDiffEvent.RevealCard>()
             .associate { Pair(it.card, player.getOracleCard(it.card)) }
         val revealedCards = revealedCardIds.values
             .associateWith { cardInfoProvider[it]!!.toOracleCard() }
 
-        users().forEach { user ->
+        subscribers().forEach { user ->
             val playerReveals = mutableMapOf<CardId, OracleId>()
             val oracleCards = mutableMapOf<OracleId, CardDao.OracleCard>()
             messages.filterIsInstance<BoardDiffEvent.RevealCard>()
@@ -101,9 +106,27 @@ class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserColle
         return player.getVirtualIds()
     }
 
-    fun sideboardPlayer(userId: UUID, main: List<Id>, side: List<Id>) {
-        val player = players.find { it.user.id == userId } ?: return
-        player.sideboard(main, side)
+    suspend fun addSpectator(user: User) {
+        if (spectators.any { it.id == user.id }) {
+            return
+        }
+        spectators.add(user)
+        user.connection?.send(StateMessage(currentState(user.id), "game"))
+    }
+
+    fun removeSpectator(userId: UUID) {
+        spectators.removeIf { it.id == userId }
+    }
+
+    fun hasSpectator(userId: UUID): Boolean {
+        return spectators.any { it.id == userId }
+    }
+
+    private suspend fun broadcastBoardUpdate(messages: List<BoardDiffEvent>) {
+        val all = subscribers()
+        for(user in all) {
+            user.connection?.send(BoardUpdateMessage(messages))
+        }
     }
 }
 

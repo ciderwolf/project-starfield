@@ -89,7 +89,7 @@ async function deleteDeckClicked(e: MouseEvent, id: string) {
   margin: 0.5em;
   box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.5);
   width: 250px;
-
+  background: white;
 }
 
 .deck-card:hover {

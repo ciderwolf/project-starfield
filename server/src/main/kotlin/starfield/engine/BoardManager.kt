@@ -182,7 +182,7 @@ class BoardManager(private val owner: UUID, private val ownerIndex: Int, private
 
     private fun revealToAll(card: BoardCard): List<BoardDiffEvent> {
         val justAdded = mutableListOf<Id>()
-        game.users().forEach {
+        game.subscribers().forEach {
             if (card.visibility.add(it.id)) {
                 justAdded.add(it.id)
             }

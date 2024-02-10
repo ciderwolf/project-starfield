@@ -102,8 +102,11 @@ fun disconnect(connection: WSConnection) {
     lobby?.disconnectUser(connection)
     if (lobby != null) return
 
-    val draft = findGame(connection.id)
-    draft?.disconnectUser(connection)
+    val game = findGame(connection.id)
+    game?.disconnectUser(connection)
+
+    val spectatingGame = findGameSpectating(connection.id)
+    spectatingGame?.removeSpectator(connection.id)
 }
 
 

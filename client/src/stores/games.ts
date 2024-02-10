@@ -8,10 +8,12 @@ type GameMap = { [id: string]: GameListing }
 
 export const useGameStore = defineStore('games', () => {
   const router = useRouter();
+  const isLoaded = ref(false);
   getGames().then((gameInfo) => {
     for(const game of gameInfo) {
       games[game.id] = game;
     }
+    isLoaded.value = true;
   });
 
   function processListing(listing: GameListing) {
@@ -49,5 +51,5 @@ export const useGameStore = defineStore('games', () => {
   }
 
   const games = reactive<GameMap>({});
-  return { games, processListing, processDeleteListing, processState, getGame, gameState, lobbyState };
+  return { games, processListing, processDeleteListing, processState, getGame, gameState, lobbyState, isLoaded };
 });

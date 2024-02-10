@@ -2,7 +2,7 @@
 import { onMounted, ref } from 'vue';
 import DeckPreview from '@/components/deck/DeckPreview.vue';
 import LoadingButton from '@/components/LoadingButton.vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useDecksCache } from '@/cache/decks';
 import type { Deck } from '@/api/message';
 import { useDecksStore } from '@/stores/decks';
@@ -14,6 +14,7 @@ const deck = ref<Deck | null>(null);
 const route = useRoute();
 const deckId = route.params.id as string;
 const decks = useDecksCache();
+const router = useRouter();
 
 onMounted(async () => {
   const decklist = await decks.get(deckId);
@@ -44,11 +45,20 @@ const submitDeckClicked = async () => {
   sideboard.value = decklist.sideboard.map(card => `${card.count} ${card.name}`).join('\n');
 }
 
+async function submitDeckAndCloseClicked() {
+  await submitDeckClicked();
+  router.push('/');
+}
+
 </script>
 
 <template>
   <div id="decklist">
-    <h1>Decklist <span v-if="deck !== null">&mdash; <input type=text v-model="deck.name" id="deck-name-input"></span></h1>
+    <div class="title" v-if="deck !== null">
+      <h1>Decklist &mdash;</h1>
+      <input type=text v-model="deck.name" id="deck-name-input">
+      <loading-button :on-click="submitDeckAndCloseClicked">Save deck and close</loading-button>
+    </div>
     <div id="decklist-deckbuilder">
       <div id="deck-inputs">
         <textarea v-model="maindeck" placeholder="Maindeck (60 cards)"></textarea>
@@ -64,8 +74,14 @@ const submitDeckClicked = async () => {
 </template>
 
 <style scoped>
+.title {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
 #deck-name-input {
-  font-size: 1em;
+  font-size: 1.75em;
 }
 
 #decklist-deckbuilder {
@@ -88,5 +104,17 @@ const submitDeckClicked = async () => {
 
 #decklist #sideboard-input {
   min-height: 150px;
+}
+
+.submit-controls {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  width: 100%;
+}
+
+.submit-controls button {
+  margin: 5px;
+  width: 100%;
 }
 </style>

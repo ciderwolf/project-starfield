@@ -337,36 +337,22 @@ export function getMoveZoneActions(exceptZone: number, emit: ActionEmit): TextOp
     .filter(option => option.title !== zoneFromIndex(exceptZone)?.name);
 }
 
-export function getZoneContextMenu(zoneId: number, emit: ActionEmit): ContextMenuDefinition {
-  return {
-    options: [
-      {
-        type: 'text',
-        title: 'View all cards',
-        effect: () => emit('view-all-cards')
-      },
-      // {
-      //   type: 'seperator'
-      // },
-      // {
-      //   type: 'submenu',
-      //   title: 'Reveal all to...',
-      //   options: getRevealToPlayersSubmenu(emit)
-      // },
-      // {
-      //   type: 'text',
-      //   title: 'Reveal all',
-      //   effect: () => {
-      //     emit('reveal-all')
-      //   }
-      // },
-      {
-        type: 'submenu',
-        title: 'Move all to zone...',
-        options: getMoveZoneActions(zoneId, emit)
-      }
-    ]
+export function getZoneContextMenu(zoneId: number, isInteractive: boolean, emit: ActionEmit): ContextMenuDefinition {
+  const options: ContextMenuOption[] = [
+    {
+      type: 'text',
+      title: 'View all cards',
+      effect: () => emit('view-all-cards')
+    }
+  ];
+  if (isInteractive) {
+    options.push({
+      type: 'submenu',
+      title: 'Move all to zone...',
+      options: getMoveZoneActions(zoneId, emit)
+    });
   }
+  return { options };
 }
 
 function getRevealToPlayersSubmenu(emit: ActionEmit) {

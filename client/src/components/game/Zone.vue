@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ZoneConfig } from '@/zones';
-import { onMounted, onUnmounted, reactive, ref } from 'vue';
+import { onMounted, onUnmounted, reactive, ref, computed } from 'vue';
 import { useBoardStore } from '@/stores/board';
 import { useZoneStore } from '@/stores/zone';
 import ContextMenu from '@/components/ContextMenu.vue';
@@ -15,9 +15,11 @@ const zoneBounds = ref<HTMLElement | null>(null);
 const zoneRect = ref<DOMRect | undefined>(undefined);
 const board = useBoardStore();
 const zones = useZoneStore();
+const isMe = computed(() => board.zoneIsMovable(props.zone.id));
+const hasCards = computed(() => board.cards[props.zone.id]?.length > 0);
 
 function resetZoneRect() {
-  zoneRect.value = zoneBounds.value?.getBoundingClientRect()!;
+  zoneRect.value = zoneBounds.value?.getBoundingClientRect();
   zones.updateZoneBounds(props.zone.id, zoneRect.value!);
 }
 
@@ -26,7 +28,7 @@ const menuPos = reactive({ x: 0, y: 0 });
 const menuDefinition = ref<ContextMenuDefinition>({ options: [] });
 function showOptions(e: MouseEvent) {
 
-  menuDefinition.value = getZoneContextMenu(props.zone.id, doMenuAction);
+  menuDefinition.value = getZoneContextMenu(props.zone.id, isMe.value, doMenuAction);
 
   showMenu.value = true;
   menuPos.x = e.clientX;
@@ -67,10 +69,9 @@ onUnmounted(() => {
     <card-dispatch v-for="card in board.cards[zone.id]" :key="card.id" :zone="zone.type" :card="card"
       :zone-rect="zoneRect" />
     <div class="zone-bounds" ref="zoneBounds" :style="zone.pos">
-      <span class="zone-bubble zone-count" v-if="zone.layout === 'stack' && board.cards[zone.id].length > 0">
+      <span class="zone-bubble zone-count" v-if="zone.layout === 'stack' && hasCards">
         {{ board.cards[zone.id].length }}</span>
-      <span class="zone-bubble zone-options"
-        v-if="zone.layout === 'stack' && zone.type != 'LIBRARY' && board.cards[zone.id].length > 0"
+      <span class="zone-bubble zone-options" v-if="zone.layout === 'stack' && zone.type != 'LIBRARY' && hasCards"
         @click="showOptions">≡</span>
     </div>
     <context-menu v-if="showMenu" v-click-outside="() => showMenu = false" :real-pos="menuPos" :menu="menuDefinition" />

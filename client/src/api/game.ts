@@ -1,5 +1,5 @@
 import type { OracleId } from "@/stores/board";
-import { getJson } from ".";
+import { deleteJson, getJson, postJson } from ".";
 import type { OracleCard } from "./message";
 
 type OracleIdMap = { [key: string]: OracleId };
@@ -23,6 +23,14 @@ export function getVirtualScryIds(count: number): Promise<VirtualIdsMessage> {
 
 export function getVirtualSideboardingIds(): Promise<SideboardingVirtualIdsMessage> {
   return getJson('game/virtual-ids/sideboarding');
+}
+
+export function beginSpectating(gameId: string): Promise<void> {
+  return postJson(`game/${gameId}/spectate`, {});
+}
+
+export function stopSpectating(gameId: string): Promise<void> {
+  return deleteJson(`game/${gameId}/spectate`);
 }
 
 export function searchForTokens(name?: string, type?: string, colors?: string, text?: string, pt?: string): Promise<OracleCard[]> {
