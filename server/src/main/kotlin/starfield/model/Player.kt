@@ -92,12 +92,12 @@ class Player(val user: User, userIndex: Int, deck: Deck, game: Game) {
 
     fun setLife(newValue: Int): List<BoardDiffEvent> {
         life = newValue
-        return listOf(BoardDiffEvent.ChangePlayerAttribute(PlayerAttribute.LIFE, newValue))
+        return listOf(BoardDiffEvent.ChangePlayerAttribute(user.id, PlayerAttribute.LIFE, newValue))
     }
 
     fun setPoison(newValue: Int): List<BoardDiffEvent> {
         poison = newValue
-        return listOf(BoardDiffEvent.ChangePlayerAttribute(PlayerAttribute.POISON, newValue))
+        return listOf(BoardDiffEvent.ChangePlayerAttribute(user.id, PlayerAttribute.POISON, newValue))
     }
 
     fun getOracleCard(card: CardId): OracleId {

@@ -176,7 +176,7 @@ export type ChangeAttributeEvent = {
 export type ChangePlayerAttribute = {
   attribute: PlayerAttribute;
   newValue: number;
-  playerId: string;
+  player: string;
   type: 'change_player_attribute';
 }
 

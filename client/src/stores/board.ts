@@ -35,7 +35,7 @@ function indexToPivot(index: number): Pivot {
 export type CardId = number;
 export type OracleId = string;
 
-interface PlayerAttributes {
+export interface PlayerAttributes {
   life: number;
   poison: number;
   id: string;
@@ -216,7 +216,7 @@ export const useBoardStore = defineStore('board', () => {
   }
 
   function processChangePlayerAttribute(event: ChangePlayerAttribute) {
-    const player = players[event.playerId];
+    const player = players[event.player];
     switch(event.attribute) {
       case 'LIFE':
         player.life = event.newValue;
@@ -310,9 +310,13 @@ export const useBoardStore = defineStore('board', () => {
 
   function cardIsMovable(card: CardId): boolean {
     const player = extractPlayerIndex(card);
+    return playerIsMovable(player);
+  }
+
+  function playerIsMovable(playerIndex: number) {
     const data = useDataStore();
     const myAttributes = players[data.userId!];
-    if (myAttributes && myAttributes.index === player) {
+    if (myAttributes && myAttributes.index === playerIndex) {
       return true;
     } else {
       return false;
@@ -379,7 +383,7 @@ export const useBoardStore = defineStore('board', () => {
     return zoneNameToId(zone, pos);
   }
 
-  return { setBoardState, processBoardUpdate, processOracleInfo, cardToOracleId, oracleInfo, updateHandPos, cards, moveCard, cardIsMovable, zoneIsMovable, getScreenPositionFromCard, players }
+  return { setBoardState, processBoardUpdate, processOracleInfo, cardToOracleId, oracleInfo, updateHandPos, cards, moveCard, cardIsMovable, zoneIsMovable, playerIsMovable, getScreenPositionFromCard, getScreenPositionFromPlayerIndex: getScreenPosition, players }
 });
 
 function recalculateHandOrder(handCards: BoardCard[], handBounds: DOMRect) {

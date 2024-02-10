@@ -370,8 +370,10 @@ function getRevealToPlayersSubmenu(emit: ActionEmit) {
         }
       }
     });
-    options.push({
-      'type': 'seperator'
+
+  options.push(
+    {
+    'type': 'seperator'
     }, 
     {
       type: 'text',
@@ -379,7 +381,8 @@ function getRevealToPlayersSubmenu(emit: ActionEmit) {
       effect: () => {
         emit('reveal-to', undefined);
       }
-    });
+    }
+  );
   
   return options;
 }

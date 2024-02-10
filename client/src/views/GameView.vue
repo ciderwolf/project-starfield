@@ -8,6 +8,7 @@ import EndGameModal from '@/components/game/modal/EndGameModal.vue';
 import SideboardModal from '@/components/game/modal/SideboardModal.vue';
 import CreateCardModal from '@/components/game/modal/CreateCardModal.vue';
 import CardPreview from '@/components/game/CardPreview.vue';
+import PlayerCounters from '@/components/game/PlayerCounters.vue';
 import { OPPONENT_ZONES, ZONES } from '@/zones';
 import { ref, onMounted, onUnmounted, watchEffect, computed } from 'vue';
 import { client } from '@/ws';
@@ -24,6 +25,7 @@ const myZones = ref<HTMLElement[]>([]);
 const opponentZones = ref<HTMLElement[]>([]);
 const router = useRouter();
 const route = useRoute();
+const board = useBoardStore();
 const data = useDataStore();
 const games = useGameStore();
 const gameId = ref('');
@@ -101,7 +103,6 @@ onMounted(() => {
   window.addEventListener('keypress', checkHotkey);
   notificationsCache.findCards = () => {
     getVirtualIds().then((message) => {
-      const board = useBoardStore();
       board.processOracleInfo({}, message.oracleInfo);
       findCardsModal.value?.open(message.virtualIds);
     });
@@ -173,19 +174,24 @@ onUnmounted(() => {
     <sideboard-modal ref="sideboardModal" />
     <create-card-modal ref="createCardModal" />
     <card-preview ref="cardPreview" />
-    <div class="game-options" v-if="isSpectator">
-      <router-link to="/"><button>Go Home</button></router-link>
+    <div class="above-deck-elements">
+      <div class="game-options" v-if="isSpectator">
+        <router-link to="/"><button>Go Home</button></router-link>
+      </div>
+      <div class="game-options" v-else>
+        <router-link to="/"><button>Go Home</button></router-link>
+        <hr>
+        <button @click="endGameClicked">End Game</button>
+        <button @click="endGameClicked">New Game</button>
+        <hr>
+        <button @click="createToken">Create Token</button>
+        <button @click=createCard>Create Card</button>
+        <hr>
+        <button @click="untapAll">Untap All</button>
+      </div>
     </div>
-    <div class="game-options" v-else>
-      <router-link to="/"><button>Go Home</button></router-link>
-      <hr>
-      <button @click="endGameClicked">End Game</button>
-      <button @click="endGameClicked">New Game</button>
-      <hr>
-      <button @click="createToken">Create Token</button>
-      <button @click=createCard>Create Card</button>
-      <hr>
-      <button @click="untapAll">Untap All</button>
+    <div class="player-counters">
+      <player-counters v-for="player in board.players" :player="player" />
     </div>
     <zone ref="myZones" v-for="zone in ZONES" :zone="zone"></zone>
     <zone ref="opponentZones" v-for="zone in OPPONENT_ZONES" :zone="zone" />
@@ -193,10 +199,14 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-.game-options {
+.above-deck-elements {
   position: fixed;
   right: 0;
-  bottom: 108px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.game-options {
   border: none;
   background-color: #0005;
   font-size: 1rem;
@@ -213,5 +223,10 @@ onUnmounted(() => {
   padding: 5px;
   margin: 0;
   cursor: pointer;
+  border-radius: 5px;
+}
+
+.game-options button:hover {
+  background-color: #0008;
 }
 </style>

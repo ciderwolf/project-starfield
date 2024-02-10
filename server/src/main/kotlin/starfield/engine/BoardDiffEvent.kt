@@ -26,7 +26,7 @@ sealed class BoardDiffEvent {
     data class ChangeAttribute(val card: CardId, val attribute: CardAttribute, val newValue: Int) : BoardDiffEvent()
     @Serializable
     @SerialName("change_player_attribute")
-    data class ChangePlayerAttribute(val attribute: PlayerAttribute, val newValue: Int) : BoardDiffEvent()
+    data class ChangePlayerAttribute(val player: Id, val attribute: PlayerAttribute, val newValue: Int) : BoardDiffEvent()
 
     @Serializable
     @SerialName("shuffle_deck")
