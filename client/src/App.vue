@@ -4,6 +4,7 @@ import { ws } from './ws'
 import { authenticate } from './api';
 import { ref } from 'vue';
 import LoadingSpinner from './components/LoadingSpinner.vue';
+import AlertsContainer from './components/AlertsContainer.vue';
 console.log(ws);
 
 const router = useRouter();
@@ -20,6 +21,7 @@ authenticate().then((isLoggedIn) => {
 <template>
   <RouterView v-if="loaded" />
   <div v-else class="loading-view"><loading-spinner /> Loading...</div>
+  <AlertsContainer />
 </template>
 
 <style scoped>

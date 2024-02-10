@@ -16,6 +16,7 @@ class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserColle
 
     private val players: List<Player>
     private val spectators: MutableList<User> = mutableListOf()
+    private var lastActionTime = System.currentTimeMillis()
     val cardIdProvider = CardIdProvider()
     val cardInfoProvider = CardInfoProvider(players.values.flatMap { it.maindeck + it.sideboard })
 
@@ -24,6 +25,8 @@ class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserColle
             Player(it.key, index, it.value, this)
         }
     }
+
+    fun lastActionTime() = lastActionTime
 
     fun hasPlayer(userId: UUID): Boolean {
         return players.any { it.user.id == userId }
@@ -43,6 +46,7 @@ class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserColle
 
     suspend fun handleMessage(userId: UUID, message: ClientMessage) {
         val player = players.find { it.user.id == userId } ?: return
+        lastActionTime = System.currentTimeMillis()
         println("Received message: $message")
         val messages = when(message) {
             is ChangeCardAttributeMessage -> player.changeAttribute(message.card, message.attribute, message.newValue)

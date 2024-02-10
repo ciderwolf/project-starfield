@@ -14,6 +14,7 @@ fun main() {
 
 fun Application.module() {
     DatabaseSingleton.init()
+    EntityPurge.init()
     configureSerialization()
     configureSessions()
     configureSockets()

@@ -88,7 +88,10 @@ class DeckDao {
         }
     }
 
-    suspend fun deleteDeck(deckId: UUID) = DatabaseSingleton.dbQuery {
+    suspend fun deleteDeck(deckId: UUID, userId: UUID) = DatabaseSingleton.dbQuery {
+        if (getDeck(deckId)?.owner != userId) {
+            return@dbQuery 0
+        }
         DeckCards.deleteWhere { DeckCards.deckId eq deckId }
         Decks.deleteWhere { Decks.id eq deckId }
     }

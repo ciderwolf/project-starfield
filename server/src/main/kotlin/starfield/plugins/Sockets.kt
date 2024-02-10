@@ -54,6 +54,14 @@ val connections: MutableSet<WSConnection> = Collections.synchronizedSet(LinkedHa
 
 class WSConnection(val id: UUID, val ws: DefaultWebSocketSession) {
 
+    private var lastMessageTime = System.currentTimeMillis()
+
+    fun lastMessageTime() = lastMessageTime
+
+    fun receiveMessage() {
+        lastMessageTime = System.currentTimeMillis()
+    }
+
     suspend inline fun <reified T> send(message: T) {
         ws.send(Json.encodeToString(message))
     }
@@ -134,10 +142,12 @@ fun Application.configureSockets() {
                     frame as? Frame.Text ?: continue
 
                     val message = Json.decodeFromString<ClientMessage>(frame.readText())
+                    connection.receiveMessage()
                     val game = findGame(session.id)
                     game?.handleMessage(session.id, message)
                 }
             } finally {
+                println("Connection ${connection.id} closed.")
                 connections -= connection
                 disconnect(connection)
             }

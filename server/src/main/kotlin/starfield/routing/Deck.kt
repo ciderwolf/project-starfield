@@ -132,7 +132,7 @@ fun Route.deckRouting() {
         )
 
         val deckDao = DeckDao()
-        val deleteCount = deckDao.deleteDeck(uuid)
+        val deleteCount = deckDao.deleteDeck(uuid, session.id)
 
         call.respondSuccess(deleteCount == 1)
     }

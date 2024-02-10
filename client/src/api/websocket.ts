@@ -3,6 +3,7 @@ import type { ClientMessage, WebSocketMessage } from "./message";
 import { useDataStore } from "@/stores/data";
 import router from '@/router';
 import { useBoardStore } from "@/stores/board";
+import { useAlertsStore } from "@/stores/alerts";
 
 export class WebSocketConnection {
 
@@ -61,6 +62,10 @@ export class WebSocketConnection {
 
   private attemptReconnect(e: CloseEvent) {
     console.log(e);
+    if (e.reason === "Closed due to inactivity") {
+      const alerts = useAlertsStore();
+      alerts.addAlert('Connection lost', 'You were disconnected due to inactivity. Reload the page to reconnect', 'warning');
+    }
   }
 
   reconnect() {
