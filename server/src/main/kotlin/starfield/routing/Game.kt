@@ -49,7 +49,7 @@ fun Route.engineRouting() {
         )
 
         val game = findGame(session.id) ?: return@get call.respondError("Not in a game")
-        val ids = game.assignVirtualIds(session.id)
+        val ids = game.assignVirtualIds(session.id, scoop=true)
         val oracleInfo = CardDao().getCards(ids.values.flatMap { it.values }).associate {
             val card = it.toOracleCard()
             Pair(card.id, card)

@@ -101,8 +101,11 @@ class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserColle
         return false
     }
 
-    fun assignVirtualIds(userId: UUID): Map<Zone, Map<UUID, OracleId>> {
+    suspend fun assignVirtualIds(userId: UUID, scoop: Boolean = false): Map<Zone, Map<UUID, OracleId>> {
         val player = players.find { it.user.id == userId } ?: return mapOf()
+        if(scoop) {
+            handleMessage(userId, SpecialActionMessage(SpecialAction.SCOOP))
+        }
         return player.getVirtualIds()
     }
 
