@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Modal from '@/components/Modal.vue'
 import StyleButton from '@/components/StyleButton.vue';
+import LoadingButton from '@/components/LoadingButton.vue';
 import CardThumbnail from '@/components/game/modal/CardThumbnail.vue';
 import { ref } from 'vue';
 import { searchForTokens } from '@/api/game';
@@ -18,7 +19,8 @@ const textInput = ref("");
 
 const tokens = ref<OracleCard[]>([]);
 
-async function searchClicked() {
+async function searchClicked(e: MouseEvent) {
+  e.preventDefault();
   const name = nameInput.value.trim() || undefined;
   const type = typeInput.value.trim() || undefined;
   const colors = colorsInput.value.trim() || undefined;
@@ -44,7 +46,7 @@ function createToken(token: OracleCard) {
   <Modal :visible="visible" title="Create a Token" @close="visible = false">
 
     <div class="search-form">
-      <div class="form-inputs">
+      <form class="form-inputs">
         <h2>Create a Token</h2>
         <em>Search by any or all attributes for a token to create</em>
         <div class="input-row">
@@ -67,8 +69,8 @@ function createToken(token: OracleCard) {
           <label for="text">Text: </label>
           <input type="text" id="text" v-model="textInput" placeholder="e.g. 'Flying'">
         </div>
-        <StyleButton @click="searchClicked" class="search-button">Search</StyleButton>
-      </div>
+        <loading-button @click="searchClicked" class="search-button">Search</loading-button>
+      </form>
       <div class="search-results">
         <div v-if="tokens.length > 0" v-for="token in tokens" :key="token.id" class="search-result">
           <CardThumbnail :card="token" />

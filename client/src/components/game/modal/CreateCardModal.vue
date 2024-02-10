@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Modal from '@/components/Modal.vue'
+import LoadingButton from '@/components/LoadingButton.vue';
 import StyleButton from '@/components/StyleButton.vue';
 import CardThumbnail from '@/components/game/modal/CardThumbnail.vue';
 import { ref } from 'vue';
@@ -15,7 +16,8 @@ const searched = ref("");
 
 const cards = ref<OracleCard[]>([]);
 
-async function searchClicked() {
+async function searchClicked(e: MouseEvent) {
+  e.preventDefault();
   const name = nameInput.value.trim();
   if (name.length === 0) {
     return;
@@ -42,11 +44,11 @@ function createCard(token: OracleCard) {
     <div class="search-form">
       <div class="form-inputs">
         <h2>Create a Card</h2>
-        <div class="input-row">
+        <form class="input-row">
           <label for="name">Name:</label>
           <input type="text" id="name" v-model="nameInput" placeholder="e.g. Brisela">
-          <StyleButton @click="searchClicked" class="search-button" small>Search</StyleButton>
-        </div>
+          <loading-button :on-click="searchClicked" class="search-button" small>Search</loading-button>
+        </form>
 
       </div>
       <div class="search-results">
