@@ -42,12 +42,16 @@ export async function authenticate(): Promise<boolean> {
 }
 
 export async function getJson(path: string): Promise<any> {
-  const response = await fetch('/api/' + path);
-  return handleApiError(await response.json());
+  return handleApiError(await getJsonRaw<any>(path));
 }
 
 export async function postJson(path: string, payload: any): Promise<any> {
   return handleApiError(await postJsonRaw<any>(path, payload));
+}
+
+export async function getJsonRaw<T>(path: string): Promise<JsonResponse<T>> {
+  const response = await fetch('/api/' + path);
+  return response.json();
 }
 
 export async function postJsonRaw<T>(path: string, payload: any): Promise<JsonResponse<T>> {

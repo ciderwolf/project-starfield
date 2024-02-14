@@ -1,8 +1,13 @@
-import { deleteJson, getJson, postJson } from ".";
+import { deleteJson, getJson, getJsonRaw, postJson } from ".";
 import type { Deck, DeckListing } from "./message";
 
 export async function getDecks(): Promise<DeckListing[]> {
-  return getJson('deck');
+  const response = await getJsonRaw<DeckListing[]>('deck');
+  if (response.success) {
+    return response.content;
+  } else {
+    return [];
+  }
 }
 
 export async function fetchDeck(id: string): Promise<Deck> {
