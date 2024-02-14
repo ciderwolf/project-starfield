@@ -1,6 +1,6 @@
 {
   "name": "starfield-client",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "private": true,
   "scripts": {
     "dev": "vite",
@@ -12,7 +12,6 @@
   "dependencies": {
     "click-outside-vue3": "^4.0.1",
     "pinia": "^2.1.6",
-    "primevue": "^3.39.0",
     "uuid": "^9.0.1",
     "vue": "^3.3.4",
     "vue-router": "^4.2.4"

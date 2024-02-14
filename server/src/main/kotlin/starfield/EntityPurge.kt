@@ -9,7 +9,7 @@ import kotlin.concurrent.schedule
 
 
 object EntityPurge {
-    private const val THIRTY_MINUTES = 1 * 60 * 1000L
+    private const val THIRTY_MINUTES = 30 * 60 * 1000L
 
     fun init() {
         val timer = Timer()
