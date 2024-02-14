@@ -37,7 +37,7 @@ const alerts = useAlertsStore();
   margin-bottom: 10px;
 }
 
-.alert-danger {
+.alert-error {
   background-color: #f8d7da;
   border-color: #f5c6cb;
   color: #721c24;

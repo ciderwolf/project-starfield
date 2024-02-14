@@ -30,5 +30,5 @@ FROM openjdk:17-jdk-alpine
 WORKDIR /app
 COPY --from=build /app/build /app
 
-EXPOSE 8080
+EXPOSE 8080 2222
 ENTRYPOINT ["java", "-jar", "server.jar"]

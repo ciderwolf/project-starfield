@@ -23,10 +23,11 @@ export const useAlertsStore = defineStore('alerts', () => {
         removeAlert(id);
       }, expires);
     }
+    return id;
   }
 
   function removeAlert(id: string) {
     delete alerts[id];
   }
-  return { addAlert, alerts }
+  return { addAlert, removeAlert, alerts }
 });

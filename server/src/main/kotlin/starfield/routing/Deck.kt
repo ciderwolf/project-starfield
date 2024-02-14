@@ -116,12 +116,19 @@ fun Route.deckRouting() {
             deck.owner,
             upload.name,
             thumbnailCard?.id,
-            maindeck,
-            sideboard
+            maindeck.filter { it.image != "" },
+            sideboard.filter { it.image != "" }
         )
         deckDao.updateDeck(updatedDeck)
 
-        call.respondSuccess(updatedDeck)
+        call.respondSuccess(Deck(
+            deckId,
+            deck.owner,
+            upload.name,
+            thumbnailCard?.id,
+            maindeck,
+            sideboard
+        ))
     }
 
     delete("/{id}") {
@@ -146,10 +153,11 @@ suspend fun validateDeck(main: List<String>, side: List<String>): Pair<List<Deck
 }
 
 suspend fun lookupCards(cards: List<Pair<Int, String>>): List<DeckCard> {
+    val dedupedCards = cards.groupBy { it.second }.entries.map { kv -> Pair(kv.value.sumOf { it.first }, kv.key) }
     val dao = CardDao()
-    val cardData = dao.tryFindCards(cards.map { it.second })
+    val cardData = dao.tryFindCards(dedupedCards.map { it.second })
 
-    return cards.zip(cardData).map {
+    return dedupedCards.zip(cardData).map {
         val (entry, card) = it
         val (count, name) = entry
 

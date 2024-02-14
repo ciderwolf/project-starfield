@@ -1,20 +1,23 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 import DeckPreview from '@/components/deck/DeckPreview.vue';
 import LoadingButton from '@/components/LoadingButton.vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useDecksCache } from '@/cache/decks';
 import type { Deck } from '@/api/message';
 import { useDecksStore } from '@/stores/decks';
+import { useAlertsStore } from '@/stores/alerts';
 
 const maindeck = ref('');
 const sideboard = ref('');
 const deck = ref<Deck | null>(null);
+const unknownCardWarningAlertId = ref('');
 
 const route = useRoute();
 const deckId = route.params.id as string;
 const decks = useDecksCache();
 const router = useRouter();
+const alertsStore = useAlertsStore();
 
 onMounted(async () => {
   const decklist = await decks.get(deckId);
@@ -26,7 +29,18 @@ onMounted(async () => {
   }
 });
 
+onUnmounted(() => {
+  if (unknownCardWarningAlertId.value) {
+    alertsStore.removeAlert(unknownCardWarningAlertId.value);
+  }
+});
+
 const submitDeckClicked = async () => {
+
+  if (unknownCardWarningAlertId.value) {
+    alertsStore.removeAlert(unknownCardWarningAlertId.value);
+  }
+
   const main = maindeck.value.split('\n')
     .map(line => line.trim())
     .filter(line => line.length > 0);
@@ -35,7 +49,6 @@ const submitDeckClicked = async () => {
     .filter(line => line.length > 0);
 
   deck.value = await decks.set(deck.value!.id, { name: deck.value!.name, main, side });
-  // sleep(100000);
 
   const store = useDecksStore();
   store.decks[deck.value!.id] = { name: deck.value!.name, id: deck.value!.id, thumbnailId: deck.value!.thumbnailId };
@@ -43,6 +56,14 @@ const submitDeckClicked = async () => {
   const decklist = deck.value;
   maindeck.value = decklist.maindeck.map(card => `${card.count} ${card.name}`).join('\n');
   sideboard.value = decklist.sideboard.map(card => `${card.count} ${card.name}`).join('\n');
+
+  const deckHasUnknownCards = deck.value.maindeck.some(card => card.image === '')
+    || deck.value.sideboard.some(card => card.image === '');
+
+  if (deckHasUnknownCards) {
+    const alertId = alertsStore.addAlert('Your deck contains some unknown cards', 'Those cards have not been saved.', 'error');
+    unknownCardWarningAlertId.value = alertId;
+  }
 }
 
 async function submitDeckAndCloseClicked() {

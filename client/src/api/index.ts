@@ -1,4 +1,17 @@
+import { useAlertsStore } from "@/stores/alerts";
 import type { GameListing, LobbyState } from "./message";
+
+interface UserInfo {
+  username: string;
+  id: string;
+}
+type JsonResponse<T> = {
+  success: true;
+  content: T;
+} | {
+  success: false;
+  message: string;
+}
 
 export async function createGame(name: string): Promise<LobbyState> {
   const response = await postJson('lobbies', { name, players: 2 });
@@ -13,11 +26,6 @@ export async function joinGame(gameId: string): Promise<LobbyState> {
 export async function getGames(): Promise<GameListing[]> {
   const response = await getJson('lobbies');
   return response;
-}
-
-interface UserInfo {
-  username: string;
-  id: string;
 }
 
 export async function login(name: string, password: string): Promise<JsonResponse<UserInfo>> {
@@ -35,27 +43,11 @@ export async function authenticate(): Promise<boolean> {
 
 export async function getJson(path: string): Promise<any> {
   const response = await fetch('/api/' + path);
-  return (await response.json()).content;
+  return handleApiError(await response.json());
 }
 
 export async function postJson(path: string, payload: any): Promise<any> {
-  const response = await fetch('/api/' + path,
-  {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(payload),
-  });
-  return (await response.json()).content;
-}
-
-type JsonResponse<T> = {
-  success: true;
-  content: T;
-} | {
-  success: false;
-  message: string;
+  return handleApiError(await postJsonRaw<any>(path, payload));
 }
 
 export async function postJsonRaw<T>(path: string, payload: any): Promise<JsonResponse<T>> {
@@ -75,5 +67,14 @@ export async function deleteJson(path: string): Promise<any> {
   {
     method: 'DELETE',
   });
-  return (await response.json()).content;
+  return handleApiError(await response.json());
+}
+
+function handleApiError<T>(response: JsonResponse<T>): T {
+  if (!response.success) {
+    const alerts = useAlertsStore();
+    alerts.addAlert('Encountered an unexpected error', 'Check the console for more information', 'error');
+    throw new Error(response.message);
+  }
+  return response.content;
 }
