@@ -13,6 +13,14 @@ export enum Pivot {
   UPSIDE_DOWN,
 }
 
+export function nonRotatedRect(rect: DOMRect, pivot: Pivot) {
+  if (pivot === Pivot.LEFT_TAPPED || pivot === Pivot.TAPPED) {
+    return new DOMRect(rect.x, rect.y, rect.height, rect.width);
+  } else {
+    return rect;
+  }
+}
+
 export function pivotToAngle(pivot: Pivot) {
   switch (pivot) {
     case Pivot.LEFT_TAPPED:

@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { BoardCard } from '@/api/message';
+import { Pivot, type BoardCard } from '@/api/message';
 import { useNotificationsCache } from '@/cache/notifications';
-import { pivotToAngle, useBoardStore } from '@/stores/board';
+import { nonRotatedRect, pivotToAngle, useBoardStore } from '@/stores/board';
 import { ScreenPosition } from '@/zones';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 
@@ -87,10 +87,11 @@ function updateScreenPosFromVirtualCoords() {
   const visualYPos = screenPos === ScreenPosition.PRIMARY ? props.card.y : 1 - props.card.y;
 
   const rect = image.value!.getBoundingClientRect();
-  const x = parentRect.left + parentRect.width * props.card.x - rect.width / 2;
-  const y = parentRect.top + parentRect.height * visualYPos - rect.height / 2;
+  const cardRect = nonRotatedRect(rect, props.card.pivot);
+  const x = parentRect.left + parentRect.width * props.card.x - cardRect.width / 2;
+  const y = parentRect.top + parentRect.height * visualYPos - cardRect.height / 2;
 
-  const clamped = clampToBounds(x, y, rect, parentRect);
+  const clamped = clampToBounds(x, y, cardRect, parentRect);
   boardPos.x = clamped.x;
   boardPos.y = clamped.y;
 }

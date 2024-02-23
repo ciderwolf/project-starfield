@@ -2,9 +2,10 @@
 import { useZoneStore } from '@/stores/zone';
 import { onMounted, onUnmounted, reactive, ref } from 'vue';
 import { type ComponentExposed } from 'vue-component-type-helpers';
-import type { BoardCard } from '@/api/message';
+import { Pivot, type BoardCard } from '@/api/message';
 import CardImage from './CardImage.vue';
 import { useNotificationsCache } from '@/cache/notifications';
+import { nonRotatedRect } from '@/stores/board';
 
 interface Position {
   x: number;
@@ -35,11 +36,9 @@ function stopMoving(): Position {
   const rect = image.value!.getBounds();
   const parentRect = props.parentBounds!;
 
-  // clamp the image position inside the parent element
-
-  // get the center of the element
-  const centerX = (imagePos.x + rect.width / 2 - parentRect.left) / parentRect.width;
-  const centerY = (imagePos.y + rect.height / 2 - parentRect.top) / parentRect.height;
+  const cardRect = nonRotatedRect(rect, props.card.pivot);
+  const centerX = (imagePos.x + cardRect.width / 2 - parentRect.left) / parentRect.width;
+  const centerY = (imagePos.y + cardRect.height / 2 - parentRect.top) / parentRect.height;
 
   return { x: centerX, y: centerY };
 }
@@ -105,15 +104,3 @@ onUnmounted(() => {
   <card-image :card="card" :moving="moving" :image-pos="imagePos" :zone-rect="parentBounds" ref="image"
     @dblclick="$emit('dblclick')" @mousedown="onMouseDown" @mouseup="onMouseUp" />
 </template>
-
-<style scoped>
-.dot {
-  position: absolute;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background-color: blue;
-  pointer-events: none;
-  z-index: 100;
-}
-</style>
