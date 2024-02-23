@@ -68,11 +68,10 @@ function mouseOverDfc(e: MouseEvent) {
     <Teleport to="body">
       <img :style="style" class="card-preview" :src="backFace ? card.backImage! : card.image" ref="cardImage" />
     </Teleport>
-    <a class="card-line" :href="`https://scryfall.com/card/${card.id}`" target="_blank" rel="noreferrer"
-      @mouseleave="mouseLeave" @mouseover="mouseOver" @mousemove="mouseMove">
-      {{ card.count }} {{ frontName }}</a>
-    <a v-if="dfc" class="card-line" :href="`https://scryfall.com/card/${card.id}?back`" target="_blank" rel="noreferrer"
-      @mouseleave="mouseLeave" @mouseover="mouseOverDfc" @mousemove="mouseMove"> // {{ backName }}</a>
+    <span class="card-line" @mouseleave="mouseLeave" @mouseover="mouseOver" @mousemove="mouseMove">
+      {{ card.count }} {{ frontName }}</span>
+    <span v-if="dfc" class="card-line" @mouseleave="mouseLeave" @mouseover="mouseOverDfc" @mousemove="mouseMove">
+      // {{ backName }}</span>
   </div>
 </template>
 

@@ -62,7 +62,7 @@ export function createBattlefieldContextMenu(card: BoardCard, emit: ActionEmit):
   }
 
   const board = useBoardStore();
-  if (board.oracleInfo[board.cardToOracleId[card.id]].hasBackFace) {
+  if (board.oracleInfo[board.cardToOracleId[card.id]].backImage) {
     options.push({
       type: 'text',
       title: 'Transform',
@@ -245,7 +245,7 @@ export function createHandContextMenu(card: BoardCard, emit: ActionEmit): Contex
     },
   ];
   const board = useBoardStore();
-  if (board.oracleInfo[board.cardToOracleId[card.id]].hasBackFace) {
+  if (board.oracleInfo[board.cardToOracleId[card.id]].backImage) {
     options.push({
       type: 'text',
       title: card.transformed ? 'See front face' : 'See back face',

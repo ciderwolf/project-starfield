@@ -300,7 +300,7 @@ class CardDao {
         val image: String,
         val backImage: String?
     ) : CardEntity() {
-        override fun toOracleCard() = OracleCard(name, id, false)
+        override fun toOracleCard() = OracleCard(name, id, image, null)
     }
 
     data class Card(
@@ -311,14 +311,15 @@ class CardDao {
         val image: String,
         val backImage: String?
     ) : CardEntity() {
-        override fun toOracleCard() = OracleCard(name, id, backImage != null)
+        override fun toOracleCard() = OracleCard(name, id, image, backImage)
     }
 
     @Serializable
     data class OracleCard (
         val name: String,
         val id: Id,
-        val hasBackFace: Boolean
+        val image: String,
+        val backImage: String?
     )
 
     enum class CardSource {

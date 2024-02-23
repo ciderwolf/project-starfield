@@ -24,10 +24,7 @@ const maindeckCards = ref<IdentifiedDeckCard[]>([]);
 
 function mapCard(card: OracleCard, virtualId: string): IdentifiedDeckCard {
   return {
-    id: card.id,
-    name: card.name,
-    image: `https://api.scryfall.com/cards/${card.id}?format=image`,
-    backImage: card.hasBackFace ? `https://api.scryfall.com/cards/${card.id}?format=image&face=back` : null,
+    ...card,
     virtualId
   };
 }

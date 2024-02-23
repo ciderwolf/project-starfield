@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { OracleId } from '@/stores/board';
+import { useBoardStore, type OracleId } from '@/stores/board';
 import { ref } from 'vue';
 
 defineExpose({ showPreview, hidePreview });
@@ -22,10 +22,12 @@ function getCardUrl() {
   if (cardId.value === null) {
     return '';
   }
-  if (backFace.value) {
-    return `https://api.scryfall.com/cards/${cardId.value}?format=image&version=large&face=back`;
+  const board = useBoardStore();
+  const card = board.oracleInfo[cardId.value]
+  if (backFace.value && card.backImage) {
+    return card.backImage;
   } else {
-    return `https://api.scryfall.com/cards/${cardId.value}?format=image&version=large`;
+    return card.image;
   }
 
 }

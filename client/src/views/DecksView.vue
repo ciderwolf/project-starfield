@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { newDeck, deleteDeck } from '@/api/deck';
+import type { Deck, DeckListing } from '@/api/message';
 import { useDecksCache } from '@/cache/decks';
 import StyleButton from '@/components/StyleButton.vue';
 import { useDecksStore } from '@/stores/decks';
@@ -26,6 +27,15 @@ async function deleteDeckClicked(e: MouseEvent, id: string) {
   }
 }
 
+function deckThumbnailUrl(deck: DeckListing) {
+  if (deck.thumbnailId) {
+    return `https://api.scryfall.com/cards/${deck.thumbnailId}?format=image&version=art_crop`;
+  }
+  else {
+    return 'https://api.scryfall.com/cards/ec8e4142-7c46-4d2f-aaa6-6410f323d9f0?format=image&version=art_crop';
+  }
+}
+
 </script>
 
 <template>
@@ -37,8 +47,7 @@ async function deleteDeckClicked(e: MouseEvent, id: string) {
     <div class="deck-cards" v-if="Object.keys(decks.decks).length > 0">
       <div v-for="deck in decks.decks" :key="deck.id">
         <router-link :to="{ name: 'deckbuilder', params: { id: deck.id } }" class="deck-card">
-          <img :alt="`${deck.name} Thumnail`" class="deck-card-thumnail"
-            :src="`https://api.scryfall.com/cards/${deck.thumbnailId || 'ec8e4142-7c46-4d2f-aaa6-6410f323d9f0'}?format=image&version=art_crop`" />
+          <img :alt="`${deck.name} Thumnail`" class="deck-card-thumnail" :src="deckThumbnailUrl(deck)" />
           <h3 class="deck-card-title">{{ deck.name }}</h3>
           <style-button @click="deleteDeckClicked($event, deck.id)" type="danger" class="delete-deck-button">Delete
             deck</style-button>

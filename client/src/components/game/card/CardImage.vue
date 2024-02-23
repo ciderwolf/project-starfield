@@ -37,11 +37,12 @@ const notifications = useNotificationsCache();
 
 const imageUrl = computed(() => {
   if (board.cardToOracleId[props.card.id] && !props.card.flipped) {
-    const id = board.cardToOracleId[props.card.id]
+    const id = board.cardToOracleId[props.card.id];
+    const oracleCard = board.oracleInfo[id];
     if (props.card.transformed) {
-      return `https://api.scryfall.com/cards/${id}?format=image&version=small&face=back`;
+      return oracleCard.backImage || './back.png';
     } else {
-      return `https://api.scryfall.com/cards/${id}?format=image&version=small`;
+      return oracleCard.image;
     }
   } else {
     return '/back.png';

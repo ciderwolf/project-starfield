@@ -125,7 +125,8 @@ export type Card = {
 export type OracleCard = {
   name: string;
   id: string;
-  hasBackFace: boolean;
+  image: string;
+  backImage: string | null;
 }
 
 export type CardAttributeMap = Partial<Record<CardAttribute, number>>;

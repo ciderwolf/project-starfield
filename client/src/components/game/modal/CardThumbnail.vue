@@ -7,12 +7,12 @@ const props = defineProps<{ card?: OracleCard, class?: string }>();
 
 const imageUrl = computed(() => {
   if (!props.card?.id) return '/back.png';
-  return `https://api.scryfall.com/cards/${props.card.id}?format=image&version=small`;
+  return props.card.image;
 });
 
 const previewUrl = computed(() => {
   if (!props.card?.id) return '/back.png';
-  return `https://api.scryfall.com/cards/${props.card.id}?format=image&version=normal`;
+  return props.card.image;
 });
 
 defineEmits<{
