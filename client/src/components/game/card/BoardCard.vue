@@ -55,7 +55,7 @@ function onMouseUp(e: MouseEvent) {
 
     const otherZone = zones.overlappingZone(e.clientX, e.clientY);
 
-    if (otherZone !== null && otherZone.id !== props.card.zone) {
+    if (otherZone !== null && otherZone.id !== props.card.zone && otherZone.id >= 0) {
       // move this card to that zone
       const rect = image.value!.getBounds();
       const newPos = zones.pointInZone(otherZone.id, imagePos.x + rect.width / 2, imagePos.y + rect.height / 2);

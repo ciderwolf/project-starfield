@@ -8,7 +8,11 @@ export const useZoneStore = defineStore('zone', () => {
 
   function overlappingZone(x: number, y: number): ZoneConfig | null {
     for (const [id, bounds] of Object.entries(zoneBounds)) {
-      if (bounds.left < x && x < bounds.right && bounds.top < y && y < bounds.bottom) {
+      if (bounds && bounds.left < x && x < bounds.right && bounds.top < y && y < bounds.bottom) {
+        // count the opponent's battlefield as the same as ours
+        if (Number(id) === OPPONENT_ZONES.play.id) {
+          return ZONES.play;
+        }
         return zoneFromIndex(Number(id)) ?? null;
       }
     }
