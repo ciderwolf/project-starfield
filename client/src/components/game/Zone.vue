@@ -40,7 +40,7 @@ function doMenuAction(action: string, ...args: any[]) {
   showMenu.value = false;
   switch (action) {
     case 'view-all-cards':
-      notifications.viewZone(props.zone.id, true);
+      notifications.viewZone(props.zone.id, !board.zoneIsMovable(props.zone.id));
       break;
     case 'move-zone':
       client.moveCardsToZone(board.cards[props.zone.id].map(card => card.id), args[0], args[1] ?? -1);
