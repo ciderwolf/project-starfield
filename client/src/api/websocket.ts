@@ -3,6 +3,7 @@ import type { ClientMessage, WebSocketMessage } from "./message";
 import { useDataStore } from "@/stores/data";
 import { useBoardStore } from "@/stores/board";
 import { useAlertsStore } from "@/stores/alerts";
+import { useDecksStore } from "@/stores/decks";
 
 function websocketUrl() {
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -29,6 +30,8 @@ export class WebSocketConnection {
         break;
       case 'identity':
         console.log('identity', message.username, message.id);
+        const decks = useDecksStore();
+        decks.reloadDecks();
         login.login(message.username, message.id);
         break;
       case 'listing':

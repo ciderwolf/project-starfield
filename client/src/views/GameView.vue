@@ -42,7 +42,6 @@ function checkHotkey(e: KeyboardEvent) {
   if ((e.target as HTMLElement).nodeName === "INPUT") {
     return;
   }
-  console.log(e);
   if (e.key === 'r') {
     if (confirm('Are you sure you want to scoop your deck?')) {
       client.scoop();
@@ -130,12 +129,10 @@ onMounted(() => {
 });
 
 watchEffect(() => {
-  console.log('watchEffect', games.isLoaded);
   if (games.isLoaded) {
     gameId.value = route.params.id as string;
 
     const game = games.getGame(gameId.value);
-    console.log('watchEffect', game, gameId, route.params.id, games.games);
     if (game === undefined) {
       router.push('/');
       return;

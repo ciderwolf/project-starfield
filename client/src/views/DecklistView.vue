@@ -2,6 +2,7 @@
 import { onMounted, onUnmounted, ref } from 'vue';
 import DeckPreview from '@/components/deck/DeckPreview.vue';
 import LoadingButton from '@/components/LoadingButton.vue';
+import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useDecksCache } from '@/cache/decks';
 import type { Deck } from '@/api/message';
@@ -74,7 +75,7 @@ async function submitDeckAndCloseClicked() {
 </script>
 
 <template>
-  <div id="decklist">
+  <div id="decklist" v-if="deck">
     <div class="title" v-if="deck !== null">
       <h1>Decklist &mdash;</h1>
       <input type=text v-model="deck.name" id="deck-name-input">
@@ -88,13 +89,23 @@ async function submitDeckAndCloseClicked() {
           <loading-button :on-click="submitDeckClicked">Save deck</loading-button>
         </div>
       </div>
-      <deck-preview v-if="deck" :deckData="deck" />
-      <h3 v-else>No deck yet</h3>
+      <deck-preview :deckData="deck" />
     </div>
+  </div>
+  <div v-else>
+    <h1 class="loading-title"><loading-spinner></loading-spinner> Loading...</h1>
   </div>
 </template>
 
 <style scoped>
+.loading-title {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  margin-top: 25%;
+}
+
 .title {
   display: flex;
   flex-direction: row;

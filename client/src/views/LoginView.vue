@@ -2,7 +2,6 @@
 import { ref } from 'vue';
 import LoadingButton from '@/components/LoadingButton.vue';
 import { login } from '@/api';
-import { useDataStore } from '@/stores/data';
 import { ws } from '@/ws';
 import { useRouter } from 'vue-router';
 
@@ -15,8 +14,6 @@ async function loginClicked(e: Event) {
   e.preventDefault();
   const loginResult = await login(username.value, password.value)
   if (loginResult.success) {
-    const data = useDataStore();
-    data.login(loginResult.content.username, loginResult.content.id);
     ws.reconnect();
     router.push('/');
   } else {

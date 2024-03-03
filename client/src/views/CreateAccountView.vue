@@ -2,7 +2,6 @@
 import { ref } from 'vue';
 import LoadingButton from '@/components/LoadingButton.vue';
 import { createAccount, login } from '@/api';
-import { useDataStore } from '@/stores/data';
 import { ws } from '@/ws';
 import { useRouter } from 'vue-router';
 
@@ -20,8 +19,6 @@ async function createAccountClicked(e: Event) {
   }
   const createAccountResult = await createAccount(username.value, password.value)
   if (createAccountResult.success) {
-    const data = useDataStore();
-    data.login(createAccountResult.content.username, createAccountResult.content.id);
     ws.reconnect();
     router.push('/');
   } else {

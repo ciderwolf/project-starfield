@@ -5,12 +5,6 @@ import { fetchDeck, getDecks } from '@/api/deck';
 
 export const useDecksStore = defineStore('decks', () => {
 
-  getDecks().then((decksList) => {
-    decksList.forEach((deck) => {
-      decks[deck.id] = deck;
-    });
-  });
-
   const decks = reactive<{ [id: string]: DeckListing }>({});
 
   async function getDeck(id: string) {
@@ -21,6 +15,13 @@ export const useDecksStore = defineStore('decks', () => {
     const deck = await fetchDeck(id);
     return deck;
   }
+
+  async function reloadDecks() {
+    const decksList = await getDecks()
+    for (const deck of decksList) {
+      decks[deck.id] = deck;
+    }
+  }
   
-  return { decks, getDeck }
+  return { decks, getDeck, reloadDecks }
 })
