@@ -67,11 +67,16 @@ export async function postJsonRaw<T>(path: string, payload: any): Promise<JsonRe
 }
 
 export async function deleteJson(path: string): Promise<any> {
+  return handleApiError(await deleteJsonRaw(path));
+}
+
+export async function deleteJsonRaw(path: string): Promise<JsonResponse<any>> {
   const response = await fetch('/api/' + path,
   {
     method: 'DELETE',
   });
-  return handleApiError(await response.json());
+  return response.json();
+  
 }
 
 function handleApiError<T>(response: JsonResponse<T>): T {

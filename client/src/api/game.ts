@@ -1,5 +1,5 @@
 import type { OracleId } from "@/stores/board";
-import { deleteJson, getJson, postJson } from ".";
+import { deleteJson, deleteJsonRaw, getJson, postJson } from ".";
 import type { OracleCard } from "./message";
 
 type OracleIdMap = { [key: string]: OracleId };
@@ -29,8 +29,9 @@ export function beginSpectating(gameId: string): Promise<void> {
   return postJson(`game/${gameId}/spectate`, {});
 }
 
-export function stopSpectating(gameId: string): Promise<void> {
-  return deleteJson(`game/${gameId}/spectate`);
+export async function stopSpectating(gameId: string): Promise<boolean> {
+  const result = await deleteJsonRaw(`game/${gameId}/spectate`);
+  return result.success;
 }
 
 export function searchForTokens(name?: string, type?: string, colors?: string, text?: string, pt?: string): Promise<OracleCard[]> {
