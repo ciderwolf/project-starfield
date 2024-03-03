@@ -47,7 +47,7 @@ function deckThumbnailUrl(deck: DeckListing) {
     <div class="deck-cards" v-if="Object.keys(decks.decks).length > 0">
       <div v-for="deck in decks.decks" :key="deck.id">
         <router-link :to="{ name: 'deckbuilder', params: { id: deck.id } }" class="deck-card">
-          <img :alt="`${deck.name} Thumnail`" class="deck-card-thumnail" :src="deckThumbnailUrl(deck)" />
+          <img :alt="`${deck.name} Thumnail`" class="deck-card-thumbnail" :src="deckThumbnailUrl(deck)" />
           <h3 class="deck-card-title">{{ deck.name }}</h3>
           <style-button @click="deleteDeckClicked($event, deck.id)" type="danger" class="delete-deck-button">Delete
             deck</style-button>
@@ -115,9 +115,8 @@ function deckThumbnailUrl(deck: DeckListing) {
 }
 
 .deck-card-thumbnail {
-  width: 200px;
-  height: 200px;
-  object-fit: cover;
+  height: 182.5px;
+  object-fit: fill;
 }
 
 .deck-card-title {
