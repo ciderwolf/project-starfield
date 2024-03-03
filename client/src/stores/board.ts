@@ -181,6 +181,7 @@ export const useBoardStore = defineStore('board', () => {
     
     const handId = getZoneId(event.card, 'HAND');
     if (newZoneId === handId || oldZoneId === handId) {
+      card.x = 1;
       recalculateHandOrder(cards[handId], zones.zoneBounds[handId]);
     }
   }
