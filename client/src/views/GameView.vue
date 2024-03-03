@@ -69,6 +69,8 @@ function checkHotkey(e: KeyboardEvent) {
   }
   else if (e.key === 'e') {
     endGameClicked();
+  } else if (e.key === 'x') {
+    untapAll();
   }
 }
 
