@@ -159,5 +159,9 @@ class Player(val user: User, userIndex: Int, deck: Deck, game: Game) {
     fun sideboard(main: List<Id>, side: List<Id>): List<BoardDiffEvent> {
         return board.sideboard(main, side) + resetSelf()
     }
+
+    fun registerSpectator(user: User) {
+        board.revealCardsToSpectator(user)
+    }
 }
 

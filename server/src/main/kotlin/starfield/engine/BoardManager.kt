@@ -182,9 +182,9 @@ class BoardManager(private val owner: UUID, private val ownerIndex: Int, private
 
     private fun revealToAll(card: BoardCard): List<BoardDiffEvent> {
         val justAdded = mutableListOf<Id>()
-        game.subscribers().forEach {
-            if (card.visibility.add(it.id)) {
-                justAdded.add(it.id)
+        for (subscriber in game.subscribers()) {
+            if (card.visibility.add(subscriber.id)) {
+                justAdded.add(subscriber.id)
             }
         }
 
@@ -289,6 +289,15 @@ class BoardManager(private val owner: UUID, private val ownerIndex: Int, private
             it.origin = CardOrigin.SIDEBOARD
         }
         return reset()
+    }
+
+    fun revealCardsToSpectator(user: User): List<BoardDiffEvent> {
+        val allPlayers = game.users().map { it.id }.toSet()
+        val publicCards = cards.values
+            .flatten()
+            .filter { allPlayers.subtract(it.visibility).isEmpty() }
+
+        return publicCards.flatMap { revealTo(it.id, user.id) }
     }
 
     data class MoveZoneResult(val events: List<BoardDiffEvent>, val newCardId: CardId) {

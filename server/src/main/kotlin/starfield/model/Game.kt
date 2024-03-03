@@ -118,6 +118,7 @@ class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserColle
             return
         }
         spectators.add(user)
+        players.forEach { it.registerSpectator(user) }
         user.connection?.send(StateMessage(currentState(user.id), "game"))
     }
 
