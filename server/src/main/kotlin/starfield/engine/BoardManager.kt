@@ -264,6 +264,8 @@ class BoardManager(private val owner: UUID, private val ownerIndex: Int, private
     fun cloneCard(id: CardId): List<BoardDiffEvent> {
         val card = findCard(id) ?: return listOf()
         val newCard = card.clone(CardOrigin.TOKEN)
+        newCard.x += 0.02
+        newCard.y += 0.02
         val index = cards[card.zone]!!.indexOfFirst { it.id == id }
         cards[card.zone]!!.add(index + 1, newCard)
         return listOf(
