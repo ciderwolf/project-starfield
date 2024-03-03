@@ -25,6 +25,18 @@ class Player(val user: User, userIndex: Int, deck: Deck, game: Game) {
     private var life = 20
     private var poison = 0
 
+    fun resetSelf(): List<BoardDiffEvent> {
+        val events = mutableListOf<BoardDiffEvent>()
+        if (life != 20) {
+            events.add(BoardDiffEvent.ChangePlayerAttribute(user.id, PlayerAttribute.LIFE, 20))
+        }
+
+        if (poison != 20) {
+            events.add(BoardDiffEvent.ChangePlayerAttribute(user.id, PlayerAttribute.POISON, 0))
+        }
+        return events
+    }
+
     fun mulligan(): List<BoardDiffEvent> {
         return board.reset() + board.drawCards(7, to = Zone.HAND)
     }
@@ -83,7 +95,7 @@ class Player(val user: User, userIndex: Int, deck: Deck, game: Game) {
     }
 
     fun scoop(): List<BoardDiffEvent> {
-        return board.reset()
+        return board.reset() + resetSelf()
     }
 
     fun shuffle(): List<BoardDiffEvent> {
@@ -145,7 +157,7 @@ class Player(val user: User, userIndex: Int, deck: Deck, game: Game) {
     }
 
     fun sideboard(main: List<Id>, side: List<Id>): List<BoardDiffEvent> {
-        return board.sideboard(main, side)
+        return board.sideboard(main, side) + resetSelf()
     }
 }
 
