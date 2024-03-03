@@ -100,16 +100,20 @@ fun Route.engineRouting() {
         val text = call.parameters["text"]
         val color = call.parameters["colors"]
 
-        val subTypes = mutableListOf<String>()
-        val superTypes = mutableListOf<String>()
+        val types = mutableListOf<String>()
 
         if (type != null) {
-            val types = type.split(" - ")
-            subTypes.addAll(types.getOrElse(1) { "" }.split(" "))
-            superTypes.addAll(types[0].split(" "))
+            val rawTypes = type.split(" - ")
+            if (rawTypes.size == 2) {
+                types.addAll(rawTypes[1].split(" "))
+                types.addAll(rawTypes[0].split(" "))
+            }
+            else {
+                types.addAll(rawTypes[0].split(" "))
+            }
         }
 
-        val tokens = dao.searchForTokens(name, color, superTypes, subTypes, text, pt)
+        val tokens = dao.searchForTokens(name, color, types, text, pt)
         call.respondSuccess(tokens.map { it.toOracleCard() })
     }
 

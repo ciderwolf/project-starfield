@@ -75,7 +75,7 @@ class CardDao {
         Tokens.selectAll().where { Tokens.id eq id }.single().let(::mapToken)
     }
 
-    suspend fun searchForTokens(name: String?, color: String?, superTypes: List<String>, subTypes: List<String>, text: String?, pt: String?) = DatabaseSingleton.dbQuery {
+    suspend fun searchForTokens(name: String?, color: String?, types: List<String>, text: String?, pt: String?) = DatabaseSingleton.dbQuery {
         val sortedColor = color?.toList()?.sorted()?.joinToString("")
         val columns = mapOf(Tokens.fuzzyName to name, Tokens.colors to sortedColor, Tokens.text to text, Tokens.pt to pt)
         var query = Tokens.selectAll()
@@ -86,11 +86,9 @@ class CardDao {
             }
         }
 
-        for(type in superTypes) {
-            query = query.andWhere { Tokens.superTypes like "%${normalizeName(type)}%" }
-        }
-        for(type in subTypes) {
-            query = query.andWhere { Tokens.subTypes like "%${normalizeName(type)}%" }
+        for(type in types) {
+            val normalType = normalizeName(type)
+            query = query.andWhere { (Tokens.superTypes like "%$normalType%") or (Tokens.subTypes like "%$normalType%") }
         }
 
         return@dbQuery query.map(::mapToken)

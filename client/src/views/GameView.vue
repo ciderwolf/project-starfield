@@ -66,9 +66,6 @@ function checkHotkey(e: KeyboardEvent) {
     createToken();
   } else if (e.key === 'n') {
     createCard();
-  }
-  else if (e.key === 'e') {
-    endGameClicked();
   } else if (e.key === 'x') {
     untapAll();
   }
