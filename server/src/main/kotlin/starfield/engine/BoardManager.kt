@@ -6,7 +6,7 @@ import starfield.model.*
 import starfield.plugins.toEnum
 import starfield.routing.Deck
 import java.util.*
-import kotlin.math.max
+import kotlin.math.min
 
 
 class BoardManager(private val owner: UUID, private val ownerIndex: Int, private val game: Game, private val deck: Deck) {
@@ -243,8 +243,8 @@ class BoardManager(private val owner: UUID, private val ownerIndex: Int, private
 
     fun scry(count: Int): List<BoardDiffEvent> {
         val library = cards[Zone.LIBRARY]!!
-        val maxCount = max(count, library.size)
-        return (1..maxCount).flatMap { revealTo(library[library.size - it].id, owner) }
+        val safeCount = min(count, library.size)
+        return (1..safeCount).flatMap { revealTo(library[library.size - it].id, owner) }
     }
 
     fun getCardsFromVirtualIds(virtualIds: List<Id>): List<BoardCard> {
