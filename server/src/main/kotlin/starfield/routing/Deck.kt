@@ -109,7 +109,7 @@ fun Route.deckRouting() {
         val upload = call.receive<DeckUpload>()
         val (maindeck, sideboard) = validateDeck(upload.maindeck, upload.sideboard)
         val thumbnailCard = maindeck
-            .filter { it.backImage == null }
+            .filter { it.backImage == null && it.image != "" }
             .maxByOrNull { it.name.length }
         val updatedDeck = Deck(
             deckId,
