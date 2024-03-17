@@ -5,6 +5,7 @@ import org.jetbrains.exposed.sql.Table
 
 
 object Cards : Table("Card") {
+
     val id = uuid("CardId")
     val name = varchar("Name", 200)
     val fuzzyName = varchar("FuzzyName", 200).index(isUnique = true)
@@ -12,6 +13,7 @@ object Cards : Table("Card") {
     val src = integer("Source")
     val image = varchar("Image", 100)
     val backImage = varchar("BackImage", 100).nullable()
+    val thumbnailImage = varchar("ThumbnailImage", 100)
 
     override val primaryKey = PrimaryKey(id)
 }

@@ -25,7 +25,8 @@ class CardDao {
             type = row[Cards.type],
             id = row[Cards.id],
             image = row[Cards.image],
-            backImage = row[Cards.backImage]
+            backImage = row[Cards.backImage],
+            thumbnailImage = row[Cards.thumbnailImage]
         )
     }
 
@@ -250,6 +251,18 @@ class CardDao {
                 .jsonPrimitive.content
         }
 
+        val thumbnailImage = if ("image_uris" !in card) {
+            card["card_faces"]!!
+                .jsonArray[0]
+                .jsonObject["image_uris"]!!
+                .jsonObject["art_crop"]!!
+                .jsonPrimitive.content
+        } else {
+            card["image_uris"]!!
+                .jsonObject["art_crop"]!!
+                .jsonPrimitive.content
+        }
+
         val backImage = if ("image_uris" !in card) {
             card["card_faces"]!!
                 .jsonArray[1]
@@ -268,7 +281,8 @@ class CardDao {
             type,
             id,
             image,
-            backImage
+            backImage,
+            thumbnailImage
         )
     }
 
@@ -307,7 +321,8 @@ class CardDao {
         val type: String,
         override val id: Id,
         val image: String,
-        val backImage: String?
+        val backImage: String?,
+        val thumbnailImage: String
     ) : CardEntity() {
         override fun toOracleCard() = OracleCard(name, id, image, backImage)
     }

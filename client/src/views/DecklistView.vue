@@ -52,7 +52,7 @@ const submitDeckClicked = async () => {
   deck.value = await decks.set(deck.value!.id, { name: deck.value!.name, main, side });
 
   const store = useDecksStore();
-  store.decks[deck.value!.id] = { name: deck.value!.name, id: deck.value!.id, thumbnailId: deck.value!.thumbnailId };
+  store.decks[deck.value!.id] = { name: deck.value!.name, id: deck.value!.id, thumbnailImage: deck.value!.thumbnailImage };
 
   const decklist = deck.value;
   maindeck.value = decklist.maindeck.map(card => `${card.count} ${card.name}`).join('\n');

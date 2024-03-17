@@ -5,6 +5,7 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import starfield.data.table.Cards
 import starfield.data.table.DeckCards
 import starfield.data.table.Decks
+import starfield.plugins.Id
 import starfield.plugins.toEnum
 import starfield.routing.Deck
 import starfield.routing.DeckCard
@@ -31,7 +32,7 @@ class DeckDao {
             }
         }
 
-        return Deck(deckId, deckRow[Decks.ownerId], deckRow[Decks.name], deckRow[Decks.thumbnailId], main, side)
+        return Deck(deckId, deckRow[Decks.ownerId], deckRow[Decks.name], deckRow[Cards.thumbnailImage], main, side)
     }
 
     private fun mapCard(card: ResultRow): DeckCard {
@@ -57,31 +58,31 @@ class DeckDao {
     }
 
     suspend fun getDeck(deckId: UUID) = DatabaseSingleton.dbQuery {
-        Decks.selectAll().where { Decks.id eq deckId }.singleOrNull()?.let {
+        Decks.leftJoin(Cards).selectAll().where { Decks.id eq deckId }.singleOrNull()?.let {
             val cards = DeckCards.leftJoin(Cards).selectAll().where { DeckCards.deckId eq deckId }
             mapDeck(it, cards.toList())
         }
     }
 
     suspend fun getDecks(userId: UUID) = DatabaseSingleton.dbQuery {
-        val decks = Decks.selectAll().where { Decks.ownerId eq userId }.toList()
+        val decks = Decks.leftJoin(Cards).selectAll().where { Decks.ownerId eq userId }.toList()
         val deckIds = decks.map {it[Decks.id].value }
         val cards = DeckCards.leftJoin(Cards).selectAll().where { DeckCards.deckId inList deckIds }.toList()
         decks.map { mapDeck(it, cards) }
     }
 
-    suspend fun updateDeck(deck: Deck) = DatabaseSingleton.dbQuery {
+    suspend fun updateDeck(id: Id, name: String, thumbnailId: Id?, maindeck: List<DeckCard>, sideboard: List<DeckCard>) = DatabaseSingleton.dbQuery {
         Decks.upsert {
-            it[id] = deck.id
-            it[name] = deck.name
-            it[thumbnailId] = deck.thumbnailId
+            it[Decks.id] = id
+            it[Decks.name] = name
+            it[Decks.thumbnailId] = thumbnailId
         }
-        val allCards = deck.maindeck.map { Pair(it, StartingZone.Main) } +
-            deck.sideboard.map { Pair(it, StartingZone.Side) }
-        DeckCards.deleteWhere { deckId eq deck.id }
+        val allCards = maindeck.map { Pair(it, StartingZone.Main) } +
+            sideboard.map { Pair(it, StartingZone.Side) }
+        DeckCards.deleteWhere { deckId eq id }
         DeckCards.batchInsert(allCards) {
             val (card, zone) = it
-            this[DeckCards.deckId] = deck.id
+            this[DeckCards.deckId] = id
             this[DeckCards.cardId] = card.id
             this[DeckCards.count] = card.count.toByte()
             this[DeckCards.startingZone] = zone.ordinal.toByte()

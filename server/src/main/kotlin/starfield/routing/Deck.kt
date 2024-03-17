@@ -15,6 +15,11 @@ import starfield.plugins.respondSuccess
 import starfield.plugins.tryParseUuid
 import java.util.*
 
+data class ParseDeckCardResult(
+    val count: Int, 
+    val card: CardDao.Card?, 
+    val name: String)
+
 @Serializable
 data class DeckCard(
     val name: String,
@@ -23,14 +28,20 @@ data class DeckCard(
     val id: Id,
     val backImage: String?,
     val count: Int
-)
+) {
+    constructor(count: Int, card: CardDao.Card)
+            : this(card.name, card.type, card.image, card.id, card.backImage, count)
+    
+    constructor(count: Int, name: String)
+            : this(name, "", "", UUID.randomUUID(), null, count)
+}
 
 @Serializable
 data class Deck(
     val id: Id,
     val owner: Id,
     val name: String,
-    val thumbnailId: Id?,
+    val thumbnailImage: String?,
     val maindeck: List<DeckCard>,
     val sideboard: List<DeckCard>,
 )
@@ -46,7 +57,7 @@ data class DeckUpload(
 data class DeckListing(
     val id: Id,
     val name: String,
-    val thumbnailId: Id?
+    val thumbnailImage: String?
 )
 
 fun Route.deckRouting() {
@@ -59,7 +70,7 @@ fun Route.deckRouting() {
 
         val deckDao = DeckDao()
         val myDecks = deckDao.getDecks(session.id)
-            .map { DeckListing(it.id, it.name, it.thumbnailId) }
+            .map { DeckListing(it.id, it.name, it.thumbnailImage) }
 
         call.respondSuccess(myDecks)
     }
@@ -109,25 +120,22 @@ fun Route.deckRouting() {
         val upload = call.receive<DeckUpload>()
         val (maindeck, sideboard) = validateDeck(upload.maindeck, upload.sideboard)
         val thumbnailCard = maindeck
+            .mapNotNull { it.card }
             .filter { it.backImage == null && it.image != "" }
             .maxByOrNull { it.name.length }
-        val updatedDeck = Deck(
-            deckId,
-            deck.owner,
-            upload.name,
-            thumbnailCard?.id,
-            maindeck.filter { it.image != "" },
-            sideboard.filter { it.image != "" }
-        )
-        deckDao.updateDeck(updatedDeck)
+
+
+        val maindeckCards = maindeck.filter { it.card != null }.map { DeckCard(it.count, it.card!!) }
+        val sideboardCards = sideboard.filter { it.card != null }.map { DeckCard(it.count, it.card!!) }
+        deckDao.updateDeck(deckId, upload.name, thumbnailCard?.id, maindeckCards, sideboardCards)
 
         call.respondSuccess(Deck(
             deckId,
             deck.owner,
             upload.name,
-            thumbnailCard?.id,
-            maindeck,
-            sideboard
+            thumbnailCard?.thumbnailImage,
+            maindeck.map { if (it.card == null) { DeckCard(it.count, it.name) } else { DeckCard(it.count, it.card) } },
+            maindeck.map { if (it.card == null) { DeckCard(it.count, it.name) } else { DeckCard(it.count, it.card) } }
         ))
     }
 
@@ -145,14 +153,14 @@ fun Route.deckRouting() {
     }
 }
 
-suspend fun validateDeck(main: List<String>, side: List<String>): Pair<List<DeckCard>, List<DeckCard>> {
+suspend fun validateDeck(main: List<String>, side: List<String>): Pair<List<ParseDeckCardResult>, List<ParseDeckCardResult>> {
     val mainCards = lookupCards(main.map(::splitCardLine))
     val sideCards = lookupCards(side.map(::splitCardLine))
 
     return Pair(mainCards, sideCards)
 }
 
-suspend fun lookupCards(cards: List<Pair<Int, String>>): List<DeckCard> {
+suspend fun lookupCards(cards: List<Pair<Int, String>>): List<ParseDeckCardResult> {
     val dedupedCards = cards.groupBy { it.second }.entries.map { kv -> Pair(kv.value.sumOf { it.first }, kv.key) }
     val dao = CardDao()
     val cardData = dao.tryFindCards(dedupedCards.map { it.second })
@@ -161,19 +169,7 @@ suspend fun lookupCards(cards: List<Pair<Int, String>>): List<DeckCard> {
         val (entry, card) = it
         val (count, name) = entry
 
-        val type = card?.type ?: ""
-        val image = card?.image ?: ""
-        val fullName = card?.name ?: name
-        val id = card?.id ?: UUID.randomUUID()
-
-        DeckCard(
-            fullName,
-            type,
-            image,
-            id,
-            card?.backImage,
-            count
-        )
+        ParseDeckCardResult(count, card, name)
     }
 }
 

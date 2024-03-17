@@ -14,7 +14,7 @@ const router = useRouter();
 const createDeck = async () => {
   const deck = await newDeck();
   decksCache.put(deck.id, deck);
-  decks.decks[deck.id] = { name: deck.name, id: deck.id, thumbnailId: "" };
+  decks.decks[deck.id] = { name: deck.name, id: deck.id, thumbnailImage: "" };
   router.push({ name: 'deckbuilder', params: { id: deck.id } });
 };
 
@@ -28,8 +28,8 @@ async function deleteDeckClicked(e: MouseEvent, id: string) {
 }
 
 function deckThumbnailUrl(deck: DeckListing) {
-  if (deck.thumbnailId) {
-    return `https://api.scryfall.com/cards/${deck.thumbnailId}?format=image&version=art_crop`;
+  if (deck.thumbnailImage) {
+    return deck.thumbnailImage;
   }
   else {
     return 'https://api.scryfall.com/cards/ec8e4142-7c46-4d2f-aaa6-6410f323d9f0?format=image&version=art_crop';

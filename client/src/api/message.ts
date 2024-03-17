@@ -99,13 +99,13 @@ export type Deck = {
   sideboard: DeckCard[];
   name: string;
   id: string;
-  thumbnailId: string;
+  thumbnailImage: string;
 }
 
 export type DeckListing = {
   name: string;
   id: string;
-  thumbnailId: string;
+  thumbnailImage: string;
 }
 
 export type DeckCard = Card & {
