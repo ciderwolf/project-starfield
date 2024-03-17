@@ -46,7 +46,7 @@ class CardDao {
     }
 
     suspend fun getCard(id: OracleId) = DatabaseSingleton.dbQuery {
-        Cards.selectAll().where { Cards.id eq id}.single().let(::mapDbCard)
+        Cards.selectAll().where { Cards.id eq id}.singleOrNull()?.let(::mapDbCard)
     }
 
     suspend fun getCards(ids: Iterable<OracleId>): List<Card> {

@@ -10,6 +10,7 @@ import io.ktor.server.sessions.*
 import io.ktor.util.pipeline.*
 import kotlinx.serialization.Serializable
 import starfield.data.dao.UserDao
+import starfield.routing.cardRouting
 import starfield.routing.deckRouting
 import starfield.routing.engineRouting
 import starfield.routing.gameRouting
@@ -65,6 +66,10 @@ fun Application.configureRouting() {
 
             route("/deck") {
                 deckRouting()
+            }
+
+            route("/card") {
+                cardRouting()
             }
         }
 

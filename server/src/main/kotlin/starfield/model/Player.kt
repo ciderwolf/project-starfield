@@ -144,7 +144,7 @@ class Player(val user: User, userIndex: Int, deck: Deck, game: Game) {
 
     suspend fun createCard(id: OracleId): List<BoardDiffEvent> {
         val dao = CardDao()
-        val card = dao.getCard(id)
+        val card = dao.getCard(id)!!
         return board.createCard(card)
     }
 
