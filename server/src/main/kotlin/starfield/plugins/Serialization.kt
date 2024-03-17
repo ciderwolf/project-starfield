@@ -20,12 +20,6 @@ fun Application.configureSerialization() {
     install(ContentNegotiation) {
         json()
     }
-
-    routing {
-        get("/cards/download") {
-            call.respond(CardDao().download())
-        }
-    }
 }
 
 object PivotSerializer : KSerializer<Pivot> {

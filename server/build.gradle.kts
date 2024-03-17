@@ -42,6 +42,7 @@ dependencies {
     implementation("com.h2database:h2:$h2_version")
     implementation("at.favre.lib:bcrypt:$bcrypt_version")
     implementation("com.opencsv:opencsv:$opencsv_version")
+    implementation("com.github.ajalt.clikt:clikt:4.2.2")
 
     testImplementation("io.ktor:ktor-server-tests-jvm")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")

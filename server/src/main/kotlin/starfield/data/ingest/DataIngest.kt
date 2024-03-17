@@ -10,6 +10,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import starfield.data.table.Cards
 import starfield.data.table.Tokens
 import java.io.BufferedReader
+import java.io.File
 import java.io.FileReader
 
 object DataIngest {
@@ -29,7 +30,7 @@ object DataIngest {
         }
     }
 
-    fun insertCsv(path: String, tableName: String) {
+    fun insertCsv(path: File, tableName: String) {
         val table = matchTable(tableName)
         val reader = CSVReader(BufferedReader(FileReader(path)))
         val file = CsvFile(reader)
@@ -58,5 +59,6 @@ object DataIngest {
     object CardOracleIds : Table("card_oracle_ids") {
         val card_id = uuid("card_id")
         val oracle_id = uuid("oracle_id")
+        val fuzzy_name = varchar("fuzzy_name", 200)
     }
 }
