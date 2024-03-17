@@ -11,4 +11,8 @@ out/
 *.iml
 
 *.db
+*.csv
 client-app/
+db/
+
+TODO

@@ -5,6 +5,7 @@ val logback_version: String by project
 val exposed_version: String by project
 val h2_version: String by project
 val bcrypt_version: String by project
+val opencsv_version: String by project
 
 plugins {
     kotlin("jvm") version "1.9.10"
@@ -40,6 +41,7 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-jdbc:$exposed_version")
     implementation("com.h2database:h2:$h2_version")
     implementation("at.favre.lib:bcrypt:$bcrypt_version")
+    implementation("com.opencsv:opencsv:$opencsv_version")
 
     testImplementation("io.ktor:ktor-server-tests-jvm")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
