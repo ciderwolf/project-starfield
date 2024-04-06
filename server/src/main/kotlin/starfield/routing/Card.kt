@@ -4,6 +4,7 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import starfield.Config
 import starfield.data.dao.CardDao
 import starfield.plugins.respondError
 import starfield.plugins.respondSuccess
@@ -19,8 +20,7 @@ fun Route.cardRouting() {
             return@get call.respondError("Invalid image type")
         }
 
-        val storagePath = System.getenv("STORAGE_PATH") ?: "./"
-        call.respondFile(File(storagePath + "cards/$uuid/$type.jpg"))
+        call.respondFile(File(Config.storagePath + "cards/$uuid/$type.jpg"))
     }
 
     get("/{id}") {
