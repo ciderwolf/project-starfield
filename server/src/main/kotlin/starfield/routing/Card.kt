@@ -20,7 +20,7 @@ fun Route.cardRouting() {
         }
 
         val storagePath = System.getenv("STORAGE_PATH") ?: "./"
-        call.respondFile(File(storagePath + "cards/$uuid/$type.png"))
+        call.respondFile(File(storagePath + "cards/$uuid/$type.jpg"))
     }
 
     get("/{id}") {

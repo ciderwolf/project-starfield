@@ -14,5 +14,6 @@ out/
 *.csv
 client-app/
 db/
+server/cards/
 
 TODO

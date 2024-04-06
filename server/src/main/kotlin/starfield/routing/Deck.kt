@@ -9,16 +9,20 @@ import kotlinx.serialization.Serializable
 import starfield.plugins.Id
 import starfield.data.dao.CardDao
 import starfield.data.dao.DeckDao
+import starfield.data.dao.DeckDao.ConflictResolutionStrategy
 import starfield.plugins.UserSession
 import starfield.plugins.respondError
 import starfield.plugins.respondSuccess
 import starfield.plugins.tryParseUuid
 import java.util.*
+import java.util.regex.Pattern
 
 data class ParseDeckCardResult(
     val count: Int, 
     val card: CardDao.Card?, 
-    val name: String)
+    val name: String,
+    val source: String,
+    val conflictResolutionStrategy: ConflictResolutionStrategy = ConflictResolutionStrategy.NoConflict)
 
 @Serializable
 data class DeckCard(
@@ -27,13 +31,25 @@ data class DeckCard(
     val image: String,
     val id: Id,
     val backImage: String?,
-    val count: Int
+    val count: Int,
+    val source: String,
+    val conflictResolutionStrategy: ConflictResolutionStrategy
 ) {
-    constructor(count: Int, card: CardDao.Card)
-            : this(card.name, card.type, card.image, card.id, card.backImage, count)
+    private constructor(count: Int, card: CardDao.Card, source: String, conflictResolutionStrategy: ConflictResolutionStrategy)
+            : this(card.name, card.type, card.image, card.id, card.backImage, count, source, conflictResolutionStrategy)
     
-    constructor(count: Int, name: String)
-            : this(name, "", "", UUID.randomUUID(), null, count)
+    private constructor(count: Int, name: String, source: String, conflictResolutionStrategy: ConflictResolutionStrategy)
+            : this(name, "", "", UUID.randomUUID(), null, count, source, conflictResolutionStrategy)
+
+    companion object {
+        fun new(result: ParseDeckCardResult): DeckCard {
+            return if (result.card == null) {
+                DeckCard(result.count, result.name, result.source, result.conflictResolutionStrategy)
+            } else {
+                DeckCard(result.count, result.card, result.source, result.conflictResolutionStrategy)
+            }
+        }
+    }
 }
 
 @Serializable
@@ -125,8 +141,8 @@ fun Route.deckRouting() {
             .maxByOrNull { it.name.length }
 
 
-        val maindeckCards = maindeck.filter { it.card != null }.map { DeckCard(it.count, it.card!!) }
-        val sideboardCards = sideboard.filter { it.card != null }.map { DeckCard(it.count, it.card!!) }
+        val maindeckCards = maindeck.filter { it.card != null }.map { DeckCard.new(it) }
+        val sideboardCards = sideboard.filter { it.card != null }.map { DeckCard.new(it) }
         deckDao.updateDeck(deckId, upload.name, thumbnailCard?.id, maindeckCards, sideboardCards)
 
         call.respondSuccess(Deck(
@@ -134,8 +150,8 @@ fun Route.deckRouting() {
             deck.owner,
             upload.name,
             thumbnailCard?.thumbnailImage,
-            maindeck.map { if (it.card == null) { DeckCard(it.count, it.name) } else { DeckCard(it.count, it.card) } },
-            maindeck.map { if (it.card == null) { DeckCard(it.count, it.name) } else { DeckCard(it.count, it.card) } }
+            maindeck.map { DeckCard.new(it) },
+            sideboard.map { DeckCard.new(it) }
         ))
     }
 
@@ -160,28 +176,61 @@ suspend fun validateDeck(main: List<String>, side: List<String>): Pair<List<Pars
     return Pair(mainCards, sideCards)
 }
 
-suspend fun lookupCards(cards: List<Pair<Int, String>>): List<ParseDeckCardResult> {
-    val dedupedCards = cards.groupBy { it.second }.entries.map { kv -> Pair(kv.value.sumOf { it.first }, kv.key) }
+suspend fun lookupCards(cards: List<Triple<Int, String, String>>): List<ParseDeckCardResult> {
+    if (cards.isEmpty()) {
+        return listOf()
+    }
+    val dedupedCards = cards
+        .groupBy { Pair(it.second, it.third.uppercase()) }
+        .entries
+        .map { kv -> Triple(kv.value.sumOf { it.first }, kv.key.first, kv.key.second) }
     val dao = CardDao()
     val cardData = dao.tryFindCards(dedupedCards.map { it.second })
 
-    return dedupedCards.zip(cardData).map {
-        val (entry, card) = it
-        val (count, name) = entry
+    val sourceCounts = cardData.values.flatten().groupingBy { it.source }.eachCount()
+    val largestCount = sourceCounts.maxBy { it.value }.value
+    val defaultSource = sourceCounts.filterValues { it == largestCount }.keys.min()
 
-        ParseDeckCardResult(count, card, name)
-    }
+    val sources = dao.getSources(sourceCounts.keys)
+    val sourcesById = sources.associateBy { it.id }
+
+    return dedupedCards
+        .map { card ->
+            // TODO: What if a card was created as unique but now has conflicts
+            val (count, name, sourceCode) = card
+            val normalName = CardDao.normalizeName(name)
+            val candidates = cardData[normalName]
+                ?: return@map ParseDeckCardResult(count, null, name, sourceCode)
+            if (sourceCode != "") {
+                val source = sources.find { it.code == sourceCode }
+                    ?: return@map ParseDeckCardResult(count, null, name, sourceCode)
+                val print = candidates.find { it.source == source.id }
+                    ?: return@map ParseDeckCardResult(count, null, name, sourceCode)
+                return@map ParseDeckCardResult(count, print, print.name, sourceCode, ConflictResolutionStrategy.Pinned)
+            }
+            if (candidates.size == 1) {
+                return@map ParseDeckCardResult(count, candidates[0], candidates[0].name, sourcesById[candidates[0].source]!!.code, ConflictResolutionStrategy.NoConflict)
+            }
+            val defaultPrint = candidates.find { it.source == defaultSource }
+            if (defaultPrint == null) {
+                val bestPrint = candidates.minBy { it.source }
+                return@map ParseDeckCardResult(count, bestPrint, bestPrint.name, sourcesById[bestPrint.source]!!.code, ConflictResolutionStrategy.Best)
+            } else {
+                return@map ParseDeckCardResult(count, defaultPrint, defaultPrint.name, sourcesById[defaultPrint.source]!!.code, ConflictResolutionStrategy.Default)
+            }
+        }
 }
 
-fun splitCardLine(line: String): Pair<Int, String> {
-    val components = line.split(" ")
-    val maybeCount = components[0].toIntOrNull()
-    var count = 1
-    var name = line
-    if (maybeCount != null) {
-        count = maybeCount
-        name = components.subList(1, components.size).joinToString(" ")
+fun splitCardLine(line: String): Triple<Int, String, String> {
+    val pattern = Pattern.compile("^(?:(?<count>\\d+) )?(?<name>[\\w ,\\-+'/!&.:?\"()®]*?)(?: \\((?<source>[A-Z]{3,5})\\))?$")
+    val matcher = pattern.matcher(line)
+    return if (matcher.find()) {
+        val count = matcher.group("count")?.toIntOrNull() ?: 1
+        val name = matcher.group("name") ?: ""
+        val source = matcher.group("source") ?: ""
+        Triple(count, name, source)
     }
-
-    return Pair(count, name)
+    else {
+        Triple(1, line, "")
+    }
 }

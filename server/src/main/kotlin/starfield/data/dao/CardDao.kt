@@ -2,12 +2,22 @@ package starfield.data.dao
 
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.*
+import starfield.data.table.CardSources
 import starfield.plugins.Id
 import starfield.data.table.Cards
 import starfield.data.table.Tokens
 import starfield.engine.OracleId
+import starfield.plugins.toEnum
 
 class CardDao {
+
+    private fun mapDbCardSource(row: ResultRow): CardSource {
+        return CardSource(
+            id = row[CardSources.id].value,
+            name = row[CardSources.name],
+            code = row[CardSources.code]
+        )
+    }
 
     private fun mapDbCard(row: ResultRow): Card {
         return Card(
@@ -17,7 +27,8 @@ class CardDao {
             id = row[Cards.id],
             image = row[Cards.image],
             backImage = row[Cards.backImage],
-            thumbnailImage = row[Cards.thumbnailImage]
+            thumbnailImage = row[Cards.thumbnailImage],
+            source = row[Cards.src]
         )
     }
 
@@ -47,15 +58,15 @@ class CardDao {
         }
     }
 
-    suspend fun tryFindCards(names: List<String>): List<Card?> {
+    suspend fun tryFindCards(names: List<String>): Map<String, List<Card>> {
         val fuzzyNames = names.map(::normalizeName)
         val result = DatabaseSingleton.dbQuery {
             Cards.selectAll().where { Cards.fuzzyName inList fuzzyNames }
                 .map(::mapDbCard)
-                .associateBy { it.fuzzyName }
+                .groupBy { it.fuzzyName }
         }
 
-        return fuzzyNames.map { result[it] }
+        return result
     }
 
     suspend fun searchForCards(name: String): List<Card> = DatabaseSingleton.dbQuery {
@@ -86,6 +97,10 @@ class CardDao {
         return@dbQuery query.map(::mapToken)
     }
 
+    suspend fun getSources(keys: Collection<Int>) = DatabaseSingleton.dbQuery {
+        CardSources.selectAll().where { CardSources.id inList keys }.map(::mapDbCardSource)
+    }
+
     abstract class CardEntity {
         abstract val id: OracleId
 
@@ -114,7 +129,8 @@ class CardDao {
         override val id: Id,
         val image: String,
         val backImage: String?,
-        val thumbnailImage: String
+        val thumbnailImage: String,
+        val source: Int
     ) : CardEntity() {
         override fun toOracleCard() = OracleCard(name, id, image, backImage)
     }
@@ -127,9 +143,11 @@ class CardDao {
         val backImage: String?
     )
 
-    enum class CardSource {
-        Scryfall, Custom
-    }
+    data class CardSource(
+        val id: Int,
+        val name: String,
+        val code: String
+    )
 
     companion object {
         fun normalizeName(name: String): String {

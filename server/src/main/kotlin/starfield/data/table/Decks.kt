@@ -16,6 +16,7 @@ object DeckCards : Table("DeckCard") {
     val cardId = uuid("CardId").references(Cards.id)
     val count = byte("Count")
     val startingZone = byte("StartingZone")
+    val conflictResolutionStrategy = byte("ConflictResolutionStrategy")
 
     override val primaryKey = PrimaryKey(deckId, cardId, startingZone)
 }

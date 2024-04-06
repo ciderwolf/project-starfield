@@ -2,6 +2,7 @@ package starfield.data.dao
 
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import starfield.data.table.CardSources
 import starfield.data.table.Cards
 import starfield.data.table.DeckCards
 import starfield.data.table.Decks
@@ -16,6 +17,10 @@ class DeckDao {
 
     enum class StartingZone {
         Main, Side
+    }
+
+    enum class ConflictResolutionStrategy {
+        NoConflict, Default, Best, Pinned
     }
 
     private fun mapDeck(deckRow: ResultRow, cards: List<ResultRow>): Deck {
@@ -42,7 +47,9 @@ class DeckDao {
             card[Cards.image],
             card[Cards.id],
             card[Cards.backImage],
-            card[DeckCards.count].toInt()
+            card[DeckCards.count].toInt(),
+            card[CardSources.code],
+            card[DeckCards.conflictResolutionStrategy].toEnum<ConflictResolutionStrategy>()!!
         )
     }
 
@@ -59,7 +66,7 @@ class DeckDao {
 
     suspend fun getDeck(deckId: UUID) = DatabaseSingleton.dbQuery {
         Decks.leftJoin(Cards).selectAll().where { Decks.id eq deckId }.singleOrNull()?.let {
-            val cards = DeckCards.leftJoin(Cards).selectAll().where { DeckCards.deckId eq deckId }
+            val cards = DeckCards.leftJoin(Cards).innerJoin(CardSources).selectAll().where { DeckCards.deckId eq deckId }
             mapDeck(it, cards.toList())
         }
     }
@@ -67,7 +74,7 @@ class DeckDao {
     suspend fun getDecks(userId: UUID) = DatabaseSingleton.dbQuery {
         val decks = Decks.leftJoin(Cards).selectAll().where { Decks.ownerId eq userId }.toList()
         val deckIds = decks.map {it[Decks.id].value }
-        val cards = DeckCards.leftJoin(Cards).selectAll().where { DeckCards.deckId inList deckIds }.toList()
+        val cards = DeckCards.leftJoin(Cards).innerJoin(CardSources).selectAll().where { DeckCards.deckId inList deckIds }.toList()
         decks.map { mapDeck(it, cards) }
     }
 
@@ -86,6 +93,7 @@ class DeckDao {
             this[DeckCards.cardId] = card.id
             this[DeckCards.count] = card.count.toByte()
             this[DeckCards.startingZone] = zone.ordinal.toByte()
+            this[DeckCards.conflictResolutionStrategy] = card.conflictResolutionStrategy.ordinal.toByte()
         }
     }
 

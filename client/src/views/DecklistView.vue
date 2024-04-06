@@ -5,7 +5,7 @@ import LoadingButton from '@/components/LoadingButton.vue';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useDecksCache } from '@/cache/decks';
-import type { Deck } from '@/api/message';
+import type { Deck, DeckCard } from '@/api/message';
 import { useDecksStore } from '@/stores/decks';
 import { useAlertsStore } from '@/stores/alerts';
 
@@ -19,6 +19,25 @@ const deckId = route.params.id as string;
 const decks = useDecksCache();
 const router = useRouter();
 const alertsStore = useAlertsStore();
+
+function createCardLine(card: DeckCard) {
+  const line = `${card.count} ${card.name}`;
+  if (card.type === '' && card.source !== '') {
+    return `${line} (${card.source.toUpperCase()})`;
+  }
+
+  switch (card.conflictResolutionStrategy) {
+    case 'Pinned':
+    case 'Best':
+      return `${line} (${card.source.toUpperCase()})`;
+    case 'Default':
+    case 'NoConflict':
+      return line;
+    default:
+      const _exhaustiveCheck: never = card.conflictResolutionStrategy;
+      return _exhaustiveCheck;
+  }
+}
 
 onMounted(async () => {
   const decklist = await decks.get(deckId);
@@ -55,8 +74,8 @@ const submitDeckClicked = async () => {
   store.decks[deck.value!.id] = { name: deck.value!.name, id: deck.value!.id, thumbnailImage: deck.value!.thumbnailImage };
 
   const decklist = deck.value;
-  maindeck.value = decklist.maindeck.map(card => `${card.count} ${card.name}`).join('\n');
-  sideboard.value = decklist.sideboard.map(card => `${card.count} ${card.name}`).join('\n');
+  maindeck.value = decklist.maindeck.map(createCardLine).join('\n');
+  sideboard.value = decklist.sideboard.map(createCardLine).join('\n');
 
   const deckHasUnknownCards = deck.value.maindeck.some(card => card.image === '')
     || deck.value.sideboard.some(card => card.image === '');

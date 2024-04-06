@@ -108,12 +108,17 @@ export type DeckListing = {
   thumbnailImage: string;
 }
 
-export type DeckCard = Card & {
+export type ConflictResolutionStrategy = 'NoConflict' | 'Best' | 'Default' | 'Pinned';
+export type DeckCard = {
+  name: string;
   type: string;
   count: number;
   id: string;
-}
-
+  image: string;
+  backImage: string | null;
+  source: string;
+  conflictResolutionStrategy: ConflictResolutionStrategy;
+};
 
 export type Card = {
   name: string;

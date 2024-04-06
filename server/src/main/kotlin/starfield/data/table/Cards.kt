@@ -1,6 +1,6 @@
 package starfield.data.table
 
-import kotlinx.serialization.json.Json
+import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.Table
 
 
@@ -8,9 +8,9 @@ object Cards : Table("Card") {
 
     val id = uuid("CardId")
     val name = varchar("Name", 200)
-    val fuzzyName = varchar("FuzzyName", 200).index(isUnique = true)
+    val fuzzyName = varchar("FuzzyName", 200).index(isUnique = false)
     val type = varchar("Type", 50)
-    val src = integer("Source")
+    val src = integer("Source").references(CardSources.id)
     val image = varchar("Image", 100)
     val backImage = varchar("BackImage", 100).nullable()
     val thumbnailImage = varchar("ThumbnailImage", 100)
@@ -31,5 +31,9 @@ object Tokens : Table("Token") {
     val backImage = varchar("BackImage", 100).nullable()
 
     override val primaryKey = PrimaryKey(id)
+}
 
+object CardSources : IntIdTable("CardSource", "CardSourceId") {
+    val name = varchar("Name", 100)
+    val code = varchar("Code", 5)
 }

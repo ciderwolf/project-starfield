@@ -67,7 +67,7 @@ object ImportFromScryfall : CliktCommand(help = "Import latest cards from Scryfa
                 this[Cards.image] = it.image
                 this[Cards.backImage] = it.backImage
                 this[Cards.thumbnailImage] = it.thumbnailImage
-                this[Cards.src] = CardDao.CardSource.Scryfall.ordinal
+                this[Cards.src] = it.source
             }
         }
 
@@ -216,7 +216,8 @@ object ImportFromScryfall : CliktCommand(help = "Import latest cards from Scryfa
             id,
             image,
             backImage,
-            thumbnailImage
+            thumbnailImage,
+            0
         )
     }
 }

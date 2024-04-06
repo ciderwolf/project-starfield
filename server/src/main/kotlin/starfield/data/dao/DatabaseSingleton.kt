@@ -14,7 +14,7 @@ object DatabaseSingleton {
         val jdbcURL = "jdbc:h2:${storagePath}db;AUTO_SERVER=TRUE"
         val database = Database.connect(jdbcURL, driverClassName)
         transaction(database) {
-            SchemaUtils.create(Cards, Tokens, Users, Decks, DeckCards)
+            SchemaUtils.create(Cards, Tokens, Users, Decks, DeckCards, CardSources)
         }
     }
 
