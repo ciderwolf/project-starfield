@@ -43,10 +43,11 @@ export class WebSocketGameClient extends GameClient {
     super();
   }
 
-  drawCards(count: number, to?: Zone): void {
+  drawCards(count: number, to?: Zone, fromBottom?: boolean): void {
     this.ws.send({
       type: 'draw_card',
       to: to ?? 'HAND',
+      fromBottom: fromBottom ?? false,
       count
     });
   }
@@ -153,6 +154,16 @@ export class WebSocketGameClient extends GameClient {
       type: 'reveal',
       card: cardId,
       revealTo: playerId ?? null,
+      reveal: true,
+    });
+  }
+
+  unrevealCard(cardId: number, playerId?: string | undefined): void {
+    this.ws.send({
+      type: 'reveal',
+      card: cardId,
+      revealTo: null,
+      reveal: false,
     });
   }
 

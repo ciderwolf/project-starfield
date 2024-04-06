@@ -153,6 +153,7 @@ export const useBoardStore = defineStore('board', () => {
         processShuffleDeck(event);
         break;
       case 'reveal_card':
+      case 'hide_card':
         break;
       case 'create_card':
         processCreateCard(event);
@@ -312,9 +313,13 @@ export const useBoardStore = defineStore('board', () => {
     card.flipped = false;
   }
 
-  function processOracleInfo(newCards: { [cardId: CardId]: string }, newOracleInfo: { [oracleId: OracleId]: OracleCard }) {
+  function processOracleInfo(newCards: { [cardId: CardId]: string }, newOracleInfo: { [oracleId: OracleId]: OracleCard }, cardsToHide: CardId[]) {
     Object.assign(cardToOracleId, newCards);
     Object.assign(oracleInfo, newOracleInfo);
+
+    for (const cardId of cardsToHide) {
+      delete cardToOracleId[cardId];
+    }
   }
 
   function cardIsMovable(card: CardId): boolean {

@@ -33,13 +33,18 @@ class BoardManager(private val owner: UUID, private val ownerIndex: Int, private
         }
     }
 
-    fun drawCards(count: Int, to: Zone): List<BoardDiffEvent> {
-        return (0..<count).flatMap { drawCard(to) }
+    fun drawCards(count: Int, to: Zone, fromBottom: Boolean): List<BoardDiffEvent> {
+        return (0..<count).flatMap { drawCard(to, fromBottom) }
     }
 
-    private fun drawCard(to: Zone): List<BoardDiffEvent> {
+    private fun drawCard(to: Zone, fromBottom: Boolean): List<BoardDiffEvent> {
         if (cards[Zone.LIBRARY]!!.size > 0) {
-            return changeZone(cards[Zone.LIBRARY]!!.last().id, to).events
+            val targetCard = if (fromBottom) {
+                cards[Zone.LIBRARY]!![0]
+            } else {
+                cards[Zone.LIBRARY]!!.last()
+            }
+            return changeZone(targetCard.id, to).events
         }
         return listOf()
     }
@@ -226,6 +231,22 @@ class BoardManager(private val owner: UUID, private val ownerIndex: Int, private
         }
 
         return events
+    }
+
+    fun unrevealTo(cardId: CardId, revealTo: Id?): List<BoardDiffEvent> {
+        val card = findCard(cardId) ?: return listOf()
+        val visibility = card.visibility.toMutableList()
+        card.visibility.clear()
+        if (revealTo != null) {
+            visibility.remove(revealTo)
+        } else {
+            visibility.clear()
+        }
+        card.visibility.addAll(visibility)
+
+        return listOf(
+            BoardDiffEvent.HideCard(cardId, revealTo?.let { listOf(it) } ?: listOf()),
+        )
     }
 
     fun getVirtualIds(): Map<Zone, Map<Id, OracleId>> {

@@ -54,15 +54,11 @@ export function createContextMenu(zone: number, card: BoardCard, emit: ActionEmi
 export function createBattlefieldContextMenu(card: BoardCard, emit: ActionEmit): ContextMenuDefinition {
   const options: ContextMenuOption[] = [];
   if (card.flipped) {
-    options.push({
-      type: 'submenu',
-      title: 'Reveal to...',
-      options: getRevealToPlayersSubmenu(emit)
-    });
+    options.push(...getRevealSubmenu(emit));
   }
 
   const board = useBoardStore();
-  if (board.oracleInfo[board.cardToOracleId[card.id]].backImage) {
+  if (board.oracleInfo[board.cardToOracleId[card.id]]?.backImage) {
     options.push({
       type: 'text',
       title: 'Transform',
@@ -169,6 +165,13 @@ export function createLibraryContextMenu(card: BoardCard, emit: ActionEmit): Con
       },
       {
         type: 'text',
+        title: 'Play face down',
+        effect: () => {
+          emit('play-face-down');
+        }
+      },
+      {
+        type: 'text',
         title: 'Find card',
         effect: () => {
           emit('find-card');
@@ -223,6 +226,15 @@ export function createLibraryContextMenu(card: BoardCard, emit: ActionEmit): Con
               emit('move-zone-n', ZONES.faceDown.type, count);
             }
           }, 
+          {
+            type: 'number',
+            title: 'Draw from bottom of deck',
+            min: 1,
+            effect: (count: number) => {
+              count = isNaN(count) ? 1 : count;
+              emit('move-zone-n', ZONES.hand.type, count, true);
+            }
+          }
         ]
       }
     ]
@@ -230,22 +242,9 @@ export function createLibraryContextMenu(card: BoardCard, emit: ActionEmit): Con
 }
 
 export function createHandContextMenu(card: BoardCard, emit: ActionEmit): ContextMenuDefinition {
-  const options: ContextMenuOption[] = [
-    {
-      type: 'text',
-      title: 'Reveal',
-      effect: () => {
-        emit('reveal');
-      }
-    },
-    {
-      type: 'submenu',
-      title: 'Reveal to...',
-      options: getRevealToPlayersSubmenu(emit)
-    },
-  ];
+  const options: ContextMenuOption[] = getRevealSubmenu(emit);
   const board = useBoardStore();
-  if (board.oracleInfo[board.cardToOracleId[card.id]].backImage) {
+  if (board.oracleInfo[board.cardToOracleId[card.id]]?.backImage) {
     options.push({
       type: 'text',
       title: card.transformed ? 'See front face' : 'See back face',
@@ -355,12 +354,41 @@ export function getZoneContextMenu(zoneId: number, isInteractive: boolean, emit:
   return { options };
 }
 
+function getRevealSubmenu(emit: ActionEmit): ContextMenuOption[] {
+  return [
+    {
+      type: 'submenu',
+      title: 'Reveal to...',
+      options: getRevealToPlayersSubmenu(emit)
+    },
+    {
+      type: 'text',
+      title: 'Reveal to all',
+      effect: () => {
+        emit('reveal-to', undefined);
+      }
+    },
+    {
+      type: 'submenu',
+      title: 'Unreveal to...',
+      options: getUnrevealToPlayersSubmenu(emit)
+    },
+    {
+      type: 'text',
+      title: 'Unreveal to all',
+      effect: () => {
+        emit('unreveal-to', undefined);
+      }
+    }
+  ]
+}
+
 function getRevealToPlayersSubmenu(emit: ActionEmit) {
   const board = useBoardStore();
-  const data = useDataStore();
+  // const data = useDataStore();
   
   const options: ContextMenuOption[] = Object.values(board.players)
-    .filter(player => player.id !== data.userId)
+    // .filter(player => player.id !== data.userId)
     .map(player => {
       return {
         type: 'text',
@@ -380,6 +408,38 @@ function getRevealToPlayersSubmenu(emit: ActionEmit) {
       title: 'All',
       effect: () => {
         emit('reveal-to', undefined);
+      }
+    }
+  );
+  
+  return options;
+}
+
+function getUnrevealToPlayersSubmenu(emit: ActionEmit) {
+  const board = useBoardStore();
+  const data = useDataStore();
+  
+  const options: ContextMenuOption[] = Object.values(board.players)
+    .filter(player => player.id !== data.userId)
+    .map(player => {
+      return {
+        type: 'text',
+        title: player.name,
+        effect: () => {
+          emit('unreveal-to', player.id);
+        }
+      }
+    });
+
+  options.push(
+    {
+    'type': 'seperator'
+    }, 
+    {
+      type: 'text',
+      title: 'All',
+      effect: () => {
+        emit('unreveal-to', undefined);
       }
     }
   );

@@ -22,6 +22,9 @@ sealed class BoardDiffEvent {
     @SerialName("reveal_card")
     data class RevealCard(val card: CardId, val players: List<Id>) : BoardDiffEvent()
     @Serializable
+    @SerialName("hide_card")
+    data class HideCard(val card: CardId, val players: List<Id>) : BoardDiffEvent()
+    @Serializable
     @SerialName("change_attribute")
     data class ChangeAttribute(val card: CardId, val attribute: CardAttribute, val newValue: Int) : BoardDiffEvent()
     @Serializable

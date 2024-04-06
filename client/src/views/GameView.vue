@@ -101,7 +101,7 @@ onMounted(() => {
   window.addEventListener('keypress', checkHotkey);
   notificationsCache.findCards = () => {
     getVirtualIds().then((message) => {
-      board.processOracleInfo({}, message.oracleInfo);
+      board.processOracleInfo({}, message.oracleInfo, []);
       findCardsModal.value?.open(message.virtualIds);
     });
   };

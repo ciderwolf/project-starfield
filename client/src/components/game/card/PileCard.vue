@@ -44,13 +44,16 @@ function doMenuAction(name: string, ...args: any[]) {
       moveZone(args[0], 0, 0);
       break;
     case 'move-zone-n':
-      client.drawCards(args[1], args[0]);
+      client.drawCards(args[1], args[0], args[2]);
       break;
     case 'reveal':
       client.revealCard(props.card.id);
       break;
     case 'reveal-to':
       client.revealCard(props.card.id, args[0]);
+      break;
+    case 'unreveal-to':
+      client.unrevealCard(props.card.id, args[0]);
       break;
     case 'play-face-down':
       client.playWithAttributes(props.card.id, 0, 0, { FLIPPED: 1 });

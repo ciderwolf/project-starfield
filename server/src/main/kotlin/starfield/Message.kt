@@ -40,14 +40,14 @@ data class StateMessage<T>(val roomState: T, val room: String): ServerMessage("s
 data class BoardUpdateMessage(val events: List<BoardDiffEvent>) : ServerMessage("board_update")
 
 @Serializable
-data class OracleCardInfoMessage(val cards: Map<CardId, OracleId>, val oracleInfo: Map<OracleId, CardDao.OracleCard>) : ServerMessage("oracle_cards")
+data class OracleCardInfoMessage(val cards: Map<CardId, OracleId>, val oracleInfo: Map<OracleId, CardDao.OracleCard>, val cardsToHide: List<CardId>) : ServerMessage("oracle_cards")
 
 @Serializable
 sealed class ClientMessage
 
 @Serializable
 @SerialName("draw_card")
-data class DrawCardMessage(val count: Int, val to: Zone) : ClientMessage()
+data class DrawCardMessage(val count: Int, val to: Zone, val fromBottom: Boolean) : ClientMessage()
 
 @Serializable
 @SerialName("special_action")
@@ -109,7 +109,8 @@ data class ChangeCardIndexMessage(
 @SerialName("reveal")
 data class RevealCardMessage(
     val card: CardId,
-    val revealTo: Id?
+    val revealTo: Id?,
+    val reveal: Boolean
 ) : ClientMessage()
 
 @Serializable

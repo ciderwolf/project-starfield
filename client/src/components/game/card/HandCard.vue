@@ -50,6 +50,9 @@ function doMenuAction(name: string, ...args: any[]) {
     case 'reveal-to':
       client.revealCard(props.card.id, args[0]);
       break;
+    case 'unreveal-to':
+      client.unrevealCard(props.card.id, args[0]);
+      break;
     case 'play':
       client.playWithAttributes(props.card.id, 0, 0, {});
       break;

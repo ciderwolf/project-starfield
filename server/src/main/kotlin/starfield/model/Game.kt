@@ -56,8 +56,8 @@ class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserColle
             is ChangeCardZoneMessage -> player.moveCard(message.card, message.zone, message.index)
             is ChangeCardZonesMessage -> player.moveCards(message.cards, message.zone, message.index)
             is MoveCardVirtualMessage -> player.moveCardsVirtual(message.ids, message.zone, message.index)
-            is DrawCardMessage -> player.drawCards(message.count, message.to)
-            is RevealCardMessage -> player.revealCard(message.card, message.revealTo)
+            is DrawCardMessage -> player.drawCards(message.count, message.to, message.fromBottom)
+            is RevealCardMessage -> player.revealCard(message.card, message.revealTo, message.reveal)
             is ScryMessage -> player.scry(message.count)
             is CreateTokenMessage -> player.createToken(message.id)
             is CreateCardMessage -> player.createCard(message.id)
@@ -77,6 +77,8 @@ class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserColle
 
         broadcastBoardUpdate(messages)
 
+        val hiddenCardIds = messages.filterIsInstance<BoardDiffEvent.HideCard>()
+
         val revealedCardIds = messages.filterIsInstance<BoardDiffEvent.RevealCard>()
             .associate { Pair(it.card, player.getOracleCard(it.card)) }
         val revealedCards = revealedCardIds.values
@@ -92,8 +94,12 @@ class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserColle
                     playerReveals[msg.card] = card
                     oracleCards[card] = revealedCards[card]!!
                 }
-            if (playerReveals.isNotEmpty()) {
-                user.connection?.send(OracleCardInfoMessage(playerReveals, oracleCards))
+
+            val cardHides = hiddenCardIds
+                .filter { it.players.isEmpty() || it.players.contains(user.id) }
+                .map { it.card }
+            if (playerReveals.isNotEmpty() || cardHides.isNotEmpty()) {
+                user.connection?.send(OracleCardInfoMessage(playerReveals, oracleCards, cardHides))
             }
         }
     }

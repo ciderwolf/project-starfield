@@ -25,7 +25,7 @@ class Player(val user: User, userIndex: Int, deck: Deck, game: Game) {
     private var life = 20
     private var poison = 0
 
-    fun resetSelf(): List<BoardDiffEvent> {
+    private fun resetSelf(): List<BoardDiffEvent> {
         val events = mutableListOf<BoardDiffEvent>()
         if (life != 20) {
             events.add(BoardDiffEvent.ChangePlayerAttribute(user.id, PlayerAttribute.LIFE, 20))
@@ -38,7 +38,7 @@ class Player(val user: User, userIndex: Int, deck: Deck, game: Game) {
     }
 
     fun mulligan(): List<BoardDiffEvent> {
-        return board.reset() + board.drawCards(7, to = Zone.HAND)
+        return board.reset() + board.drawCards(7, to = Zone.HAND, fromBottom = false)
     }
 
     fun getState(playerId: UUID): PlayerState {
@@ -53,8 +53,8 @@ class Player(val user: User, userIndex: Int, deck: Deck, game: Game) {
         )
     }
 
-    fun drawCards(count: Int, to: Zone): List<BoardDiffEvent> {
-        return board.drawCards(count, to)
+    fun drawCards(count: Int, to: Zone, fromBottom: Boolean): List<BoardDiffEvent> {
+        return board.drawCards(count, to, fromBottom)
     }
 
     fun playCard(card: CardId, x: Double, y: Double, attributes: Map<CardAttribute, Int>): List<BoardDiffEvent> {
@@ -120,8 +120,12 @@ class Player(val user: User, userIndex: Int, deck: Deck, game: Game) {
         return board.setAttribute(card, attribute, newValue)
     }
 
-    fun revealCard(card: CardId, revealTo: Id?): List<BoardDiffEvent> {
-        return board.revealTo(card, revealTo)
+    fun revealCard(card: CardId, revealTo: Id?, reveal: Boolean): List<BoardDiffEvent> {
+        return if (reveal) {
+            board.revealTo(card, revealTo)
+        } else {
+            board.unrevealTo(card, revealTo)
+        }
     }
 
     fun scry(count: Int): List<BoardDiffEvent> {

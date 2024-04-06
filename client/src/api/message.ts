@@ -150,9 +150,10 @@ export type OracleCardsMessage = {
   type: 'oracle_cards';
   cards: { [cardId: CardId]: string };
   oracleInfo: { [oracleId: string]: OracleCard };
+  cardsToHide: CardId[];
 }
 
-export type BoardDiffEvent = ChangeZoneEvent | ChangeIndexEvent | ChangePositionEvent | ChangeAttributeEvent | ChangePlayerAttribute | ScoopDeck | ShuffleDeck | RevealCard | CreateCard | DestroyCard;
+export type BoardDiffEvent = ChangeZoneEvent | ChangeIndexEvent | ChangePositionEvent | ChangeAttributeEvent | ChangePlayerAttribute | ScoopDeck | ShuffleDeck | RevealCard | HideCard | CreateCard | DestroyCard;
 
 export type ChangeZoneEvent = {
   type: 'change_zone';
@@ -204,6 +205,12 @@ export type RevealCard = {
   players: string[];
   card: CardId;
   type: 'reveal_card';
+}
+
+export type HideCard = {
+  players: string[];
+  card: CardId;
+  type: 'hide_card';
 }
 
 export type CreateCard = {
@@ -276,6 +283,7 @@ type ChangePlayerAttributeMessage = {
 type DrawCardMessage = {
   count: number;
   to: Zone;
+  fromBottom: boolean;
   type: "draw_card";
 }
 
@@ -295,6 +303,7 @@ type SpecialActionMessage = {
 type RevealCardMessage = {
   card: CardId;
   revealTo: string | null;
+  reveal: boolean;
   type: "reveal";
 }
 

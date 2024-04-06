@@ -42,8 +42,8 @@ function createCardLine(card: DeckCard) {
 onMounted(async () => {
   const decklist = await decks.get(deckId);
   if (decklist) {
-    maindeck.value = decklist.maindeck.map(card => `${card.count} ${card.name}`).join('\n');
-    sideboard.value = decklist.sideboard.map(card => `${card.count} ${card.name}`).join('\n');
+    maindeck.value = decklist.maindeck.map(createCardLine).join('\n');
+    sideboard.value = decklist.sideboard.map(createCardLine).join('\n');
 
     deck.value = decklist;
   }
