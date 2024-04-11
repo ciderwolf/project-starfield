@@ -70,6 +70,10 @@ function onMouseUp(e: MouseEvent) {
 }
 
 function onMouseDown(e: MouseEvent) {
+  if (moving.value) {
+    return;
+  }
+
   // note the position in the element that was originally clicked
   const img = image.value!.cardPosition();
   imagePos.x = img.x;
