@@ -8,11 +8,11 @@ import { getMoveZoneActions } from '@/context-menu';
 import { useBoardStore, type OracleId } from '@/stores/board';
 import type { OracleCard } from '@/api/message';
 
-const props = defineProps<{ cards: { [id: string]: OracleId }, multiSelect: boolean, title: string, readOnly?: boolean, order?: string[] }>();
+const props = defineProps<{ cards: { [id: string]: OracleId }, multiSelect: boolean, title: string, readOnly?: boolean, order?: string[], persist?: boolean }>();
 
 type IdentifiedDeckCard = { uid: string } & OracleCard;
 
-defineExpose({ open });
+defineExpose({ open, close });
 const emit = defineEmits<{
   (event: 'select', ids: string[], zoneId: number, index: number): void
 }>()
@@ -39,6 +39,9 @@ function open() {
   selected.value.clear();
   cardFilter.value = '';
   visible.value = true;
+}
+function close() {
+  visible.value = false;
 }
 
 const selected = ref<Set<string>>(new Set());
@@ -99,7 +102,9 @@ function doMenuAction(_: string, ...args: any[]) {
   showMenu.value = false;
   const targetIndex = args[1] ?? -1;
   emit('select', Array.from(selected.value), args[0], targetIndex);
-  visible.value = false;
+  if (!props.persist) {
+    close();
+  }
 }
 </script>
 
@@ -108,10 +113,11 @@ function doMenuAction(_: string, ...args: any[]) {
     :z-index="2000" />
   <Modal :visible="visible" @close="visible = false" :title="title">
     <h2>{{ title }}</h2>
-    <input type="text" placeholder="Filter cards..." v-model="cardFilter">
-    <style-button @click="moveSelected" :disabled="selected.size === 0" v-if="multiSelect && !readOnly" small>Move
-      to...</style-button>
-
+    <div class="inputs">
+      <input type="text" placeholder="Filter cards..." v-model="cardFilter">
+      <style-button @click="moveSelected" :disabled="selected.size === 0" v-if="multiSelect && !readOnly" small>Move
+        to...</style-button>
+    </div>
     <div class="cards">
       <card-thumbnail v-for="card in filteredCards" :class="getClassString(card, true)" :card="card"
         @click="selectCard($event, card.uid)" />
@@ -127,6 +133,11 @@ function doMenuAction(_: string, ...args: any[]) {
   flex-wrap: wrap;
   justify-content: center;
   overflow: scroll;
+}
+
+.inputs {
+  display: flex;
+  gap: 10px;
 }
 </style>
 

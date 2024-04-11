@@ -23,6 +23,9 @@ const cards = computed(() => {
 const cardOrder = computed(() => {
   const library = board.cards[ZONES.library.id] ?? [];
   const cardsToScry = Math.min(count.value, board.cards[ZONES.library.id]?.length ?? 0);
+  if (cardsToScry === 0) {
+    return [];
+  }
   return library.slice(-cardsToScry)
     .map(card => card.id.toString())
     .reverse();
@@ -38,6 +41,10 @@ function open(countValue: number) {
 
 function select(ids: string[], zoneId: number, index: number) {
   client.moveCardsToZone(ids.map(Number), zoneId, index);
+  count.value -= ids.length;
+  if (count.value === 0) {
+    modal.value?.close();
+  }
 }
 const title = computed(() => {
   const cardCount = Object.keys(cards.value).length;
@@ -51,5 +58,5 @@ const title = computed(() => {
 </script>
 
 <template>
-  <MoveCardsModal ref="modal" multi-select :title="title" :cards="cards" @select="select" :order="cardOrder" />
+  <MoveCardsModal ref="modal" multi-select persist :title="title" :cards="cards" @select="select" :order="cardOrder" />
 </template>
