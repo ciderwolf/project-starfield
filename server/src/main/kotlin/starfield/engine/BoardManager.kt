@@ -178,6 +178,11 @@ class BoardManager(private val owner: UUID, private val ownerIndex: Int, private
                     events.add(BoardDiffEvent.RevealCard(card.id, listOf(owner)))
                 }
             }
+        } else {
+            // visible to just the owner
+            if (card.visibility.add(owner)) {
+                events.add(BoardDiffEvent.RevealCard(card.id, listOf(owner)))
+            }
         }
 
         events.add(BoardDiffEvent.ChangeZone(card.id, newZone, oldCardId))
