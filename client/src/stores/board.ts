@@ -340,9 +340,7 @@ export const useBoardStore = defineStore('board', () => {
   function zoneIsMovable(zoneId: number): boolean {
     const pos = zoneId < 0 ? ScreenPosition.SECONDARY : ScreenPosition.PRIMARY;
     const data = useDataStore();
-    const myAttributes = players[data.userId!];
-    
-    return pos == ScreenPosition.PRIMARY && myAttributes?.index === 0;
+    return pos == ScreenPosition.PRIMARY && data.userId! in players;
   }
 
   function updateHandPos(id: number, bounds: DOMRect) {

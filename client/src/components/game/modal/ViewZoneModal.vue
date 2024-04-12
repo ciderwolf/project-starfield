@@ -21,7 +21,16 @@ const cards = computed(() => {
     cardIdMap[card.id] = board.cardToOracleId[card.id];
   }
   return cardIdMap;
-})
+});
+
+const order = computed(() => {
+  if (!board.cards[zoneId.value]) {
+    return [];
+  }
+  return board.cards[zoneId.value]
+    .map(card => card.id.toString())
+    .reverse();
+});
 
 const modal = ref<ComponentExposed<typeof MoveCardsModal>>();
 defineExpose({ open });
@@ -39,6 +48,6 @@ function select(ids: string[], zoneId: number, index: number) {
 </script>
 
 <template>
-  <MoveCardsModal ref="modal" multi-select :title="`Viewing ${zoneName}`" :cards="cards" :read-only="readOnly"
-    @select="select" />
+  <MoveCardsModal ref="modal" multi-select :title="`Viewing ${zoneName}`" :cards="cards" :order="order"
+    :read-only="readOnly" @select="select" />
 </template>

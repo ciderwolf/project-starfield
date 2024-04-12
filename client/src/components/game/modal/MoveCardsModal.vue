@@ -50,13 +50,13 @@ const cardFilter = ref('');
 
 const filteredCards = computed(() => {
   return expandedCards.value.filter((card) => {
-    return card.name?.toLowerCase().includes(cardFilter.value.toLowerCase());
+    return (card.name ?? "").toLowerCase().includes(cardFilter.value.toLowerCase());
   });
 });
 
 const nonFilteredCards = computed(() => {
   return expandedCards.value.filter((card) => {
-    return !card.name?.toLowerCase().includes(cardFilter.value.toLowerCase());
+    return !(card.name ?? "").toLowerCase().includes(cardFilter.value.toLowerCase());
   });
 });
 

@@ -351,6 +351,41 @@ export function getZoneContextMenu(zoneId: number, isInteractive: boolean, emit:
       options: getMoveZoneActions(zoneId, emit)
     });
   }
+  if (zoneId === ZONES.library.id) {
+    options.push(
+      { 
+        type: 'seperator'
+      },
+      {
+        type: 'text',
+        title: 'Shuffle',
+        effect: () => {
+          emit('shuffle');
+        }
+      },
+      {
+        type: 'text',
+        title: 'Scoop deck',
+        effect: () => {
+          emit('scoop');
+        }
+      },
+      {
+        type: 'text',
+        title: 'Show Sideboard',
+        effect: () => {
+          emit('show-sideboard');
+        }
+      },
+      {
+        type: 'text',
+        title: 'Find card',
+        effect: () => {
+          emit('find-card');
+        }
+      },
+    )
+  }
   return { options };
 }
 

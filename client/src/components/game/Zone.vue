@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ZoneConfig } from '@/zones';
+import { ZONES, type ZoneConfig } from '@/zones';
 import { onMounted, onUnmounted, reactive, ref, computed } from 'vue';
 import { useBoardStore } from '@/stores/board';
 import { useZoneStore } from '@/stores/zone';
@@ -45,6 +45,21 @@ function doMenuAction(action: string, ...args: any[]) {
     case 'move-zone':
       client.moveCardsToZone(board.cards[props.zone.id].map(card => card.id), args[0], args[1] ?? -1);
       break;
+    case 'scoop':
+      client.scoop();
+      break;
+    case 'shuffle':
+      client.shuffle();
+      break;
+    case 'find-card':
+      notifications.findCards();
+      break;
+    case 'scry':
+      notifications.scry(args[0]);
+      break;
+    case 'show-sideboard':
+      notifications.viewZone(ZONES.sideboard.id);
+      break;
     default:
       console.error(`Unknown zone action ${action} ${args}`);
   }
@@ -71,8 +86,7 @@ onUnmounted(() => {
     <div class="zone-bounds" ref="zoneBounds" :style="zone.pos">
       <span class="zone-bubble zone-count" v-if="zone.layout === 'stack' && hasCards">
         {{ board.cards[zone.id].length }}</span>
-      <span class="zone-bubble zone-options" v-if="zone.layout === 'stack' && zone.type != 'LIBRARY' && hasCards"
-        @click="showOptions">≡</span>
+      <span class="zone-bubble zone-options" v-if="zone.layout === 'stack' && hasCards" @click="showOptions">≡</span>
     </div>
     <context-menu v-if="showMenu" v-click-outside="() => showMenu = false" :real-pos="menuPos" :menu="menuDefinition" />
   </div>
