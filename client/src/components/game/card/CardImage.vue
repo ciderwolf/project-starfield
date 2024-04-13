@@ -3,7 +3,7 @@ import { type BoardCard } from '@/api/message';
 import { useNotificationsCache } from '@/cache/notifications';
 import { nonRotatedRect, pivotToAngle, useBoardStore } from '@/stores/board';
 import { useZoneStore } from '@/stores/zone';
-import { OPPONENT_ZONES, ScreenPosition, ZONES } from '@/zones';
+import { OPPONENT_ZONES, ScreenPosition, ZONES, zoneFromIndex } from '@/zones';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 
 interface Position {
@@ -26,6 +26,7 @@ const emits = defineEmits<{
 
 const image = ref<HTMLImageElement>();
 const boardPos = reactive<Position>({ x: 0, y: 0 });
+const animate = ref(false);
 
 defineExpose<{ getBounds: () => DOMRect, recomputePosition: () => void, cardPosition: () => Position }>({
   getBounds: () => image.value!.getBoundingClientRect(),
@@ -67,7 +68,8 @@ const positionInfo = computed(() => {
       left: `${boardPos.x}px`,
       top: `${boardPos.y}px`,
       transform: `rotate(${pivotToAngle(props.card.pivot)})`,
-      backgroundImage: `url(${imageUrl.value})`
+      backgroundImage: `url(${imageUrl.value})`,
+      transition: animate.value ? '0.3s' : 'none'
     };
   }
 });
@@ -128,6 +130,9 @@ onMounted(() => {
   if (props.zoneRect) {
     updateScreenPosFromVirtualCoords();
   }
+  setTimeout(() => {
+    animate.value = zoneFromIndex(props.card.zone)?.type === 'BATTLEFIELD';
+  }, 100);
 });
 
 watch([() => props.zoneRect, () => props.card.x, () => props.card.y], () => {
