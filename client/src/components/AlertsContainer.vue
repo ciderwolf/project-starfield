@@ -6,7 +6,7 @@ const alerts = useAlertsStore();
 </script>
 
 <template>
-  <div id="alerts">
+  <div id="alerts" v-if="Object.keys(alerts.alerts).length > 0">
     <div v-for="alert in alerts.alerts" :key="alert.id">
       <div class="alert" :class="`alert-${alert.type}`" role="alert">
         <b>{{ alert.title }}</b>
