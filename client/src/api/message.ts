@@ -1,6 +1,6 @@
 import type { CardId } from "@/stores/board";
 
-export type WebSocketMessage = LocationMessage | IdentityMessage | ListingUpdateMessage | DeleteListingMessage | RoomStateMessage | BoardUpdateMessage | OracleCardsMessage;
+export type WebSocketMessage = LocationMessage | IdentityMessage | ListingUpdateMessage | DeleteListingMessage | RoomStateMessage | BoardUpdateMessage | OracleCardsMessage | AccountabilityMessage;
 
 type LocationMessage = {
   type: 'location';
@@ -151,6 +151,15 @@ export type OracleCardsMessage = {
   cards: { [cardId: CardId]: string };
   oracleInfo: { [oracleId: string]: OracleCard };
   cardsToHide: CardId[];
+}
+
+export type AccountableAction = "FIND_CARD" | "SIDEBOARD" | "SCRY" | "REVEAL";
+export type AccountabilityMessage = {
+  type: "accountability";
+  action: AccountableAction;
+  owner: string;
+  payload: number
+  player: string | null;
 }
 
 export type BoardDiffEvent = ChangeZoneEvent | ChangeIndexEvent | ChangePositionEvent | ChangeAttributeEvent | ChangePlayerAttribute | ScoopDeck | ShuffleDeck | RevealCard | HideCard | CreateCard | DestroyCard;

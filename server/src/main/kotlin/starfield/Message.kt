@@ -43,6 +43,9 @@ data class BoardUpdateMessage(val events: List<BoardDiffEvent>) : ServerMessage(
 data class OracleCardInfoMessage(val cards: Map<CardId, OracleId>, val oracleInfo: Map<OracleId, CardDao.OracleCard>, val cardsToHide: List<CardId>) : ServerMessage("oracle_cards")
 
 @Serializable
+data class AccountabilityMessage(val action: AccountableAction, val owner: Id, val payload: Int, val player: Id?) : ServerMessage("accountability")
+
+@Serializable
 sealed class ClientMessage
 
 @Serializable

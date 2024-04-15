@@ -20,12 +20,12 @@ const positionInfo = computed<StyleValue>(() => {
   if (position == ScreenPosition.PRIMARY) {
     return {
       right: '0',
-      bottom: '108px',
+      top: 'calc(100vh - 108px)',
       'flex-direction': 'column-reverse',
     };
   } else {
     return {
-      top: '108px',
+      bottom: 'calc(100vh - 108px)',
       right: '0',
       'flex-direction': 'column',
     };

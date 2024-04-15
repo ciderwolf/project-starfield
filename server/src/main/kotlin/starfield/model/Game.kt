@@ -12,6 +12,10 @@ import java.util.*
 @Serializable
 data class GameState(val id: Id, val name: String, val players: List<PlayerState>)
 
+enum class AccountableAction {
+    FIND_CARD, SCRY, SIDEBOARD, REVEAL
+}
+
 class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserCollection<GameState>() {
 
     private val players: List<Player>
@@ -102,6 +106,12 @@ class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserColle
                 user.connection?.send(OracleCardInfoMessage(playerReveals, oracleCards, cardHides))
             }
         }
+
+        if (message is ScryMessage) {
+            sendAccountabilityMessage(AccountableAction.SCRY, player.user.id,  message.count)
+        } else if (message is RevealCardMessage && message.reveal) {
+            sendAccountabilityMessage(AccountableAction.REVEAL,  player.user.id, message.card, message.revealTo)
+        }
     }
 
     fun end(user: User): Boolean {
@@ -140,6 +150,13 @@ class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserColle
         val all = subscribers()
         for(user in all) {
             user.connection?.send(BoardUpdateMessage(messages))
+        }
+    }
+
+    suspend fun sendAccountabilityMessage(messageType: AccountableAction, owner: Id, payload: Int = 0, target: Id? = null) {
+        val all = subscribers()
+        for(user in all) {
+            user.connection?.send(AccountabilityMessage(messageType, owner, payload, target))
         }
     }
 }

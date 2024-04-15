@@ -10,6 +10,7 @@ import starfield.findGame
 import starfield.engine.OracleId
 import starfield.engine.Zone
 import starfield.games
+import starfield.model.AccountableAction
 import starfield.plugins.*
 
 @Serializable
@@ -34,6 +35,7 @@ fun Route.engineRouting() {
 
         val game = findGame(session.id) ?: return@get call.respondError("Not in a game")
         val ids = game.assignVirtualIds(session.id)[Zone.LIBRARY]!!
+        game.sendAccountabilityMessage(AccountableAction.FIND_CARD, session.id)
         val oracleInfo = CardDao().getCards(ids.values).associate {
             val card = it.toOracleCard()
             Pair(card.id, card)
@@ -50,6 +52,7 @@ fun Route.engineRouting() {
 
         val game = findGame(session.id) ?: return@get call.respondError("Not in a game")
         val ids = game.assignVirtualIds(session.id, scoop=true)
+        game.sendAccountabilityMessage(AccountableAction.SIDEBOARD, session.id)
         val oracleInfo = CardDao().getCards(ids.values.flatMap { it.values }).associate {
             val card = it.toOracleCard()
             Pair(card.id, card)

@@ -2,6 +2,7 @@ import type { Zone } from "./api/message";
 
 const Z_WIDTH = '78px';
 const Z_HEIGHT = '108px';
+const GAME_LOG_WIDTH = '250px';
 
 type ZoneFlex = 'free' | 'stack' | 'hstack';
 
@@ -24,7 +25,7 @@ export interface ZoneConfig {
 export const OPPONENT_ZONES: { [name: string] : ZoneConfig } = {
   library: {
     pos: {
-      right: '0',
+      right: `${Z_WIDTH}`,
       top: '0',
       width: `${Z_WIDTH}`,
       height: `${Z_HEIGHT}`,
@@ -39,7 +40,7 @@ export const OPPONENT_ZONES: { [name: string] : ZoneConfig } = {
     pos: {
       left: `${Z_WIDTH}`,
       top: '0px',
-      width: `calc(100% - 2 * ${Z_WIDTH})`,
+      width: `calc(100% - 3 * ${Z_WIDTH})`,
       height: `${Z_HEIGHT}`,
     },
     layout: 'hstack',
@@ -52,7 +53,7 @@ export const OPPONENT_ZONES: { [name: string] : ZoneConfig } = {
     pos: {
       left: `${Z_WIDTH}`,
       top: `${Z_HEIGHT}`,
-      width: `calc(100% - 2 * ${Z_WIDTH})`,
+      width: `calc(100% - ${GAME_LOG_WIDTH} - ${Z_WIDTH})`,
       height: `calc(50vh - ${Z_HEIGHT})`,
     },
     layout: 'free',
@@ -116,7 +117,7 @@ export const OPPONENT_ZONES: { [name: string] : ZoneConfig } = {
 export const ZONES: { [name: string] : ZoneConfig } = {
   library: {
     pos: {
-      right: '0',
+      right: `${Z_WIDTH}`,
       bottom: '0',
       width: `${Z_WIDTH}`,
       height: `${Z_HEIGHT}`,
@@ -131,7 +132,7 @@ export const ZONES: { [name: string] : ZoneConfig } = {
     pos: {
       left: `${Z_WIDTH}`,
       bottom: '0px',
-      width: `calc(100% - 2 * ${Z_WIDTH})`,
+      width: `calc(100% - 3 * ${Z_WIDTH})`,
       height: `${Z_HEIGHT}`,
     },
     layout: 'hstack',
@@ -144,7 +145,7 @@ export const ZONES: { [name: string] : ZoneConfig } = {
     pos: {
       left: `${Z_WIDTH}`,
       top: '50vh',
-      width: `calc(100% - 2 * ${Z_WIDTH})`,
+      width: `calc(100% - ${GAME_LOG_WIDTH} - ${Z_WIDTH})`,
       height: `calc(50% - ${Z_HEIGHT})`,
     },
     layout: 'free',

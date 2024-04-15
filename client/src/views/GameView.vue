@@ -19,6 +19,8 @@ import type { ComponentExposed } from 'vue-component-type-helpers';
 import { useGameStore } from '@/stores/games';
 import { useDataStore } from '@/stores/data';
 import { useRouter, useRoute } from 'vue-router';
+import GameOptionButtons from '@/components/game/GameOptionButtons.vue';
+import GameLog from '@/components/game/GameLog.vue';
 
 
 const myZones = ref<HTMLElement[]>([]);
@@ -171,20 +173,9 @@ onUnmounted(() => {
     <create-card-modal ref="createCardModal" />
     <card-preview ref="cardPreview" />
     <div class="above-deck-elements">
-      <div class="game-options" v-if="isSpectator">
-        <router-link to="/"><button>Go Home</button></router-link>
-      </div>
-      <div class="game-options" v-else>
-        <router-link to="/"><button>Go Home</button></router-link>
-        <hr>
-        <button @click="endGameClicked">End Game</button>
-        <button @click="endGameClicked">New Game</button>
-        <hr>
-        <button @click="createToken">Create Token</button>
-        <button @click=createCard>Create Card</button>
-        <hr>
-        <button @click="untapAll">Untap All</button>
-      </div>
+      <GameOptionButtons :isSpectator="isSpectator" @end-game="endGameClicked" @create-token="createToken"
+        @create-card="createCard" @untap-all="untapAll" />
+      <GameLog />
     </div>
     <div class="player-counters">
       <player-counters v-for="player in board.players" :player="player" />
@@ -198,31 +189,10 @@ onUnmounted(() => {
 .above-deck-elements {
   position: fixed;
   right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-}
-
-.game-options {
-  border: none;
-  background-color: #0005;
-  font-size: 1rem;
-  width: 78px;
-  text-align: center;
-  border-radius: 5px;
-}
-
-.game-options button {
-  width: 100%;
-  border: none;
-  background-color: transparent;
-  color: white;
-  padding: 5px;
-  margin: 0;
-  cursor: pointer;
-  border-radius: 5px;
-}
-
-.game-options button:hover {
-  background-color: #0008;
+  top: 108px;
+  height: calc(100vh - 2 * 108px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 </style>

@@ -1,9 +1,10 @@
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
 import { defineStore } from 'pinia'
 import { ScreenPosition, ZONES, OPPONENT_ZONES, findZoneByName, getZones, zoneNameToId } from '@/zones';
-import type { BoardDiffEvent, BoardCard, ChangeAttributeEvent, ChangeIndexEvent, ChangePlayerAttribute, ChangePositionEvent, ChangeZoneEvent, PlayerState, ScoopDeck, ShuffleDeck, Zone, OracleCard, CreateCard, DestroyCard } from '@/api/message';
+import type { BoardDiffEvent, BoardCard, ChangeAttributeEvent, ChangeIndexEvent, ChangePlayerAttribute, ChangePositionEvent, ChangeZoneEvent, PlayerState, ScoopDeck, ShuffleDeck, Zone, OracleCard, CreateCard, DestroyCard, AccountableAction } from '@/api/message';
 import { useZoneStore } from './zone';
 import { useDataStore } from './data';
+import { getAccountabilityMessage, getEventMessage } from '@/logs';
 
 
 export enum Pivot {
@@ -58,7 +59,7 @@ interface HandOrderInfo {
 
 type HandOrder = { [id: CardId]: HandOrderInfo };
 
-function extractPlayerIndex(cardId: CardId): number {
+export function extractPlayerIndex(cardId: CardId): number {
   // extract the first four bits and return the corresponding player index
   return cardId & 0b00001111;
 }
@@ -69,6 +70,7 @@ export const useBoardStore = defineStore('board', () => {
   const cardToOracleId = reactive<{ [cardId: CardId]: OracleId }>({});
   const oracleInfo = reactive<{ [oracleId: OracleId]: OracleCard }>({});
   const players = reactive<{ [playerId: string]: PlayerAttributes }>({});
+  const logs = ref<string[]>([]);
   const zones = useZoneStore();
   
   function moveCard(zoneId: number, cardId: CardId, x: number, y: number) {
@@ -126,6 +128,10 @@ export const useBoardStore = defineStore('board', () => {
   function processBoardUpdate(events: BoardDiffEvent[]) {
     for(const event of events) {
       processBoardEvent(event);
+      const logMessage = getEventMessage(event);
+      if (logMessage) {
+        logs.value.push(logMessage);
+      }
     }
   }
 
@@ -322,6 +328,11 @@ export const useBoardStore = defineStore('board', () => {
     }
   }
 
+  function processAccountability(action: AccountableAction, owner: string, payload: number, targetPlayer: string | null) {
+    const name = players[owner].name;
+    logs.value.push(getAccountabilityMessage(action, name, payload, targetPlayer))
+  }
+
   function cardIsMovable(card: CardId): boolean {
     const player = extractPlayerIndex(card);
     return playerIsMovable(player);
@@ -395,7 +406,7 @@ export const useBoardStore = defineStore('board', () => {
     return zoneNameToId(zone, pos);
   }
 
-  return { setBoardState, processBoardUpdate, processOracleInfo, cardToOracleId, oracleInfo, updateHandPos, cards, moveCard, cardIsMovable, zoneIsMovable, playerIsMovable, getScreenPositionFromCard, getScreenPositionFromPlayerIndex: getScreenPosition, players }
+  return { setBoardState, processBoardUpdate, processOracleInfo, processAccountability, cardToOracleId, oracleInfo, updateHandPos, cards, moveCard, cardIsMovable, zoneIsMovable, playerIsMovable, getScreenPositionFromCard, getScreenPositionFromPlayerIndex: getScreenPosition, players, logs }
 });
 
 function recalculateHandOrder(handCards: BoardCard[], handBounds: DOMRect) {
