@@ -43,7 +43,27 @@ data class BoardUpdateMessage(val events: List<BoardDiffEvent>) : ServerMessage(
 data class OracleCardInfoMessage(val cards: Map<CardId, OracleId>, val oracleInfo: Map<OracleId, CardDao.OracleCard>, val cardsToHide: List<CardId>) : ServerMessage("oracle_cards")
 
 @Serializable
-data class AccountabilityMessage(val action: AccountableAction, val owner: Id, val payload: Int, val player: Id?) : ServerMessage("accountability")
+data class GameLogMessage<T : LogInfoMessage>(val owner: Id, val message: T) : ServerMessage("log")
+
+@Serializable
+sealed class LogInfoMessage()
+
+@Serializable
+@SerialName("find_card")
+class FindCardLogMessage() : LogInfoMessage()
+@Serializable
+@SerialName("sideboard")
+class SideboardLogMessage() : LogInfoMessage()
+@Serializable
+@SerialName("scry")
+data class ScryLogMessage(val count: Int) : LogInfoMessage()
+@Serializable
+@SerialName("reveal")
+data class RevealLogMessage(val card: CardId, val revealTo: Id?) : LogInfoMessage()
+@Serializable
+@SerialName("roll_die")
+data class RollDieLogMessage(val sides: Int, val result: Int) : LogInfoMessage()
+
 
 @Serializable
 sealed class ClientMessage

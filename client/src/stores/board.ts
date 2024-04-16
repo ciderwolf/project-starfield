@@ -1,10 +1,10 @@
 import { reactive, ref } from 'vue'
 import { defineStore } from 'pinia'
 import { ScreenPosition, ZONES, OPPONENT_ZONES, findZoneByName, getZones, zoneNameToId } from '@/zones';
-import type { BoardDiffEvent, BoardCard, ChangeAttributeEvent, ChangeIndexEvent, ChangePlayerAttribute, ChangePositionEvent, ChangeZoneEvent, PlayerState, ScoopDeck, ShuffleDeck, Zone, OracleCard, CreateCard, DestroyCard, AccountableAction } from '@/api/message';
+import type { BoardDiffEvent, BoardCard, ChangeAttributeEvent, ChangeIndexEvent, ChangePlayerAttribute, ChangePositionEvent, ChangeZoneEvent, PlayerState, ScoopDeck, ShuffleDeck, Zone, OracleCard, CreateCard, DestroyCard, AccountableAction, GameLogMessage, LogInfoMessage } from '@/api/message';
 import { useZoneStore } from './zone';
 import { useDataStore } from './data';
-import { getAccountabilityMessage, getEventMessage } from '@/logs';
+import { getLogMessage, getEventMessage } from '@/logs';
 
 
 export enum Pivot {
@@ -328,9 +328,9 @@ export const useBoardStore = defineStore('board', () => {
     }
   }
 
-  function processAccountability(action: AccountableAction, owner: string, payload: number, targetPlayer: string | null) {
+  function processLog(message: LogInfoMessage, owner: string) {
     const name = players[owner].name;
-    logs.value.push(getAccountabilityMessage(action, name, payload, targetPlayer))
+    logs.value.push(getLogMessage(message, name))
   }
 
   function cardIsMovable(card: CardId): boolean {
@@ -406,7 +406,7 @@ export const useBoardStore = defineStore('board', () => {
     return zoneNameToId(zone, pos);
   }
 
-  return { setBoardState, processBoardUpdate, processOracleInfo, processAccountability, cardToOracleId, oracleInfo, updateHandPos, cards, moveCard, cardIsMovable, zoneIsMovable, playerIsMovable, getScreenPositionFromCard, getScreenPositionFromPlayerIndex: getScreenPosition, players, logs }
+  return { setBoardState, processBoardUpdate, processOracleInfo, processLog: processLog, cardToOracleId, oracleInfo, updateHandPos, cards, moveCard, cardIsMovable, zoneIsMovable, playerIsMovable, getScreenPositionFromCard, getScreenPositionFromPlayerIndex: getScreenPosition, players, logs }
 });
 
 function recalculateHandOrder(handCards: BoardCard[], handBounds: DOMRect) {

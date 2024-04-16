@@ -1,4 +1,4 @@
-import type { AccountableAction, BoardDiffEvent } from "./api/message";
+import type { AccountableAction, BoardDiffEvent, GameLogMessage, LogInfoMessage } from "./api/message";
 import { extractPlayerIndex, useBoardStore, type CardId } from "./stores/board";
 import { findZoneByName } from "./zones";
 
@@ -70,17 +70,22 @@ function getPlayerReveals(players: string[]): string {
     return players.map(player => board.players[player].name).join(", ");
 }
 
-export function getAccountabilityMessage(action: AccountableAction, ownerName: string, payload: number, player: string | null): string {
-    switch (action) {
-        case 'FIND_CARD':
+export function getLogMessage(message: LogInfoMessage, ownerName: string): string {
+    switch (message.type) {
+        case 'find_card':
             return `${ownerName} is searching their deck for a card`;
-        case 'REVEAL':
-            const board = useBoardStore();
-            return `${ownerName} is revealing a card to ${board.players[player??""]?.name ?? "everyone"}`;
-        case 'SCRY':
-            return `${ownerName} is looking at the top ${payload} card${payload === 1 ? "" : "s"} of their deck`;
-        case 'SIDEBOARD':
+        case 'sideboard':
             return `${ownerName} is sideboarding`;
+        case 'reveal':
+            const board = useBoardStore();
+            return `${ownerName} is revealing a card to ${board.players[message.revealTo ?? ""]?.name ?? "everyone"}`;
+        case 'scry':
+            return `${ownerName} is looking at the top ${message.count} card${message.count === 1 ? "" : "s"} of their deck`;
+        case 'roll_die':
+            if (message.sides === 2) {
+                return `${ownerName} flipped a coin and got ${message.result === 1 ? "heads" : "tails"}`;
+            }
+            return `${ownerName} rolled a ${message.sides}-sided die and got ${message.result}`;
     }
 }
 

@@ -55,9 +55,9 @@ export class WebSocketConnection {
         console.log('oracle_cards', message);
         boardStore.processOracleInfo(message.cards, message.oracleInfo, message.cardsToHide);
         break;
-      case 'accountability':
-        console.log('accountability', message);
-        boardStore.processAccountability(message.action, message.owner, message.payload, message.player);
+      case 'log':
+        console.log('log', message);
+        boardStore.processLog(message.message, message.owner);
         break;
       case 'board_update':
         console.log('board_update', message);

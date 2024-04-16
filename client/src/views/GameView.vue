@@ -7,6 +7,7 @@ import CreateTokenModal from '@/components/game/modal/CreateTokenModal.vue';
 import EndGameModal from '@/components/game/modal/EndGameModal.vue';
 import SideboardModal from '@/components/game/modal/SideboardModal.vue';
 import CreateCardModal from '@/components/game/modal/CreateCardModal.vue';
+import RollDieModal from '@/components/game/modal/RollDieModal.vue';
 import CardPreview from '@/components/game/CardPreview.vue';
 import PlayerCounters from '@/components/game/PlayerCounters.vue';
 import { OPPONENT_ZONES, ZONES } from '@/zones';
@@ -88,6 +89,10 @@ function createCard() {
   createCardModal.value?.open();
 }
 
+function rollDie() {
+  rollDieModal.value?.open();
+}
+
 const findCardsModal = ref<ComponentExposed<typeof FindCardsModal>>();
 const scryModal = ref<ComponentExposed<typeof ScryModal>>();
 const viewZoneModal = ref<ComponentExposed<typeof ViewZoneModal>>();
@@ -95,6 +100,7 @@ const createTokenModal = ref<ComponentExposed<typeof CreateTokenModal>>();
 const endGameModal = ref<ComponentExposed<typeof EndGameModal>>();
 const sideboardModal = ref<ComponentExposed<typeof SideboardModal>>();
 const createCardModal = ref<ComponentExposed<typeof CreateCardModal>>();
+const rollDieModal = ref<ComponentExposed<typeof RollDieModal>>();
 const cardPreview = ref<ComponentExposed<typeof CardPreview>>();
 const notificationsCache = useNotificationsCache();
 
@@ -171,10 +177,11 @@ onUnmounted(() => {
     <end-game-modal ref="endGameModal" />
     <sideboard-modal ref="sideboardModal" />
     <create-card-modal ref="createCardModal" />
+    <roll-die-modal ref="rollDieModal" />
     <card-preview ref="cardPreview" />
     <div class="above-deck-elements">
       <GameOptionButtons :isSpectator="isSpectator" @end-game="endGameClicked" @create-token="createToken"
-        @create-card="createCard" @untap-all="untapAll" />
+        @create-card="createCard" @untap-all="untapAll" @roll-die="rollDie" />
       <GameLog />
     </div>
     <div class="player-counters">

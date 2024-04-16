@@ -8,6 +8,7 @@ const emit = defineEmits<{
   createToken: []
   createCard: []
   untapAll: []
+  rollDie: []
 }>();
 
 const expanded = ref(false);
@@ -52,6 +53,10 @@ const expanded = ref(false);
       <button class="icon-button" :class="{ expanded }" @click="emit('createCard')" title="Create Card">
         <span class="material-symbols-rounded">add_box</span>
         <span class="icon-button-text">Create Card</span>
+      </button>
+      <button class="icon-button" :class="{ expanded }" @click="emit('rollDie')" title="Roll a Die">
+        <span class="material-symbols-rounded">casino</span>
+        <span class="icon-button-text">Roll a Die</span>
       </button>
     </div>
     <div class="button-group">

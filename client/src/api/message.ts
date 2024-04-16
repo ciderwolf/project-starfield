@@ -1,6 +1,6 @@
 import type { CardId } from "@/stores/board";
 
-export type WebSocketMessage = LocationMessage | IdentityMessage | ListingUpdateMessage | DeleteListingMessage | RoomStateMessage | BoardUpdateMessage | OracleCardsMessage | AccountabilityMessage;
+export type WebSocketMessage = LocationMessage | IdentityMessage | ListingUpdateMessage | DeleteListingMessage | RoomStateMessage | BoardUpdateMessage | OracleCardsMessage | GameLogMessage;
 
 type LocationMessage = {
   type: 'location';
@@ -154,12 +154,33 @@ export type OracleCardsMessage = {
 }
 
 export type AccountableAction = "FIND_CARD" | "SIDEBOARD" | "SCRY" | "REVEAL";
-export type AccountabilityMessage = {
-  type: "accountability";
-  action: AccountableAction;
+export type GameLogMessage = {
+  type: "log";
   owner: string;
-  payload: number
-  player: string | null;
+  message: LogInfoMessage;
+}
+
+export type LogInfoMessage = SideboardLogMessage | FindCardLogMessage | RollDieLogMessage | ScryLogMessage | RevealLogMessage;
+
+export type SideboardLogMessage = {
+  type: "sideboard";
+}
+export type FindCardLogMessage = {
+  type: "find_card";
+}
+export type RollDieLogMessage = {
+  type: "roll_die";
+  sides: number;
+  result: number;
+}
+export type ScryLogMessage = {
+  type: "scry";
+  count: number;
+}
+export type RevealLogMessage = {
+  type: "reveal";
+  card: CardId;
+  revealTo: string | null;
 }
 
 export type BoardDiffEvent = ChangeZoneEvent | ChangeIndexEvent | ChangePositionEvent | ChangeAttributeEvent | ChangePlayerAttribute | ScoopDeck | ShuffleDeck | RevealCard | HideCard | CreateCard | DestroyCard;

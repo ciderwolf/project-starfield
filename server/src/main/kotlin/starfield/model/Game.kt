@@ -12,10 +12,6 @@ import java.util.*
 @Serializable
 data class GameState(val id: Id, val name: String, val players: List<PlayerState>)
 
-enum class AccountableAction {
-    FIND_CARD, SCRY, SIDEBOARD, REVEAL
-}
-
 class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserCollection<GameState>() {
 
     private val players: List<Player>
@@ -108,9 +104,9 @@ class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserColle
         }
 
         if (message is ScryMessage) {
-            sendAccountabilityMessage(AccountableAction.SCRY, player.user.id,  message.count)
+            broadcastLogMessage(ScryLogMessage(message.count), player.user.id)
         } else if (message is RevealCardMessage && message.reveal) {
-            sendAccountabilityMessage(AccountableAction.REVEAL,  player.user.id, message.card, message.revealTo)
+            broadcastLogMessage(RevealLogMessage(message.card, message.revealTo), player.user.id)
         }
     }
 
@@ -153,10 +149,11 @@ class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserColle
         }
     }
 
-    suspend fun sendAccountabilityMessage(messageType: AccountableAction, owner: Id, payload: Int = 0, target: Id? = null) {
+    suspend fun broadcastLogMessage(message: LogInfoMessage, owner: Id) {
+        val logMessage = GameLogMessage(owner, message)
         val all = subscribers()
         for(user in all) {
-            user.connection?.send(AccountabilityMessage(messageType, owner, payload, target))
+            user.connection?.send(logMessage)
         }
     }
 }

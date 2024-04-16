@@ -25,6 +25,10 @@ export function getVirtualSideboardingIds(): Promise<SideboardingVirtualIdsMessa
   return getJson('game/virtual-ids/sideboarding');
 }
 
+export function rollDie(sides: number): Promise<number> {
+  return getJson(`game/roll-die?sides=${sides}`);
+}
+
 export function beginSpectating(gameId: string): Promise<void> {
   return postJson(`game/${gameId}/spectate`, {});
 }
