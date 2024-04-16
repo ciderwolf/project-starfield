@@ -41,6 +41,9 @@ function open(countValue: number) {
 
 function select(ids: string[], zoneId: number, index: number) {
   client.moveCardsToZone(ids.map(Number), zoneId, index);
+  if (zoneId === ZONES.library.id && index === -1) {
+    return;
+  }
   count.value -= ids.length;
   if (count.value === 0) {
     modal.value?.close();

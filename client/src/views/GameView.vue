@@ -134,6 +134,8 @@ onMounted(() => {
   notificationsCache.sideboard = () => {
     sideboardModal.value?.open();
   }
+
+  board.logs.splice(0, board.logs.length);
 });
 
 watchEffect(() => {

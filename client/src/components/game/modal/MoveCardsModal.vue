@@ -102,6 +102,7 @@ function doMenuAction(_: string, ...args: any[]) {
   showMenu.value = false;
   const targetIndex = args[1] ?? -1;
   emit('select', Array.from(selected.value), args[0], targetIndex);
+  selected.value.clear();
   if (!props.persist) {
     close();
   }
