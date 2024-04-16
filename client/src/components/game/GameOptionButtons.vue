@@ -65,7 +65,7 @@ const expanded = ref(false);
         <span class="icon-button-text">Untap All</span>
       </button>
     </div>
-    <button class="icon-button" :class="{ expanded }" @click="expanded = !expanded" title="Show Details">
+    <button class="show-more" :class="{ expanded }" @click="expanded = !expanded" title="Show Details">
       <span v-if="expanded" class="material-symbols-rounded">expand_less</span>
       <span v-else class="material-symbols-rounded">expand_more</span>
       <span class="icon-button-text">Show Less</span>
@@ -84,6 +84,7 @@ const expanded = ref(false);
   display: flex;
   width: 250px;
   justify-content: center;
+  position: relative;
 }
 
 .game-options.expanded {
@@ -99,7 +100,7 @@ const expanded = ref(false);
   border: none;
 }
 
-.button-group:not(:last-child) {
+.button-group:not(:last-of-type) {
   border-right: 1px solid #fff5;
 }
 
@@ -134,5 +135,28 @@ const expanded = ref(false);
 
 .icon-button.expanded .icon-button-text {
   display: block;
+}
+
+.show-more {
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  transform: translateX(-50%);
+  color: white;
+  background: #0005;
+  border: none;
+  cursor: pointer;
+  width: 25%;
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+  height: 16px;
+}
+
+.show-more span {
+  font-size: 16px;
+}
+
+.show-more:hover {
+  background: #0008;
 }
 </style>
