@@ -15,7 +15,8 @@ data class CardState(
     val counter: Int,
     val transformed: Boolean,
     val flipped: Boolean,
-    val zone: Zone
+    val zone: Zone,
+    val visibility: Set<Id>
 )
 
 class BoardCard(val card: CardDao.CardEntity,
@@ -53,7 +54,7 @@ class BoardCard(val card: CardDao.CardEntity,
     }
 
     fun getState(index: Int): CardState {
-        return CardState(id, x, y, index, pivot, counter, transformed, flipped, zone)
+        return CardState(id, x, y, index, pivot, counter, transformed, flipped, zone, visibility)
     }
 
     fun clone(origin: CardOrigin): BoardCard {

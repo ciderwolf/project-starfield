@@ -1,7 +1,7 @@
 import { reactive, ref } from 'vue'
 import { defineStore } from 'pinia'
 import { ScreenPosition, ZONES, OPPONENT_ZONES, findZoneByName, getZones, zoneNameToId } from '@/zones';
-import type { BoardDiffEvent, BoardCard, ChangeAttributeEvent, ChangeIndexEvent, ChangePlayerAttribute, ChangePositionEvent, ChangeZoneEvent, PlayerState, ScoopDeck, ShuffleDeck, Zone, OracleCard, CreateCard, DestroyCard, AccountableAction, GameLogMessage, LogInfoMessage } from '@/api/message';
+import type { BoardDiffEvent, BoardCard, ChangeAttributeEvent, ChangeIndexEvent, ChangePlayerAttribute, ChangePositionEvent, ChangeZoneEvent, PlayerState, ScoopDeck, ShuffleDeck, Zone, OracleCard, CreateCard, DestroyCard, AccountableAction, GameLogMessage, LogInfoMessage, RevealCard, HideCard } from '@/api/message';
 import { useZoneStore } from './zone';
 import { useDataStore } from './data';
 import { getLogMessage, getEventMessage } from '@/logs';
@@ -126,6 +126,17 @@ export const useBoardStore = defineStore('board', () => {
   }
 
   function processBoardUpdate(events: BoardDiffEvent[]) {
+    // sort events so that reveal and hide events are last
+    events.sort((a, b) => {
+      if (a.type === 'reveal_card' || a.type === 'hide_card') {
+        return 1;
+      } else if (b.type === 'reveal_card' || b.type === 'hide_card') {
+        return -1;
+      } else {
+        return 0;
+      }
+    });
+
     for(const event of events) {
       processBoardEvent(event);
       const logMessage = getEventMessage(event);
@@ -159,7 +170,10 @@ export const useBoardStore = defineStore('board', () => {
         processShuffleDeck(event);
         break;
       case 'reveal_card':
+        processRevealCard(event);
+        break;
       case 'hide_card':
+        processHideCard(event);
         break;
       case 'create_card':
         processCreateCard(event);
@@ -290,6 +304,39 @@ export const useBoardStore = defineStore('board', () => {
     }
   }
 
+  function processRevealCard(event: RevealCard) {
+    const zone = extractZone(event.card);
+    const cardIndex = findCardIndex(event.card);
+    const card = cards[zone][cardIndex];
+
+    const revealTo = event.players.length === 0
+      ? Object.keys(players)
+      : event.players;
+
+    for(const player of revealTo) {
+      if (!card.visibility.includes(player)) {
+        card.visibility.push(player);
+      }
+    }
+  }
+
+  function processHideCard(event: HideCard) {
+    const zone = extractZone(event.card);
+    const cardIndex = findCardIndex(event.card);
+    const card = cards[zone][cardIndex];
+
+    const revealTo = event.players.length === 0
+      ? Object.keys(players)
+      : event.players;
+
+    for(const player of revealTo) {
+      const index = card.visibility.indexOf(player);
+      if (index >= 0) {
+        card.visibility.splice(index, 1);
+      }
+    }
+  }
+
   function processCreateCard(event: CreateCard) {
     const card = event.state;
     card.zone = getZoneId(card.id, card.zone as unknown as Zone);
@@ -309,6 +356,7 @@ export const useBoardStore = defineStore('board', () => {
     resetCardAttributes(card);
     card.x = 0;
     card.y = 0;
+    card.visibility = [];
     card.zone = getZoneId(card.id, 'LIBRARY');
   }
 

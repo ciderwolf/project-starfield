@@ -92,6 +92,7 @@ export type BoardCard = Card & {
   flipped: boolean;
   zone: number;
   id: CardId;
+  visibility: string[];
 };
 
 export type Deck = {

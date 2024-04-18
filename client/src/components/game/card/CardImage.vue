@@ -2,6 +2,7 @@
 import { type BoardCard } from '@/api/message';
 import { useNotificationsCache } from '@/cache/notifications';
 import { nonRotatedRect, pivotToAngle, useBoardStore } from '@/stores/board';
+import { useDataStore } from '@/stores/data';
 import { useZoneStore } from '@/stores/zone';
 import { OPPONENT_ZONES, ScreenPosition, ZONES, zoneFromIndex } from '@/zones';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
@@ -80,6 +81,16 @@ const ghostPositionInfo = computed(() => ({
   transform: `rotate(${pivotToAngle(props.card.pivot)})`,
 }));
 
+const shouldShowRevealedIndicator = computed(() => {
+  const data = useDataStore();
+  const zone = zoneFromIndex(props.card.zone)!;
+  const [_, revealedToOpponents] = zone.reveal;
+
+  return !revealedToOpponents
+    && board.cardIsMovable(props.card.id)
+    && props.card.visibility.some(player => player !== data.userId);
+});
+
 
 function updateScreenPosFromVirtualCoords() {
   if (props.zoneRect === undefined || image === undefined) {
@@ -148,6 +159,7 @@ watch([() => props.zoneRect, () => props.card.x, () => props.card.y], () => {
     @mousedown="$emit('mousedown', $event)" @mouseup="$emit('mouseup', $event)" @mouseenter="mouseEnter"
     @mouseleave="mouseLeave" ref="image">
     <span v-if="card.counter > 0" class="board-card-counter">{{ card.counter }}</span>
+    <span v-if="shouldShowRevealedIndicator" class="board-card-revealed material-symbols-rounded">visibility</span>
   </figure>
   <img v-if="showGhost" class="board-card board-card-ghost" :style="ghostPositionInfo" draggable="false"
     :src="imageUrl">
@@ -184,5 +196,17 @@ watch([() => props.zoneRect, () => props.card.x, () => props.card.y], () => {
   font-weight: bold;
   text-align: center;
   padding: 0;
+}
+
+.board-card-revealed {
+  position: absolute;
+  top: 25%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.5em;
+  color: white;
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 2px;
+  border-radius: 50%;
 }
 </style>

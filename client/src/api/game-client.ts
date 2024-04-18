@@ -162,7 +162,7 @@ export class WebSocketGameClient extends GameClient {
     this.ws.send({
       type: 'reveal',
       card: cardId,
-      revealTo: null,
+      revealTo: playerId ?? null,
       reveal: false,
     });
   }
