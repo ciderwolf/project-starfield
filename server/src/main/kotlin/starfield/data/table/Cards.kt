@@ -6,34 +6,34 @@ import org.jetbrains.exposed.sql.Table
 
 object Cards : Table("Card") {
 
-    val id = uuid("CardId")
-    val name = varchar("Name", 200)
-    val fuzzyName = varchar("FuzzyName", 200).index(isUnique = false)
-    val type = varchar("Type", 50)
-    val src = integer("Source").references(CardSources.id)
-    val image = varchar("Image", 100)
-    val backImage = varchar("BackImage", 100).nullable()
-    val thumbnailImage = varchar("ThumbnailImage", 100)
+    val id = uuid("card_id")
+    val name = varchar("name", 200)
+    val fuzzyName = varchar("fuzzy_name", 200).index(isUnique = false)
+    val type = varchar("type", 50)
+    val src = integer("source").references(CardSources.id)
+    val image = varchar("image", 100)
+    val backImage = varchar("back_image", 100).nullable()
+    val thumbnailImage = varchar("thumbnail_image", 100)
 
     override val primaryKey = PrimaryKey(id)
 }
 
 object Tokens : Table("Token") {
-    val id = uuid("TokenId")
-    val name = varchar("Name", 100)
-    val fuzzyName = varchar("FuzzyName", 100)
-    val colors = varchar("Colors", 10)
-    val superTypes = varchar("SuperTypes", 100)
-    val subTypes = varchar("SubTypes", 100)
-    val pt = varchar("PT", 10).nullable()
-    val text = varchar("Text", 1000)
-    val image = varchar("Image", 100)
-    val backImage = varchar("BackImage", 100).nullable()
+    val id = uuid("token_id")
+    val name = varchar("name", 100)
+    val fuzzyName = varchar("fuzzy_name", 100)
+    val colors = varchar("colors", 10)
+    val superTypes = varchar("super_types", 100)
+    val subTypes = varchar("sub_types", 100)
+    val pt = varchar("pt", 10).nullable()
+    val text = varchar("text", 1000)
+    val image = varchar("image", 100)
+    val backImage = varchar("back_image", 100).nullable()
 
     override val primaryKey = PrimaryKey(id)
 }
 
-object CardSources : IntIdTable("CardSource", "CardSourceId") {
-    val name = varchar("Name", 100)
-    val code = varchar("Code", 5)
+object CardSources : IntIdTable("CardSource", "card_source_id") {
+    val name = varchar("name", 100)
+    val code = varchar("code", 5)
 }

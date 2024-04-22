@@ -1,4 +1,4 @@
 #!/bin/sh
 set -e
-/usr/sbin/sshd
+service ssh start
 java -jar server.jar

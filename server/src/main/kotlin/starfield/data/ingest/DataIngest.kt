@@ -3,12 +3,10 @@ package starfield.data.ingest
 import com.opencsv.CSVReader
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.Column
-import org.jetbrains.exposed.sql.batchInsert
 import org.jetbrains.exposed.sql.batchUpsert
 import org.jetbrains.exposed.sql.transactions.transaction
+import starfield.data.table.*
 
-import starfield.data.table.Cards
-import starfield.data.table.Tokens
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
@@ -17,13 +15,17 @@ object DataIngest {
     @Suppress("UNCHECKED_CAST")
     private fun writeCsvFileToTable(rows: CsvFile, table: Table) {
         transaction {
-            table.batchInsert(rows) {
+            table.batchUpsert(rows) {
                 for(col in table.columns) {
                     val rowVal = rows.getColumn(it, col.name)
                     if (rowVal == "" && col.columnType.nullable) {
                         this[col as Column<Any?>] = null
                     } else {
-                        this[col as Column<Any>] = col.columnType.valueToDB(rowVal)!!
+                        if (col.columnType.sqlType() == "INT") {
+                            this[col as Column<Any>] = rowVal!!.toInt()
+                        } else {
+                            this[col as Column<Any>] = col.columnType.valueToDB(rowVal)!!
+                        }
                     }
                 }
             }
@@ -51,14 +53,10 @@ object DataIngest {
         return when(name) {
             "Card" -> Cards
             "Token" -> Tokens
-            "CardOracleIds" -> CardOracleIds
+            "CardSource" -> CardSources
+            "Deck" -> Decks
+            "DeckCard" -> DeckCards
             else -> throw IllegalArgumentException("Unhandled table type $name")
         }
-    }
-
-    object CardOracleIds : Table("card_oracle_ids") {
-        val card_id = uuid("card_id")
-        val oracle_id = uuid("oracle_id")
-        val fuzzy_name = varchar("fuzzy_name", 200)
     }
 }

@@ -15,5 +15,6 @@ out/
 client-app/
 db/
 server/cards/
+.env*
 
 TODO

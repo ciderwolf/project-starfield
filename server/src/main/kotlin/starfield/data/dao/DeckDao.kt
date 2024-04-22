@@ -79,8 +79,7 @@ class DeckDao {
     }
 
     suspend fun updateDeck(id: Id, name: String, thumbnailId: Id?, maindeck: List<DeckCard>, sideboard: List<DeckCard>) = DatabaseSingleton.dbQuery {
-        Decks.upsert {
-            it[Decks.id] = id
+        Decks.update({ Decks.id eq id }) {
             it[Decks.name] = name
             it[Decks.thumbnailId] = thumbnailId
         }

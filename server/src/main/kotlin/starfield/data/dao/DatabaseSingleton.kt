@@ -9,9 +9,8 @@ import starfield.data.table.*
 
 object DatabaseSingleton {
     fun init() {
-        val driverClassName = "org.h2.Driver"
-        val jdbcURL = "jdbc:h2:${Config.storagePath}db;AUTO_SERVER=TRUE"
-        val database = Database.connect(jdbcURL, driverClassName)
+        val driverClassName = "org.postgresql.Driver"
+        val database = Database.connect(Config.connectionString, driverClassName)
         transaction(database) {
             SchemaUtils.create(Cards, Tokens, Users, Decks, DeckCards, CardSources)
         }
