@@ -6,6 +6,7 @@ import { fetchDeck, getDecks } from '@/api/deck';
 export const useDecksStore = defineStore('decks', () => {
 
   const decks = reactive<{ [id: string]: DeckListing }>({});
+  const isLoaded = ref(false);
 
   async function getDeck(id: string) {
     const cached = decks[id];
@@ -17,11 +18,13 @@ export const useDecksStore = defineStore('decks', () => {
   }
 
   async function reloadDecks() {
-    const decksList = await getDecks()
+    isLoaded.value = false;
+    const decksList = await getDecks();
     for (const deck of decksList) {
       decks[deck.id] = deck;
     }
+    isLoaded.value = true;
   }
-  
-  return { decks, getDeck, reloadDecks }
+
+  return { decks, isLoaded, getDeck, reloadDecks }
 })

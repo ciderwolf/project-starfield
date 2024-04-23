@@ -36,7 +36,8 @@ async function open() {
     .map(([virtualId, oracleId]) => mapCard(oracleInfo[oracleId], virtualId))
     .sort((a, b) => a.name.localeCompare(b.name));
   sideboardCards.value = Object.entries(side)
-    .map(([virtualId, oracleId]) => mapCard(oracleInfo[oracleId], virtualId));
+    .map(([virtualId, oracleId]) => mapCard(oracleInfo[oracleId], virtualId))
+    .sort((a, b) => a.name.localeCompare(b.name));
 }
 
 function moveToSideboard(card: IdentifiedDeckCard) {

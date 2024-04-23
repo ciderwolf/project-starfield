@@ -147,7 +147,8 @@ async function submitDeckAndCloseClicked() {
 }
 
 #decklist textarea {
-  font-family: sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-size: 1em;
   min-width: 300px;
   min-height: 400px;
   margin: 5px;

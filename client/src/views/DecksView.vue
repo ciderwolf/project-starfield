@@ -2,6 +2,7 @@
 import { newDeck, deleteDeck } from '@/api/deck';
 import type { Deck, DeckListing } from '@/api/message';
 import { useDecksCache } from '@/cache/decks';
+import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import StyleButton from '@/components/StyleButton.vue';
 import { useDecksStore } from '@/stores/decks';
 import { useRouter } from 'vue-router';
@@ -44,7 +45,12 @@ function deckThumbnailUrl(deck: DeckListing) {
       <h2>Decks</h2>
       <style-button @click="createDeck" small>+ New Deck</style-button>
     </div>
-    <div class="deck-cards" v-if="Object.keys(decks.decks).length > 0">
+    <div class="empty-container-title" v-if="!decks.isLoaded">
+      <h3 class="loading-decks-title">
+        <LoadingSpinner /> Loading decks...
+      </h3>
+    </div>
+    <div class="deck-cards" v-else-if="Object.keys(decks.decks).length > 0">
       <div v-for="deck in decks.decks" :key="deck.id">
         <router-link :to="{ name: 'deckbuilder', params: { id: deck.id } }" class="deck-card">
           <img :alt="`${deck.name} Thumnail`" class="deck-card-thumbnail" :src="deckThumbnailUrl(deck)" />
@@ -73,6 +79,12 @@ function deckThumbnailUrl(deck: DeckListing) {
   text-align: center;
   color: #333;
   font-style: italic;
+}
+
+.loading-decks-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .deck-cards {

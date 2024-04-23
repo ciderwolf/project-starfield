@@ -25,8 +25,10 @@ const messages = computed(() => {
 
 <template>
   <div class="game-log">
-    <div class="log-message" v-for="msg in messages">{{ msg.message }} <span class="log-repeat"
-        v-if="msg.count > 1">x({{ msg.count }})</span></div>
+    <div class="log-message" v-for="msg in messages">
+      {{ msg.message }}
+      <span class="log-repeat" v-if="msg.count > 1">(x{{ msg.count }})</span>
+    </div>
   </div>
 </template>
 
@@ -35,7 +37,7 @@ const messages = computed(() => {
   display: flex;
   flex-direction: column-reverse;
   max-width: 250px;
-  overflow: scroll;
+  overflow-y: scroll;
 }
 
 .log-message {

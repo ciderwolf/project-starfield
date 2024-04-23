@@ -90,7 +90,7 @@ function createCard(token: OracleCard) {
 .search-results {
   display: flex;
   flex-wrap: wrap;
-  overflow: scroll;
+  overflow-y: scroll;
   max-height: 400px;
   background-color: #eee;
   border: 1px solid #ddd;

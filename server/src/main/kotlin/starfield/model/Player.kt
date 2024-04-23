@@ -28,10 +28,12 @@ class Player(val user: User, userIndex: Int, deck: Deck, game: Game) {
     private fun resetSelf(): List<BoardDiffEvent> {
         val events = mutableListOf<BoardDiffEvent>()
         if (life != 20) {
+            life = 20
             events.add(BoardDiffEvent.ChangePlayerAttribute(user.id, PlayerAttribute.LIFE, 20))
         }
 
-        if (poison != 20) {
+        if (poison != 0) {
+            poison = 0
             events.add(BoardDiffEvent.ChangePlayerAttribute(user.id, PlayerAttribute.POISON, 0))
         }
         return events

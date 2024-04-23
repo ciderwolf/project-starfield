@@ -97,7 +97,7 @@ function maximize() {
   border-radius: 0.5rem;
   box-shadow: 0 0 1rem rgba(0, 0, 0, 0.5);
   max-height: 80%;
-  overflow: scroll;
+  overflow-y: scroll;
   width: max-content;
   max-width: 80%;
   min-width: 50%;

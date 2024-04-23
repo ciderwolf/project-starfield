@@ -133,7 +133,7 @@ function doMenuAction(_: string, ...args: any[]) {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  overflow: scroll;
+  overflow-y: scroll;
 }
 
 .inputs {
