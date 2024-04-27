@@ -1,10 +1,10 @@
 import { reactive, ref } from 'vue'
 import { defineStore } from 'pinia'
 import { ScreenPosition, ZONES, OPPONENT_ZONES, findZoneByName, getZones, zoneNameToId } from '@/zones';
-import type { BoardDiffEvent, BoardCard, ChangeAttributeEvent, ChangeIndexEvent, ChangePlayerAttribute, ChangePositionEvent, ChangeZoneEvent, PlayerState, ScoopDeck, ShuffleDeck, Zone, OracleCard, CreateCard, DestroyCard, AccountableAction, GameLogMessage, LogInfoMessage, RevealCard, HideCard } from '@/api/message';
+import type { BoardDiffEvent, BoardCard, ChangeAttributeEvent, ChangeIndexEvent, ChangePlayerAttribute, ChangePositionEvent, ChangeZoneEvent, PlayerState, ScoopDeck, ShuffleDeck, Zone, OracleCard, CreateCard, DestroyCard, LogInfoMessage, RevealCard, HideCard } from '@/api/message';
 import { useZoneStore } from './zone';
 import { useDataStore } from './data';
-import { getLogMessage, getEventMessage } from '@/logs';
+import { getLogMessage, getEventMessage, type EventMessage } from '@/logs';
 
 
 export enum Pivot {
@@ -65,14 +65,14 @@ export function extractPlayerIndex(cardId: CardId): number {
 }
 
 export const useBoardStore = defineStore('board', () => {
-  
-  const cards: { [zoneId: number]: BoardCard[] } = reactive({  });
+
+  const cards: { [zoneId: number]: BoardCard[] } = reactive({});
   const cardToOracleId = reactive<{ [cardId: CardId]: OracleId }>({});
   const oracleInfo = reactive<{ [oracleId: OracleId]: OracleCard }>({});
   const players = reactive<{ [playerId: string]: PlayerAttributes }>({});
-  const logs = ref<string[]>([]);
+  const logs = ref<EventMessage[]>([]);
   const zones = useZoneStore();
-  
+
   function moveCard(zoneId: number, cardId: CardId, x: number, y: number) {
     const cardIndex = findCardIndex(cardId);
     cards[zoneId][cardIndex].x = x;
@@ -86,7 +86,7 @@ export const useBoardStore = defineStore('board', () => {
 
   function setBoardState(playerStates: PlayerState[]) {
     let index = 0;
-    for(const state of playerStates) {
+    for (const state of playerStates) {
       players[state.id] = {
         life: state.life,
         poison: state.poison,
@@ -97,13 +97,13 @@ export const useBoardStore = defineStore('board', () => {
       index += 1;
     }
 
-    for(const state of playerStates) {
+    for (const state of playerStates) {
       const pos = getScreenPosition(players[state.id].index);
-      for(const [zoneName, cardList] of Object.entries(state.board)) {
+      for (const [zoneName, cardList] of Object.entries(state.board)) {
         const zone = findZoneByName(zoneName, pos);
         // reserialize Zone name as id number
         if (cardList.length > 0) {
-          cardList.forEach(card => card.zone = zoneNameToId(card.zone as unknown as Zone, pos))  
+          cardList.forEach(card => card.zone = zoneNameToId(card.zone as unknown as Zone, pos))
         }
         if (zone) {
           cards[zone.id] = cardList;
@@ -111,16 +111,16 @@ export const useBoardStore = defineStore('board', () => {
       }
 
       // overwrite oracleInfo from message
-      for(const [cardId, oracleId] of Object.entries(state.cardToOracleId)) {
+      for (const [cardId, oracleId] of Object.entries(state.cardToOracleId)) {
         cardToOracleId[Number(cardId)] = oracleId;
       }
 
       // overwrite oracleInfo from message
-      for(const [oracleId, card] of Object.entries(state.oracleInfo)) {
+      for (const [oracleId, card] of Object.entries(state.oracleInfo)) {
         oracleInfo[oracleId] = card;
       }
     }
-    
+
     recalculateHandOrder(cards[ZONES.hand.id], zones.zoneBounds[ZONES.hand.id]);
     recalculateHandOrder(cards[OPPONENT_ZONES.hand.id], zones.zoneBounds[OPPONENT_ZONES.hand.id]);
   }
@@ -137,7 +137,7 @@ export const useBoardStore = defineStore('board', () => {
       }
     });
 
-    for(const event of events) {
+    for (const event of events) {
       processBoardEvent(event);
       const logMessage = getEventMessage(event);
       if (logMessage) {
@@ -147,7 +147,7 @@ export const useBoardStore = defineStore('board', () => {
   }
 
   function processBoardEvent(event: BoardDiffEvent) {
-    switch(event.type) {
+    switch (event.type) {
       case 'change_zone':
         processChangeZone(event);
         break;
@@ -199,7 +199,7 @@ export const useBoardStore = defineStore('board', () => {
       cardToOracleId[card.id] = cardToOracleId[event.oldCardId];
       delete cardToOracleId[event.oldCardId];
     }
-    
+
     const handId = getZoneId(event.card, 'HAND');
     if (newZoneId === handId || oldZoneId === handId) {
       card.x = 1;
@@ -226,7 +226,7 @@ export const useBoardStore = defineStore('board', () => {
     const zoneId = extractZone(event.card);
     const cardIndex = findCardIndex(event.card);
     const card = cards[zoneId][cardIndex];
-    switch(event.attribute) {
+    switch (event.attribute) {
       case 'PIVOT':
         card.pivot = indexToPivot(event.newValue);
         break;
@@ -247,7 +247,7 @@ export const useBoardStore = defineStore('board', () => {
 
   function processChangePlayerAttribute(event: ChangePlayerAttribute) {
     const player = players[event.player];
-    switch(event.attribute) {
+    switch (event.attribute) {
       case 'LIFE':
         player.life = event.newValue;
         break;
@@ -266,7 +266,7 @@ export const useBoardStore = defineStore('board', () => {
     const pos = getScreenPosition(player.index);
     const zones = getZones(pos);
     const libraryId = zones.find(z => z.type === 'LIBRARY')!.id;
-    for(const zone of zones) {
+    for (const zone of zones) {
       if (zone.type === 'SIDEBOARD') {
         continue;
       }
@@ -276,7 +276,7 @@ export const useBoardStore = defineStore('board', () => {
       deck.push(...cardList);
     }
 
-    for(let i = 0; i < deck.length; i++) {
+    for (let i = 0; i < deck.length; i++) {
       const card = deck[i];
       if (card.id in cardToOracleId) {
         delete cardToOracleId[card.id];
@@ -294,7 +294,7 @@ export const useBoardStore = defineStore('board', () => {
     const libraryId = getZones(getScreenPosition(player.index))
       .find(z => z.type === 'LIBRARY')!.id;
     const deck = cards[libraryId];
-    for(let i = 0; i < deck.length; i++) {
+    for (let i = 0; i < deck.length; i++) {
       const card = deck[i];
       if (card.id in cardToOracleId) {
         delete cardToOracleId[card.id];
@@ -313,7 +313,7 @@ export const useBoardStore = defineStore('board', () => {
       ? Object.keys(players)
       : event.players;
 
-    for(const player of revealTo) {
+    for (const player of revealTo) {
       if (!card.visibility.includes(player)) {
         card.visibility.push(player);
       }
@@ -329,7 +329,7 @@ export const useBoardStore = defineStore('board', () => {
       ? Object.keys(players)
       : event.players;
 
-    for(const player of revealTo) {
+    for (const player of revealTo) {
       const index = card.visibility.indexOf(player);
       if (index >= 0) {
         card.visibility.splice(index, 1);
@@ -378,7 +378,7 @@ export const useBoardStore = defineStore('board', () => {
 
   function processLog(message: LogInfoMessage, owner: string) {
     const name = players[owner].name;
-    logs.value.push(getLogMessage(message, name))
+    logs.value.push({ message: getLogMessage(message, name) })
   }
 
   function cardIsMovable(card: CardId): boolean {
@@ -406,6 +406,25 @@ export const useBoardStore = defineStore('board', () => {
     const handCards = cards[id];
     if (!handCards) return;
     recalculateHandOrder(handCards, bounds);
+  }
+
+  function highlightCard(cardId: CardId) {
+    const zoneId = extractZone(cardId);
+    const cardIndex = findCardIndex(cardId);
+    const card = cards[zoneId][cardIndex];
+    if (card) {
+      card.highlighted = true;
+      console.log(card);
+    }
+  }
+
+  function clearHighlight(cardId: CardId) {
+    const zoneId = extractZone(cardId);
+    const cardIndex = findCardIndex(cardId);
+    const card = cards[zoneId][cardIndex];
+    if (card) {
+      card.highlighted = false;
+    }
   }
 
   function findCardIndex(cardId: CardId): number {
@@ -454,7 +473,7 @@ export const useBoardStore = defineStore('board', () => {
     return zoneNameToId(zone, pos);
   }
 
-  return { setBoardState, processBoardUpdate, processOracleInfo, processLog: processLog, cardToOracleId, oracleInfo, updateHandPos, cards, moveCard, cardIsMovable, zoneIsMovable, playerIsMovable, getScreenPositionFromCard, getScreenPositionFromPlayerIndex: getScreenPosition, players, logs }
+  return { setBoardState, processBoardUpdate, processOracleInfo, processLog: processLog, cardToOracleId, oracleInfo, updateHandPos, cards, moveCard, cardIsMovable, zoneIsMovable, playerIsMovable, getScreenPositionFromCard, getScreenPositionFromPlayerIndex: getScreenPosition, players, logs, highlightCard, clearHighlight }
 });
 
 function recalculateHandOrder(handCards: BoardCard[], handBounds: DOMRect) {
@@ -480,7 +499,7 @@ function recalculateHandOrder(handCards: BoardCard[], handBounds: DOMRect) {
     cards[i].pos = virtualOffset + i * virtualCardWidth;
   }
 
-  for(const card of handCards) {
+  for (const card of handCards) {
     card.x = handOrder[card.id].pos;
   }
 }

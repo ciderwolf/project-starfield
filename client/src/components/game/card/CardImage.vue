@@ -62,7 +62,7 @@ const positionInfo = computed(() => {
       top: `${props.imagePos.y}px`,
       zIndex: props.moving ? 3 : 1,
       transform: `rotate(${pivotToAngle(props.card.pivot)})`,
-      backgroundImage: `url(${imageUrl.value})`
+      backgroundImage: `url(${imageUrl.value})`,
     };
   } else {
     return {
@@ -70,7 +70,8 @@ const positionInfo = computed(() => {
       top: `${boardPos.y}px`,
       transform: `rotate(${pivotToAngle(props.card.pivot)})`,
       backgroundImage: `url(${imageUrl.value})`,
-      transition: animate.value ? '0.3s' : 'none'
+      transition: animate.value ? '0.3s' : 'none',
+      boxShadow: props.card.highlighted ? '0 0 10px 5px #ff0' : 'none',
     };
   }
 });

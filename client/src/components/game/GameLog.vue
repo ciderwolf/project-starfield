@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useBoardStore } from '@/stores/board';
+import { useBoardStore, type CardId } from '@/stores/board';
 import { computed } from 'vue';
 
 const board = useBoardStore();
@@ -7,25 +7,41 @@ const board = useBoardStore();
 type CondensedMessage = {
   message: string;
   count: number;
+  cards: CardId[];
 }
 
 const messages = computed(() => {
   const condensedMessages: CondensedMessage[] = [];
   board.logs.forEach((log) => {
     const lastMessage = condensedMessages[condensedMessages.length - 1];
-    if (lastMessage && lastMessage.message === log) {
+    if (lastMessage && lastMessage.message === log.message) {
       lastMessage.count++;
+      if (log.card) {
+        lastMessage.cards.push(log.card);
+      }
     } else {
-      condensedMessages.push({ message: log, count: 1 });
+      condensedMessages.push({ message: log.message, cards: log.card ? [log.card] : [], count: 1 });
     }
   });
   return condensedMessages.reverse();
 });
+
+function hoverMessage(message: CondensedMessage) {
+  for (const card of message.cards) {
+    board.highlightCard(card);
+  }
+}
+
+function clearHover(message: CondensedMessage) {
+  for (const card of message.cards) {
+    board.clearHighlight(card);
+  }
+}
 </script>
 
 <template>
   <div class="game-log">
-    <div class="log-message" v-for="msg in messages">
+    <div class="log-message" v-for="msg in messages" @mouseenter="hoverMessage(msg)" @mouseleave="clearHover(msg)">
       {{ msg.message }}
       <span class="log-repeat" v-if="msg.count > 1">(x{{ msg.count }})</span>
     </div>

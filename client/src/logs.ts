@@ -1,8 +1,13 @@
-import type { AccountableAction, BoardDiffEvent, GameLogMessage, LogInfoMessage } from "./api/message";
+import type { BoardDiffEvent, LogInfoMessage } from "./api/message";
 import { extractPlayerIndex, useBoardStore, type CardId } from "./stores/board";
 import { findZoneByName } from "./zones";
 
-export function getEventMessage(event: BoardDiffEvent): string | null {
+export interface EventMessage {
+    message: string;
+    card?: CardId;
+}
+
+export function getEventMessage(event: BoardDiffEvent): EventMessage | null {
     const owner = identifyEventOwner(event);
     const board = useBoardStore();
     const name = board.players[owner].name;
@@ -14,25 +19,49 @@ export function getEventMessage(event: BoardDiffEvent): string | null {
             return null;
         case "change_index": {
             if (((event.newIndex & 0b11110000) >> 4) === 0 && event.newIndex === 0) {
-                return `${name} moved a card to the bottom of their deck`;
+                return {
+                    message: `${name} moved a card to the bottom of their deck`,
+                    card: event.card
+                };
             } else {
-                return `${name} moved ${event.card} to index ${event.newIndex}`;
+                return {
+                    message: `${name} moved a card to position ${event.newIndex} in its zone`,
+                    card: event.card
+                };
             }
         }
         case "destroy_card":
-            return `${name} destroyed a card`;
+            return {
+                message: `${name} destroyed a card`,
+                card: event.card
+            };
         case "change_zone":
-            return `${name} moved a card to their ${findZoneByName(event.newZone)!.name}`;
+            return {
+                message: `${name} moved a card to their ${findZoneByName(event.newZone)!.name}`,
+                card: event.card
+            };
         case "hide_card":
-            return `${name} hid a card from ${getPlayerReveals(event.players)}`;
+            return {
+                message: `${name} hid a card from ${getPlayerReveals(event.players)}`,
+                card: event.card
+            };
         case "create_card":
-            return `${name} created a card`;
+            return {
+                message: `${name} created a card`,
+                card: event.state.id
+            };
         case "change_player_attribute":
-            return `${name} changed their ${event.attribute.toLowerCase()} to ${event.newValue}`;
+            return {
+                message: `${name} changed their ${event.attribute.toLowerCase()} to ${event.newValue}`
+            };
         case "scoop_deck":
-            return `${name} scooped their deck`;
+            return {
+                message: `${name} scooped their deck`
+            };
         case "shuffle_deck":
-            return `${name} shuffled their deck`;
+            return {
+                message: `${name} shuffled their deck`
+            };
     }
 }
 
@@ -94,7 +123,7 @@ class RollingWindowQueue<T> {
     private currentPos: number = 0;
     private size: number = 0;
     private readonly maxLength: number;
-    
+
 
     constructor(maxLength: number) {
         this.maxLength = maxLength;
@@ -121,7 +150,7 @@ class RollingWindowQueue<T> {
     }
 
     *[Symbol.iterator]() {
-        for(let i = 0; i < this.size; i++) {
+        for (let i = 0; i < this.size; i++) {
             yield this.get(i);
         }
     }

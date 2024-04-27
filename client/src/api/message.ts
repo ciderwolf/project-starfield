@@ -93,6 +93,8 @@ export type BoardCard = Card & {
   zone: number;
   id: CardId;
   visibility: string[];
+
+  highlighted?: boolean;
 };
 
 export type Deck = {
@@ -154,7 +156,6 @@ export type OracleCardsMessage = {
   cardsToHide: CardId[];
 }
 
-export type AccountableAction = "FIND_CARD" | "SIDEBOARD" | "SCRY" | "REVEAL";
 export type GameLogMessage = {
   type: "log";
   owner: string;
@@ -254,16 +255,16 @@ export type DestroyCard = {
   type: 'destroy_card';
 }
 
-export type ClientMessage = ChangeCardAttributeMessage 
-  | ChangeCardIndexMessage 
-  | ChangeCardPositionMessage 
-  | ChangeCardZoneMessage 
+export type ClientMessage = ChangeCardAttributeMessage
+  | ChangeCardIndexMessage
+  | ChangeCardPositionMessage
+  | ChangeCardZoneMessage
   | ChangeCardZonesMessage
   | MoveCardVirtualMessage
-  | ChangePlayerAttributeMessage 
-  | DrawCardMessage 
-  | PlayCardMessage 
-  | SpecialActionMessage 
+  | ChangePlayerAttributeMessage
+  | DrawCardMessage
+  | PlayCardMessage
+  | SpecialActionMessage
   | RevealCardMessage
   | ScryMessage
   | CreateTokenMessage
