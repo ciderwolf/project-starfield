@@ -81,7 +81,9 @@ export enum Pivot {
   LEFT_TAPPED,
   UPSIDE_DOWN,
 }
-
+export enum Highlight {
+  NONE, LOG, SELECTED
+}
 export type BoardCard = Card & {
   x: number;
   y: number;
@@ -94,7 +96,7 @@ export type BoardCard = Card & {
   id: CardId;
   visibility: string[];
 
-  highlighted?: boolean;
+  highlight?: Highlight;
 };
 
 export type Deck = {

@@ -8,6 +8,7 @@ import CardDispatch from '@/components/game/card/CardDispatch.vue';
 import { getZoneContextMenu, type ContextMenuDefinition } from '@/context-menu';
 import { useNotificationsCache } from '@/cache/notifications';
 import { client } from '@/ws';
+import { Highlight } from '@/api/message';
 
 const props = defineProps<{ zone: ZoneConfig }>();
 
@@ -65,17 +66,88 @@ function doMenuAction(action: string, ...args: any[]) {
   }
 }
 
+
+const dragCoords = reactive({ x: 0, y: 0, width: 0, height: 0 });
+const isDragging = ref(false);
+function startDrag(e: MouseEvent) {
+  if (isMe.value && props.zone.type === 'BATTLEFIELD') {
+    // clear all highlights
+    for (const card of board.cards[props.zone.id]) {
+      card.highlight = Highlight.NONE;
+    }
+
+    isDragging.value = true;
+    dragCoords.x = e.clientX;
+    dragCoords.y = e.clientY;
+    dragCoords.width = 0;
+    dragCoords.height = 0;
+  }
+}
+
+function drag(e: MouseEvent) {
+  if (isDragging.value) {
+    dragCoords.width = e.clientX - dragCoords.x;
+    dragCoords.height = e.clientY - dragCoords.y;
+  }
+}
+
+function endDrag() {
+  if (isDragging.value) {
+    isDragging.value = false;
+
+    // calculate drag rect in virtual coords
+    const rect = zoneRect.value!;
+    const top = Math.min(dragCoords.y, dragCoords.y + dragCoords.height);
+    const left = Math.min(dragCoords.x, dragCoords.x + dragCoords.width);
+    const width = Math.abs(dragCoords.width);
+    const height = Math.abs(dragCoords.height);
+
+    // convert to virtual coords
+    const x = (left - rect.left) / rect.width;
+    const y = (top - rect.top) / rect.height;
+    const w = width / rect.width;
+    const h = height / rect.height;
+
+    // find all cards inside the rect
+    const cards = board.cards[props.zone.id];
+    const selected = cards.filter(card => {
+      return card.x >= x && card.x <= x + w && card.y >= y && card.y <= y + h;
+    });
+    selected.forEach(card => {
+      card.highlight = Highlight.SELECTED;
+    })
+  }
+}
+
+const dragRectStyles = computed(() => {
+  const top = Math.min(dragCoords.y, dragCoords.y + dragCoords.height);
+  const left = Math.min(dragCoords.x, dragCoords.x + dragCoords.width);
+
+  return {
+    left: `${left}px`,
+    top: `${top}px`,
+    width: `${Math.abs(dragCoords.width)}px`,
+    height: `${Math.abs(dragCoords.height)}px`
+  };
+});
+
 onMounted(() => {
   if (board.cards[props.zone.id] === undefined) {
     board.cards[props.zone.id] = [];
   }
   window.addEventListener('resize', resetZoneRect);
+  window.addEventListener('mousemove', drag);
+  window.addEventListener('mouseup', endDrag);
   resetZoneRect();
 });
 
 onUnmounted(() => {
   window.removeEventListener('resize', resetZoneRect);
+  window.removeEventListener('mousemove', drag);
+  window.removeEventListener('mouseup', endDrag);
 });
+
+
 
 </script>
 
@@ -83,13 +155,14 @@ onUnmounted(() => {
   <div class="zone-box" v-if="zone.type !== 'SIDEBOARD'">
     <card-dispatch v-for="card in board.cards[zone.id]" :key="card.id" :zone="zone.type" :card="card"
       :zone-rect="zoneRect" />
-    <div class="zone-bounds" ref="zoneBounds" :style="zone.pos">
+    <div class="zone-bounds" ref="zoneBounds" :style="zone.pos" @mousedown="startDrag">
       <span class="zone-bubble zone-count" v-if="zone.layout === 'stack' && hasCards">
         {{ board.cards[zone.id].length }}</span>
       <span class="zone-bubble zone-options" v-if="zone.layout === 'stack' && hasCards" @click="showOptions">≡</span>
     </div>
     <context-menu v-if="showMenu" v-click-outside="() => showMenu = false" :real-pos="menuPos" :menu="menuDefinition" />
   </div>
+  <div v-if="isDragging" class="drag-rect" :style="dragRectStyles" />
 </template>
 
 <style>
@@ -97,9 +170,8 @@ onUnmounted(() => {
   position: absolute;
   border: 1px solid black;
   background-color: rgba(0, 0, 0, 0.2);
-  pointer-events: none;
+  /* pointer-events: none; */
   box-sizing: border-box;
-  pointer-events: none;
 }
 
 .zone-bubble {
@@ -130,5 +202,13 @@ onUnmounted(() => {
 
 .zone-options:hover {
   background-color: rgba(0, 0, 0, 0.6);
+}
+
+.drag-rect {
+  position: absolute;
+  border: 1px solid black;
+  background-color: rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+  box-sizing: border-box;
 }
 </style>

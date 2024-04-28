@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { type BoardCard } from '@/api/message';
+import { Highlight, type BoardCard } from '@/api/message';
 import { useNotificationsCache } from '@/cache/notifications';
 import { nonRotatedRect, pivotToAngle, useBoardStore } from '@/stores/board';
 import { useDataStore } from '@/stores/data';
@@ -71,7 +71,11 @@ const positionInfo = computed(() => {
       transform: `rotate(${pivotToAngle(props.card.pivot)})`,
       backgroundImage: `url(${imageUrl.value})`,
       transition: animate.value ? '0.3s' : 'none',
-      boxShadow: props.card.highlighted ? '0 0 10px 5px #ff0' : 'none',
+      outline: props.card.highlight === Highlight.SELECTED
+        ? '3px solid rgb(78, 128, 220)'
+        : props.card.highlight === Highlight.LOG && (board.cardIsMovable(props.card.id) || zoneFromIndex(props.card.zone)?.type !== 'HAND')
+          ? '3px solid gold'
+          : 'none',
     };
   }
 });
@@ -177,6 +181,7 @@ watch([() => props.zoneRect, () => props.card.x, () => props.card.y], () => {
   pointer-events: all;
   border-radius: 3px;
   z-index: 1;
+  box-sizing: border-box;
 }
 
 .board-card-ghost {

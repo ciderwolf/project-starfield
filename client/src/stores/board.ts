@@ -1,7 +1,7 @@
-import { reactive, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
 import { defineStore } from 'pinia'
 import { ScreenPosition, ZONES, OPPONENT_ZONES, findZoneByName, getZones, zoneNameToId } from '@/zones';
-import type { BoardDiffEvent, BoardCard, ChangeAttributeEvent, ChangeIndexEvent, ChangePlayerAttribute, ChangePositionEvent, ChangeZoneEvent, PlayerState, ScoopDeck, ShuffleDeck, Zone, OracleCard, CreateCard, DestroyCard, LogInfoMessage, RevealCard, HideCard } from '@/api/message';
+import { type BoardDiffEvent, type BoardCard, type ChangeAttributeEvent, type ChangeIndexEvent, type ChangePlayerAttribute, type ChangePositionEvent, type ChangeZoneEvent, type PlayerState, type ScoopDeck, type ShuffleDeck, type Zone, type OracleCard, type CreateCard, type DestroyCard, type LogInfoMessage, type RevealCard, type HideCard, Highlight } from '@/api/message';
 import { useZoneStore } from './zone';
 import { useDataStore } from './data';
 import { getLogMessage, getEventMessage, type EventMessage } from '@/logs';
@@ -365,7 +365,10 @@ export const useBoardStore = defineStore('board', () => {
     card.counter = 0;
     card.transformed = false;
     card.flipped = false;
+
+    card.highlight = Highlight.NONE;
   }
+
 
   function processOracleInfo(newCards: { [cardId: CardId]: string }, newOracleInfo: { [oracleId: OracleId]: OracleCard }, cardsToHide: CardId[]) {
     Object.assign(cardToOracleId, newCards);
@@ -408,12 +411,12 @@ export const useBoardStore = defineStore('board', () => {
     recalculateHandOrder(handCards, bounds);
   }
 
-  function highlightCard(cardId: CardId) {
+  function highlightCard(cardId: CardId, highlight: Highlight) {
     const zoneId = extractZone(cardId);
     const cardIndex = findCardIndex(cardId);
     const card = cards[zoneId][cardIndex];
     if (card) {
-      card.highlighted = true;
+      card.highlight = highlight;
       console.log(card);
     }
   }
@@ -423,9 +426,14 @@ export const useBoardStore = defineStore('board', () => {
     const cardIndex = findCardIndex(cardId);
     const card = cards[zoneId][cardIndex];
     if (card) {
-      card.highlighted = false;
+      card.highlight = Highlight.NONE;
     }
   }
+
+  const selectedCards = computed(() => {
+    const selected = cards[ZONES.play.id].filter(card => card.highlight === Highlight.SELECTED);
+    return selected;
+  });
 
   function findCardIndex(cardId: CardId): number {
     const zone = extractZone(cardId);
@@ -473,7 +481,7 @@ export const useBoardStore = defineStore('board', () => {
     return zoneNameToId(zone, pos);
   }
 
-  return { setBoardState, processBoardUpdate, processOracleInfo, processLog: processLog, cardToOracleId, oracleInfo, updateHandPos, cards, moveCard, cardIsMovable, zoneIsMovable, playerIsMovable, getScreenPositionFromCard, getScreenPositionFromPlayerIndex: getScreenPosition, players, logs, highlightCard, clearHighlight }
+  return { setBoardState, processBoardUpdate, processOracleInfo, processLog, cardToOracleId, oracleInfo, updateHandPos, cards, moveCard, cardIsMovable, zoneIsMovable, playerIsMovable, getScreenPositionFromCard, getScreenPositionFromPlayerIndex: getScreenPosition, players, logs, highlightCard, clearHighlight, selectedCards }
 });
 
 function recalculateHandOrder(handCards: BoardCard[], handBounds: DOMRect) {

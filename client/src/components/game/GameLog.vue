@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Highlight } from '@/api/message';
 import { useBoardStore, type CardId } from '@/stores/board';
 import { computed } from 'vue';
 
@@ -28,7 +29,7 @@ const messages = computed(() => {
 
 function hoverMessage(message: CondensedMessage) {
   for (const card of message.cards) {
-    board.highlightCard(card);
+    board.highlightCard(card, Highlight.LOG);
   }
 }
 

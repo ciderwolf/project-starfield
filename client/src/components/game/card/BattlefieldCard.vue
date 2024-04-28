@@ -5,53 +5,79 @@ import ContextMenu from '@/components/ContextMenu.vue';
 import { reactive, ref, watch } from 'vue';
 import { createBattlefieldContextMenu, type ContextMenuDefinition } from '@/context-menu';
 import { ZONES } from '@/zones';
-import { Pivot, useBoardStore } from '@/stores/board';
+import { Pivot, useBoardStore, type CardId } from '@/stores/board';
 import { client } from '@/ws';
 
 const props = defineProps<{ zoneBounds?: DOMRect, card: BoardCardData }>()
 const zone = ZONES.play.id;
 const board = useBoardStore();
 
+function applyAction(action: (cardId: CardId) => void) {
+  if (!board.selectedCards.some(card => card.id === props.card.id)) {
+    action(props.card.id);
+  } else {
+    for (const cardId of board.selectedCards) {
+      action(cardId.id);
+    }
+  }
+}
+
 function tap() {
   // cancel the context menu
   window.clearTimeout(showMenuTimer);
 
-  const cardId = props.card.id;
-
-  const currentPivot = board.cards[zone].find(c => c.id === cardId)!.pivot;
-  if (currentPivot === Pivot.UNTAPPED) {
-    client.changeCardAttribute(cardId, 'PIVOT', Pivot.TAPPED);
-  } else {
-    client.changeCardAttribute(cardId, 'PIVOT', Pivot.UNTAPPED);
+  const action = (cardId: CardId) => {
+    const currentPivot = board.cards[zone].find(c => c.id === cardId)!.pivot;
+    if (currentPivot === Pivot.UNTAPPED) {
+      client.changeCardAttribute(cardId, 'PIVOT', Pivot.TAPPED);
+    } else {
+      client.changeCardAttribute(cardId, 'PIVOT', Pivot.UNTAPPED);
+    }
   }
+
+  applyAction(action);
 }
 
 function transform() {
-  const cardId = props.card.id;
-  const card = board.cards[zone].find(c => c.id === cardId)!;
-  client.changeCardAttribute(cardId, 'TRANSFORMED', card.transformed ? 0 : 1);
+  const action = (cardId: CardId) => {
+    const card = board.cards[zone].find(c => c.id === cardId)!;
+    client.changeCardAttribute(cardId, 'TRANSFORMED', card.transformed ? 0 : 1);
+  }
+  applyAction(action);
 }
 
 function flip() {
-  const cardId = props.card.id;
-  const card = board.cards[zone].find(c => c.id === cardId)!;
-  client.changeCardAttribute(cardId, 'FLIPPED', card.flipped ? 0 : 1);
+  const action = (cardId: CardId) => {
+    const card = board.cards[zone].find(c => c.id === cardId)!;
+    client.changeCardAttribute(cardId, 'FLIPPED', card.flipped ? 0 : 1);
+  }
+  applyAction(action);
 }
 
 function addCounter(counter: number) {
-  const cardId = props.card.id;
-  client.changeCardAttribute(cardId, 'COUNTER', counter);
+  const action = (cardId: CardId) => {
+    client.changeCardAttribute(cardId, 'COUNTER', counter);
+  }
+  applyAction(action);
 }
 
 
 function moveCard(x: number, y: number) {
-  const cardId = props.card.id;
-  client.moveCard(zone, cardId, x, y);
+  const deltaX = x - props.card.x;
+  const deltaY = y - props.card.y;
+  const action = (cardId: CardId) => {
+
+    const card = board.cards[zone].find(c => c.id === cardId)!;
+    client.moveCard(zone, cardId, card.x + deltaX, card.y + deltaY);
+  }
+  applyAction(action);
 }
 
 function moveZone(zoneId: number, x: number, y: number) {
-  const cardId = props.card.id;
-  client.moveCardToZone(cardId, zoneId, x, y);
+  const action = (cardId: CardId) => {
+    client.moveCardToZone(cardId, zoneId, x, y);
+  }
+  applyAction(action);
 }
 
 
@@ -87,7 +113,7 @@ function doMenuAction(name: string, ...args: any[]) {
       break;
     case 'move-zone':
       if (args[1] !== undefined) {
-        client.moveCardToZoneWithIndex(props.card.id, args[0], args[1])
+        applyAction(cardId => client.moveCardToZoneWithIndex(cardId, args[0], args[1]))
       } else {
         moveZone(args[0], 0, 0);
       }
@@ -96,13 +122,13 @@ function doMenuAction(name: string, ...args: any[]) {
       addCounter(args[0]);
       break;
     case 'reveal-to':
-      client.revealCard(props.card.id, args[0]);
+      applyAction(cardId => client.revealCard(cardId, args[0]));
       break;
     case 'unreveal-to':
-      client.unrevealCard(props.card.id, args[0]);
+      applyAction(cardId => client.unrevealCard(cardId, args[0]));
       break;
     case 'copy':
-      client.cloneCard(props.card.id);
+      applyAction(cardId => client.cloneCard(cardId));
       break;
     default:
       console.error('Unknown action for battlefield card', name, args);
