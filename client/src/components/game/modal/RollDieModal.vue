@@ -7,8 +7,7 @@ import { rollDie } from '@/api/game';
 defineExpose({ open });
 
 const visible = ref(false);
-const size = ref(6);
-console.log("here");
+const size = ref(10);
 
 function close() {
   visible.value = false;
@@ -16,7 +15,7 @@ function close() {
 
 function open() {
   visible.value = true;
-  size.value = 6;
+  size.value = 10;
 }
 
 async function rollDieSubmit(size: number) {

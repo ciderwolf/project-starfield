@@ -20,6 +20,9 @@ export abstract class GameClient {
   untapAll() {
     this.takeSpecialAction('UNTAP_ALL');
   }
+  endTurn() {
+    this.takeSpecialAction('END_TURN');
+  }
 
   abstract changeCardAttribute(cardId: CardId, attribute: CardAttribute, value: number): void;
   abstract changePlayerAttribute(attribute: PlayerAttribute, newValue: number): void;

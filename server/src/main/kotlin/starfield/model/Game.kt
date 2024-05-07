@@ -10,11 +10,12 @@ import starfield.routing.Deck
 import java.util.*
 
 @Serializable
-data class GameState(val id: Id, val name: String, val players: List<PlayerState>)
+data class GameState(val id: Id, val name: String, val players: List<PlayerState>, val currentPlayer: Int)
 
 class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserCollection<GameState>() {
 
     private val players: List<Player>
+    private var currentPlayer: Int
     private val spectators: MutableList<User> = mutableListOf()
     private var lastActionTime = System.currentTimeMillis()
     val cardIdProvider = CardIdProvider()
@@ -24,6 +25,7 @@ class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserColle
         this.players = players.entries.mapIndexed { index, it ->
             Player(it.key, index, it.value, this)
         }
+        this.currentPlayer = Random().nextInt(players.size)
     }
 
     fun lastActionTime() = lastActionTime
@@ -41,7 +43,20 @@ class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserColle
     }
 
     override fun currentState(playerId: UUID): GameState {
-        return GameState(id, name, players.map { it.getState(playerId) })
+        return GameState(id, name, players.map { it.getState(playerId) }, currentPlayer)
+    }
+
+    private fun passTurn(player: Player): List<BoardDiffEvent> {
+        if (player.user != players[currentPlayer].user) {
+            return listOf()
+        }
+        val nextPlayer = (currentPlayer + 1) % players.size
+        val events = listOf(
+            BoardDiffEvent.ChangePlayerAttribute(players[currentPlayer].user.id, PlayerAttribute.ACTIVE_PLAYER, 0),
+            BoardDiffEvent.ChangePlayerAttribute(players[nextPlayer].user.id, PlayerAttribute.ACTIVE_PLAYER, 1)
+        )
+        currentPlayer = nextPlayer
+        return events
     }
 
     suspend fun handleMessage(userId: UUID, message: ClientMessage) {
@@ -68,10 +83,12 @@ class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserColle
                 SpecialAction.SCOOP -> player.scoop()
                 SpecialAction.SHUFFLE -> player.shuffle()
                 SpecialAction.UNTAP_ALL -> player.untapAll()
+                SpecialAction.END_TURN -> passTurn(player)
             }
             is ChangePlayerAttributeMessage -> when (message.attribute) {
                 PlayerAttribute.LIFE -> player.setLife(message.newValue)
                 PlayerAttribute.POISON -> player.setPoison(message.newValue)
+                PlayerAttribute.ACTIVE_PLAYER -> listOf()
             }
         }
 

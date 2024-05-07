@@ -77,7 +77,7 @@ data class DrawCardMessage(val count: Int, val to: Zone, val fromBottom: Boolean
 data class SpecialActionMessage(val action: SpecialAction) : ClientMessage()
 
 enum class SpecialAction {
-    MULLIGAN, SCOOP, SHUFFLE, UNTAP_ALL
+    MULLIGAN, SCOOP, SHUFFLE, UNTAP_ALL, END_TURN
 }
 
 @Serializable

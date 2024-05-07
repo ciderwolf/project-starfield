@@ -60,6 +60,7 @@ export type LobbyState = {
 export type GameState = {
   id: string;
   name: string;
+  currentPlayer: number;
   players: PlayerState[];
 }
 
@@ -141,9 +142,9 @@ export type OracleCard = {
 
 export type CardAttributeMap = Partial<Record<CardAttribute, number>>;
 
-export type SpecialAction = 'MULLIGAN' | 'SCOOP' | 'SHUFFLE' | 'UNTAP_ALL';
+export type SpecialAction = 'MULLIGAN' | 'SCOOP' | 'SHUFFLE' | 'UNTAP_ALL' | 'END_TURN';
 export type CardAttribute = 'PIVOT' | 'COUNTER' | 'TRANSFORMED' | 'FLIPPED';
-export type PlayerAttribute = 'LIFE' | 'POISON';
+export type PlayerAttribute = 'LIFE' | 'POISON' | 'ACTIVE_PLAYER';
 
 
 export type BoardUpdateMessage = {
@@ -272,7 +273,8 @@ export type ClientMessage = ChangeCardAttributeMessage
   | CreateTokenMessage
   | CreateCardMessage
   | CloneCardMessage
-  | SideboardMessage;
+  | SideboardMessage
+  | EndTurnMessage;
 
 type ChangeCardAttributeMessage = {
   attribute: CardAttribute;
@@ -365,6 +367,10 @@ type SideboardMessage = {
   main: string[];
   side: string[];
   type: "sideboard";
+}
+
+type EndTurnMessage = {
+  type: "end_turn";
 }
 
 type MoveCardVirtualMessage = {

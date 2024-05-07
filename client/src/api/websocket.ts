@@ -46,7 +46,7 @@ export class WebSocketConnection {
         console.log('state', message.room, message.roomState);
         gamesStore.processState(message);
         if (message.room === 'game') {
-          boardStore.setBoardState(message.roomState.players);
+          boardStore.setBoardState(message.roomState.players, message.roomState.currentPlayer);
         }
         // const gameStore = useGameStore();
         // gameStore.processState(message.roomState);

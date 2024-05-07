@@ -70,6 +70,7 @@ export const useBoardStore = defineStore('board', () => {
   const cardToOracleId = reactive<{ [cardId: CardId]: OracleId }>({});
   const oracleInfo = reactive<{ [oracleId: OracleId]: OracleCard }>({});
   const players = reactive<{ [playerId: string]: PlayerAttributes }>({});
+  const currentPlayer = ref(0);
   const logs = ref<EventMessage[]>([]);
   const zones = useZoneStore();
 
@@ -84,8 +85,9 @@ export const useBoardStore = defineStore('board', () => {
     }
   }
 
-  function setBoardState(playerStates: PlayerState[]) {
+  function setBoardState(playerStates: PlayerState[], currentPlayerIdx: number) {
     let index = 0;
+    currentPlayer.value = currentPlayerIdx;
     for (const state of playerStates) {
       players[state.id] = {
         life: state.life,
@@ -253,6 +255,11 @@ export const useBoardStore = defineStore('board', () => {
         break;
       case 'POISON':
         player.poison = event.newValue;
+        break;
+      case 'ACTIVE_PLAYER':
+        if (event.newValue === 1) {
+          currentPlayer.value = player.index;
+        }
         break;
       default:
         const _exhaustiveCheck: never = event.attribute;
@@ -481,7 +488,7 @@ export const useBoardStore = defineStore('board', () => {
     return zoneNameToId(zone, pos);
   }
 
-  return { setBoardState, processBoardUpdate, processOracleInfo, processLog, cardToOracleId, oracleInfo, updateHandPos, cards, moveCard, cardIsMovable, zoneIsMovable, playerIsMovable, getScreenPositionFromCard, getScreenPositionFromPlayerIndex: getScreenPosition, players, logs, highlightCard, clearHighlight, selectedCards }
+  return { setBoardState, processBoardUpdate, processOracleInfo, processLog, cardToOracleId, oracleInfo, updateHandPos, cards, moveCard, cardIsMovable, zoneIsMovable, playerIsMovable, getScreenPositionFromCard, getScreenPositionFromPlayerIndex: getScreenPosition, players, logs, highlightCard, clearHighlight, selectedCards, currentPlayer }
 });
 
 function recalculateHandOrder(handCards: BoardCard[], handBounds: DOMRect) {

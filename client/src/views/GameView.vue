@@ -10,6 +10,7 @@ import CreateCardModal from '@/components/game/modal/CreateCardModal.vue';
 import RollDieModal from '@/components/game/modal/RollDieModal.vue';
 import CardPreview from '@/components/game/CardPreview.vue';
 import PlayerCounters from '@/components/game/PlayerCounters.vue';
+import PlayerProfile from '@/components/game/PlayerProfile.vue';
 import { OPPONENT_ZONES, ZONES } from '@/zones';
 import { ref, onMounted, onUnmounted, watchEffect, computed } from 'vue';
 import { client } from '@/ws';
@@ -70,6 +71,8 @@ function checkHotkey(e: KeyboardEvent) {
     createCard();
   } else if (e.key === 'x') {
     untapAll();
+  } else if (e.key === 'e') {
+    client.endTurn();
   }
 }
 
@@ -188,6 +191,7 @@ onUnmounted(() => {
     </div>
     <div class="player-counters">
       <player-counters v-for="player in board.players" :player="player" />
+      <player-profile v-for="player in board.players" :player="player" />
     </div>
     <zone ref="myZones" v-for="zone in ZONES" :zone="zone"></zone>
     <zone ref="opponentZones" v-for="zone in OPPONENT_ZONES" :zone="zone" />

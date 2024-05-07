@@ -1,5 +1,5 @@
 import { Pivot, type BoardCard } from "./api/message";
-import { useBoardStore } from "./stores/board";
+import { useBoardStore, type PlayerAttributes } from "./stores/board";
 import { useDataStore } from "./stores/data";
 import { ZONES, zoneFromIndex } from "./zones";
 
@@ -38,7 +38,7 @@ type NumberInputOption = {
 type ActionEmit = (action: string, ...args: any[]) => void;
 
 export function createContextMenu(zone: number, card: BoardCard, emit: ActionEmit) {
-  switch(zone) {
+  switch (zone) {
     case ZONES.hand.id:
       return createHandContextMenu(card, emit);
     case ZONES.play.id:
@@ -139,7 +139,7 @@ export function createLibraryContextMenu(card: BoardCard, emit: ActionEmit): Con
           emit('show-sideboard');
         }
       },
-      { 
+      {
         type: 'seperator'
       },
       {
@@ -225,7 +225,7 @@ export function createLibraryContextMenu(card: BoardCard, emit: ActionEmit): Con
               count = isNaN(count) ? 1 : count;
               emit('move-zone-n', ZONES.faceDown.type, count);
             }
-          }, 
+          },
           {
             type: 'number',
             title: 'Draw from bottom of deck',
@@ -239,6 +239,34 @@ export function createLibraryContextMenu(card: BoardCard, emit: ActionEmit): Con
       }
     ]
   };
+}
+
+export function createPlayerContextMenu(player: PlayerAttributes, emit: ActionEmit): ContextMenuDefinition {
+  const options: ContextMenuOption[] = [
+    {
+      type: 'text',
+      title: 'Scoop deck',
+      effect: () => {
+        emit('scoop');
+      }
+    },
+    {
+      type: 'text',
+      title: 'Show Sideboard',
+      effect: () => {
+        emit('show-sideboard');
+      }
+    },
+    {
+      type: 'text',
+      title: 'Scoop and sideboard',
+      effect: () => {
+        emit('scoop-sideboard');
+      }
+    }
+  ];
+
+  return { options };
 }
 
 export function createHandContextMenu(card: BoardCard, emit: ActionEmit): ContextMenuDefinition {
@@ -330,7 +358,7 @@ export function getMoveZoneActions(exceptZone: number, emit: ActionEmit): TextOp
       effect: () => {
         emit('move-zone', ZONES.faceDown.id);
       }
-    }, 
+    },
   ];
   return options
     .filter(option => option.title !== zoneFromIndex(exceptZone)?.name);
@@ -353,7 +381,7 @@ export function getZoneContextMenu(zoneId: number, isInteractive: boolean, emit:
   }
   if (zoneId === ZONES.library.id) {
     options.push(
-      { 
+      {
         type: 'seperator'
       },
       {
@@ -421,7 +449,7 @@ function getRevealSubmenu(emit: ActionEmit): ContextMenuOption[] {
 function getRevealToPlayersSubmenu(emit: ActionEmit) {
   const board = useBoardStore();
   // const data = useDataStore();
-  
+
   const options: ContextMenuOption[] = Object.values(board.players)
     // .filter(player => player.id !== data.userId)
     .map(player => {
@@ -436,8 +464,8 @@ function getRevealToPlayersSubmenu(emit: ActionEmit) {
 
   options.push(
     {
-    'type': 'seperator'
-    }, 
+      'type': 'seperator'
+    },
     {
       type: 'text',
       title: 'All',
@@ -446,14 +474,14 @@ function getRevealToPlayersSubmenu(emit: ActionEmit) {
       }
     }
   );
-  
+
   return options;
 }
 
 function getUnrevealToPlayersSubmenu(emit: ActionEmit) {
   const board = useBoardStore();
   const data = useDataStore();
-  
+
   const options: ContextMenuOption[] = Object.values(board.players)
     .filter(player => player.id !== data.userId)
     .map(player => {
@@ -468,8 +496,8 @@ function getUnrevealToPlayersSubmenu(emit: ActionEmit) {
 
   options.push(
     {
-    'type': 'seperator'
-    }, 
+      'type': 'seperator'
+    },
     {
       type: 'text',
       title: 'All',
@@ -478,6 +506,6 @@ function getUnrevealToPlayersSubmenu(emit: ActionEmit) {
       }
     }
   );
-  
+
   return options;
 }

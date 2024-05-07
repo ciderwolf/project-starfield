@@ -12,7 +12,7 @@ enum class CardOrigin {
 }
 
 enum class PlayerAttribute {
-    LIFE, POISON
+    LIFE, POISON, ACTIVE_PLAYER
 }
 
 @Serializable(with = PivotSerializer::class)

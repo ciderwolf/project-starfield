@@ -22,31 +22,31 @@ export interface ZoneConfig {
   reveal: [boolean, boolean]
 }
 
-export const OPPONENT_ZONES: { [name: string] : ZoneConfig } = {
+export const OPPONENT_ZONES: { [name: string]: ZoneConfig } = {
   library: {
     pos: {
-      right: `${Z_WIDTH}`,
+      right: `calc(${GAME_LOG_WIDTH} - ${Z_WIDTH})`,
       top: '0',
       width: `${Z_WIDTH}`,
       height: `${Z_HEIGHT}`,
     },
     layout: 'stack',
-    type: 'LIBRARY', 
+    type: 'LIBRARY',
     name: 'Library',
-    id: -1, 
+    id: -1,
     reveal: [false, false]
   },
   hand: {
     pos: {
       left: `${Z_WIDTH}`,
       top: '0px',
-      width: `calc(100% - 3 * ${Z_WIDTH})`,
+      width: `calc(100% - ${Z_WIDTH} - ${GAME_LOG_WIDTH})`,
       height: `${Z_HEIGHT}`,
     },
     layout: 'hstack',
-    type: 'HAND', 
+    type: 'HAND',
     name: 'Hand',
-    id: -2, 
+    id: -2,
     reveal: [true, false]
   },
   play: {
@@ -57,9 +57,9 @@ export const OPPONENT_ZONES: { [name: string] : ZoneConfig } = {
       height: `calc(50vh - ${Z_HEIGHT})`,
     },
     layout: 'free',
-    type: 'BATTLEFIELD', 
+    type: 'BATTLEFIELD',
     name: 'Battlefield',
-    id: -3, 
+    id: -3,
     reveal: [true, true]
   },
   graveyard: {
@@ -70,9 +70,9 @@ export const OPPONENT_ZONES: { [name: string] : ZoneConfig } = {
       height: `${Z_HEIGHT}`,
     },
     layout: 'stack',
-    type: 'GRAVEYARD', 
+    type: 'GRAVEYARD',
     name: 'Graveyard',
-    id: -4, 
+    id: -4,
     reveal: [true, true]
   },
   exile: {
@@ -83,9 +83,9 @@ export const OPPONENT_ZONES: { [name: string] : ZoneConfig } = {
       height: `${Z_HEIGHT}`,
     },
     layout: 'stack',
-    type: 'EXILE', 
+    type: 'EXILE',
     name: 'Exile',
-    id: -5, 
+    id: -5,
     reveal: [true, true]
   },
   faceDown: {
@@ -96,9 +96,9 @@ export const OPPONENT_ZONES: { [name: string] : ZoneConfig } = {
       height: `${Z_HEIGHT}`,
     },
     layout: 'stack',
-    type: 'FACE_DOWN', 
+    type: 'FACE_DOWN',
     name: 'Face Down',
-    id: -6, 
+    id: -6,
     reveal: [false, false]
   },
   sideboard: {
@@ -114,31 +114,31 @@ export const OPPONENT_ZONES: { [name: string] : ZoneConfig } = {
   }
 };
 
-export const ZONES: { [name: string] : ZoneConfig } = {
+export const ZONES: { [name: string]: ZoneConfig } = {
   library: {
     pos: {
-      right: `${Z_WIDTH}`,
+      right: `calc(${GAME_LOG_WIDTH} - ${Z_WIDTH})`,
       bottom: '0',
       width: `${Z_WIDTH}`,
       height: `${Z_HEIGHT}`,
     },
     layout: 'stack',
     type: 'LIBRARY',
-    name: 'Library', 
-    id: 0, 
+    name: 'Library',
+    id: 0,
     reveal: [false, false]
   },
   hand: {
     pos: {
       left: `${Z_WIDTH}`,
       bottom: '0px',
-      width: `calc(100% - 3 * ${Z_WIDTH})`,
+      width: `calc(100% - ${Z_WIDTH} - ${GAME_LOG_WIDTH})`,
       height: `${Z_HEIGHT}`,
     },
     layout: 'hstack',
-    type: 'HAND', 
+    type: 'HAND',
     name: 'Hand',
-    id: 1, 
+    id: 1,
     reveal: [true, false]
   },
   play: {
@@ -149,9 +149,9 @@ export const ZONES: { [name: string] : ZoneConfig } = {
       height: `calc(50% - ${Z_HEIGHT})`,
     },
     layout: 'free',
-    type: 'BATTLEFIELD', 
+    type: 'BATTLEFIELD',
     name: 'Battlefield',
-    id: 2, 
+    id: 2,
     reveal: [true, true]
   },
   graveyard: {
@@ -162,9 +162,9 @@ export const ZONES: { [name: string] : ZoneConfig } = {
       height: `${Z_HEIGHT}`,
     },
     layout: 'stack',
-    type: 'GRAVEYARD', 
+    type: 'GRAVEYARD',
     name: 'Graveyard',
-    id: 3, 
+    id: 3,
     reveal: [true, true]
   },
   exile: {
@@ -175,9 +175,9 @@ export const ZONES: { [name: string] : ZoneConfig } = {
       height: `${Z_HEIGHT}`,
     },
     layout: 'stack',
-    type: 'EXILE', 
+    type: 'EXILE',
     name: 'Exile',
-    id: 4, 
+    id: 4,
     reveal: [true, true]
   },
   faceDown: {
@@ -190,7 +190,7 @@ export const ZONES: { [name: string] : ZoneConfig } = {
     layout: 'stack',
     type: 'FACE_DOWN',
     name: 'Face Down',
-    id: 5, 
+    id: 5,
     reveal: [false, false]
   },
   sideboard: {

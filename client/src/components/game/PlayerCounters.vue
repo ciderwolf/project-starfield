@@ -19,15 +19,16 @@ const positionInfo = computed<StyleValue>(() => {
   const position = board.getScreenPositionFromPlayerIndex(props.player.index);
   if (position == ScreenPosition.PRIMARY) {
     return {
-      right: '0',
+      right: '94px',
       top: 'calc(100vh - 108px)',
-      'flex-direction': 'column-reverse',
+      flexDirection: 'column-reverse',
+      borderTop: '1px solid black',
     };
   } else {
     return {
       bottom: 'calc(100vh - 108px)',
-      right: '0',
-      'flex-direction': 'column',
+      right: '94px',
+      flexDirection: 'column',
     };
   }
 });

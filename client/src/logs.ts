@@ -51,6 +51,15 @@ export function getEventMessage(event: BoardDiffEvent): EventMessage | null {
                 card: event.state.id
             };
         case "change_player_attribute":
+            if (event.attribute === "ACTIVE_PLAYER") {
+                if (event.newValue === 0) {
+                    return {
+                        message: `${name} ended their turn`
+                    };
+                } else {
+                    return null;
+                }
+            }
             return {
                 message: `${name} changed their ${event.attribute.toLowerCase()} to ${event.newValue}`
             };
