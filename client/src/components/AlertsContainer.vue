@@ -1,14 +1,18 @@
 <script setup lang="ts">
 import { useAlertsStore } from '@/stores/alerts';
 
-
 const alerts = useAlertsStore();
+
+function closeAlert(id: string) {
+  alerts.removeAlert(id);
+}
 </script>
 
 <template>
   <div id="alerts" v-if="Object.keys(alerts.alerts).length > 0">
     <div v-for="alert in alerts.alerts" :key="alert.id">
       <div class="alert" :class="`alert-${alert.type}`" role="alert">
+        <span @click="closeAlert(alert.id)" class="material-symbols-rounded close-alert">close</span>
         <b>{{ alert.title }}</b>
         {{ alert.message }}
       </div>
@@ -35,6 +39,16 @@ const alerts = useAlertsStore();
   padding: 10px;
   border-radius: 5px;
   margin-bottom: 10px;
+}
+
+.close-alert {
+  float: right;
+  cursor: pointer;
+  font-size: 20px;
+}
+
+.close-alert:hover {
+  color: red;
 }
 
 .alert-error {
