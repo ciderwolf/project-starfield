@@ -64,6 +64,15 @@ export function extractPlayerIndex(cardId: CardId): number {
   return cardId & 0b00001111;
 }
 
+function resetReactive(obj: Record<string, any>) {
+  const baseReactive = reactive({});
+  for (const key in obj) {
+    if (!baseReactive.hasOwnProperty(key)) {
+      delete obj[key];
+    }
+  }
+}
+
 export const useBoardStore = defineStore('board', () => {
 
   const cards: { [zoneId: number]: BoardCard[] } = reactive({});
@@ -85,7 +94,20 @@ export const useBoardStore = defineStore('board', () => {
     }
   }
 
+  function resetState() {
+    for (const zone in cards) {
+      cards[zone] = [];
+    }
+    resetReactive(cardToOracleId);
+    resetReactive(oracleInfo);
+    resetReactive(players);
+    currentPlayer.value = 0;
+    logs.value = [];
+  }
+
   function setBoardState(playerStates: PlayerState[], currentPlayerIdx: number) {
+    resetState();
+
     let index = 0;
     currentPlayer.value = currentPlayerIdx;
     for (const state of playerStates) {
