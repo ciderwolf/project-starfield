@@ -7,7 +7,7 @@ export interface ContextMenuDefinition {
   options: ContextMenuOption[];
 }
 
-type ContextMenuOption = ContextMenuSeperator | SubMenu | TextOption | NumberInputOption;
+export type ContextMenuOption = ContextMenuSeperator | SubMenu | TextOption | NumberInputOption;
 
 type ContextMenuSeperator = {
   type: 'seperator'
@@ -23,6 +23,7 @@ type TextOption = {
   type: 'text';
   title: string;
   effect: () => void;
+  disabled?: boolean;
 }
 
 type NumberInputOption = {
@@ -32,6 +33,7 @@ type NumberInputOption = {
   min?: number;
   max?: number;
   effect: (value: number) => void;
+  disabled?: boolean;
 }
 
 
@@ -54,7 +56,7 @@ export function createContextMenu(zone: number, card: BoardCard, emit: ActionEmi
 export function createBattlefieldContextMenu(card: BoardCard, emit: ActionEmit): ContextMenuDefinition {
   const options: ContextMenuOption[] = [];
   if (card.flipped) {
-    options.push(...getRevealSubmenu(emit));
+    options.push(...getRevealSubmenu(card, emit));
   }
 
   const board = useBoardStore();
@@ -152,7 +154,7 @@ export function createLibraryContextMenu(card: BoardCard, emit: ActionEmit): Con
       {
         type: 'submenu',
         title: 'Reveal top card to...',
-        options: getRevealToPlayersSubmenu(emit)
+        options: getRevealToPlayersSubmenu(card, emit)
       },
       {
         type: 'number',
@@ -270,7 +272,7 @@ export function createPlayerContextMenu(player: PlayerAttributes, emit: ActionEm
 }
 
 export function createHandContextMenu(card: BoardCard, emit: ActionEmit): ContextMenuDefinition {
-  const options: ContextMenuOption[] = getRevealSubmenu(emit);
+  const options: ContextMenuOption[] = getRevealSubmenu(card, emit);
   const board = useBoardStore();
   if (board.oracleInfo[board.cardToOracleId[card.id]]?.backImage) {
     options.push({
@@ -417,12 +419,12 @@ export function getZoneContextMenu(zoneId: number, isInteractive: boolean, emit:
   return { options };
 }
 
-function getRevealSubmenu(emit: ActionEmit): ContextMenuOption[] {
+function getRevealSubmenu(card: BoardCard, emit: ActionEmit): ContextMenuOption[] {
   return [
     {
       type: 'submenu',
       title: 'Reveal to...',
-      options: getRevealToPlayersSubmenu(emit)
+      options: getRevealToPlayersSubmenu(card, emit)
     },
     {
       type: 'text',
@@ -434,7 +436,7 @@ function getRevealSubmenu(emit: ActionEmit): ContextMenuOption[] {
     {
       type: 'submenu',
       title: 'Unreveal to...',
-      options: getUnrevealToPlayersSubmenu(emit)
+      options: getUnrevealToPlayersSubmenu(card, emit)
     },
     {
       type: 'text',
@@ -446,21 +448,37 @@ function getRevealSubmenu(emit: ActionEmit): ContextMenuOption[] {
   ]
 }
 
-function getRevealToPlayersSubmenu(emit: ActionEmit) {
+function getRevealToPlayersSubmenu(card: BoardCard, emit: ActionEmit) {
   const board = useBoardStore();
-  // const data = useDataStore();
 
   const options: ContextMenuOption[] = Object.values(board.players)
-    // .filter(player => player.id !== data.userId)
     .map(player => {
       return {
         type: 'text',
         title: player.name,
         effect: () => {
           emit('reveal-to', player.id);
-        }
+        },
+        disabled: card.visibility.includes(player.id)
       }
     });
+
+  const spectators = Object.values(board.spectators);
+  if (spectators.length > 0) {
+    options.push({
+      type: 'seperator'
+    });
+    options.push(...spectators.map(player => {
+      return {
+        type: 'text',
+        title: `👻 ${player.name}`,
+        effect: () => {
+          emit('reveal-to', player.id);
+        },
+        disabled: card.visibility.includes(player.id)
+      } as ContextMenuOption;
+    }));
+  }
 
   options.push(
     {
@@ -478,7 +496,7 @@ function getRevealToPlayersSubmenu(emit: ActionEmit) {
   return options;
 }
 
-function getUnrevealToPlayersSubmenu(emit: ActionEmit) {
+function getUnrevealToPlayersSubmenu(card: BoardCard, emit: ActionEmit) {
   const board = useBoardStore();
   const data = useDataStore();
 
@@ -490,9 +508,27 @@ function getUnrevealToPlayersSubmenu(emit: ActionEmit) {
         title: player.name,
         effect: () => {
           emit('unreveal-to', player.id);
-        }
+        },
+        disabled: !card.visibility.includes(player.id)
       }
     });
+
+  const spectators = Object.values(board.spectators);
+  if (spectators.length > 0) {
+    options.push({
+      type: 'seperator'
+    });
+    options.push(...spectators.map(player => {
+      return {
+        type: 'text',
+        title: `👻 ${player.name}`,
+        effect: () => {
+          emit('unreveal-to', player.id);
+        },
+        disabled: !card.visibility.includes(player.id)
+      } as ContextMenuOption;
+    }));
+  }
 
   options.push(
     {

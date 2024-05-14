@@ -93,7 +93,7 @@ const shouldShowRevealedIndicator = computed(() => {
 
   return !revealedToOpponents
     && board.cardIsMovable(props.card.id)
-    && props.card.visibility.some(player => player !== data.userId);
+    && props.card.visibility.some(player => player !== data.userId && player in board.players);
 });
 
 

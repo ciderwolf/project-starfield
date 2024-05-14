@@ -10,7 +10,7 @@ import starfield.routing.Deck
 import java.util.*
 
 @Serializable
-data class GameState(val id: Id, val name: String, val players: List<PlayerState>, val currentPlayer: Int)
+data class GameState(val id: Id, val name: String, val players: List<PlayerState>, val spectators: List<UserState>, val currentPlayer: Int)
 
 class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserCollection<GameState>() {
 
@@ -43,7 +43,7 @@ class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserColle
     }
 
     override fun currentState(playerId: UUID): GameState {
-        return GameState(id, name, players.map { it.getState(playerId) }, currentPlayer)
+        return GameState(id, name, players.map { it.getState(playerId) }, spectators.map { it.getState() }, currentPlayer)
     }
 
     private fun passTurn(player: Player): List<BoardDiffEvent> {
@@ -148,11 +148,13 @@ class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserColle
         }
         spectators.add(user)
         players.forEach { it.registerSpectator(user) }
+        broadcastBoardUpdate(listOf(BoardDiffEvent.SpectatorJoin(user.getState())))
         user.connection?.send(StateMessage(currentState(user.id), "game"))
     }
 
-    fun removeSpectator(userId: UUID) {
+    suspend fun removeSpectator(userId: UUID) {
         spectators.removeIf { it.id == userId }
+        broadcastBoardUpdate(listOf(BoardDiffEvent.SpectatorLeave(userId)))
     }
 
     fun hasSpectator(userId: UUID): Boolean {

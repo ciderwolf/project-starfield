@@ -46,4 +46,12 @@ sealed class BoardDiffEvent {
     @Serializable
     @SerialName("destroy_card")
     data class DestroyCard(val card: CardId) : BoardDiffEvent()
+
+    @Serializable
+    @SerialName("spectator_join")
+    data class SpectatorJoin(val user: UserState) : BoardDiffEvent()
+
+    @Serializable
+    @SerialName("spectator_leave")
+    data class SpectatorLeave(val user: Id) : BoardDiffEvent()
 }

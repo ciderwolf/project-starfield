@@ -105,7 +105,7 @@ suspend fun reconnect(connection: WSConnection) {
     }
 }
 
-fun disconnect(connection: WSConnection) {
+suspend fun disconnect(connection: WSConnection) {
     val lobby = findLobby(connection.id)
     lobby?.disconnectUser(connection)
     if (lobby != null) return

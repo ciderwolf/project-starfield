@@ -1,7 +1,7 @@
 import { computed, reactive, ref } from 'vue'
 import { defineStore } from 'pinia'
 import { ScreenPosition, ZONES, OPPONENT_ZONES, findZoneByName, getZones, zoneNameToId } from '@/zones';
-import { type BoardDiffEvent, type BoardCard, type ChangeAttributeEvent, type ChangeIndexEvent, type ChangePlayerAttribute, type ChangePositionEvent, type ChangeZoneEvent, type PlayerState, type ScoopDeck, type ShuffleDeck, type Zone, type OracleCard, type CreateCard, type DestroyCard, type LogInfoMessage, type RevealCard, type HideCard, Highlight } from '@/api/message';
+import { type BoardDiffEvent, type BoardCard, type ChangeAttributeEvent, type ChangeIndexEvent, type ChangePlayerAttribute, type ChangePositionEvent, type ChangeZoneEvent, type PlayerState, type ScoopDeck, type ShuffleDeck, type Zone, type OracleCard, type CreateCard, type DestroyCard, type LogInfoMessage, type RevealCard, type HideCard, Highlight, type SpectatorJoin, type SpectatorLeave, type UserState } from '@/api/message';
 import { useZoneStore } from './zone';
 import { useDataStore } from './data';
 import { getLogMessage, getEventMessage, type EventMessage } from '@/logs';
@@ -79,6 +79,7 @@ export const useBoardStore = defineStore('board', () => {
   const cardToOracleId = reactive<{ [cardId: CardId]: OracleId }>({});
   const oracleInfo = reactive<{ [oracleId: OracleId]: OracleCard }>({});
   const players = reactive<{ [playerId: string]: PlayerAttributes }>({});
+  const spectators = reactive<{ [userId: string]: UserState }>({});
   const currentPlayer = ref(0);
   const logs = ref<EventMessage[]>([]);
   const zones = useZoneStore();
@@ -101,6 +102,7 @@ export const useBoardStore = defineStore('board', () => {
     resetReactive(cardToOracleId);
     resetReactive(oracleInfo);
     resetReactive(players);
+    resetReactive(spectators);
     currentPlayer.value = 0;
     logs.value = [];
   }
@@ -204,6 +206,12 @@ export const useBoardStore = defineStore('board', () => {
         break;
       case 'destroy_card':
         processDestroyCard(event);
+        break;
+      case 'spectator_join':
+        processSpectatorJoin(event);
+        break;
+      case 'spectator_leave':
+        processSpectatorLeave(event);
         break;
       default:
         const _exhaustiveCheck: never = event;
@@ -398,6 +406,13 @@ export const useBoardStore = defineStore('board', () => {
     card.highlight = Highlight.NONE;
   }
 
+  function processSpectatorJoin(message: SpectatorJoin) {
+    spectators[message.user.id] = message.user;
+  }
+
+  function processSpectatorLeave(message: SpectatorLeave) {
+    delete spectators[message.user];
+  }
 
   function processOracleInfo(newCards: { [cardId: CardId]: string }, newOracleInfo: { [oracleId: OracleId]: OracleCard }, cardsToHide: CardId[]) {
     Object.assign(cardToOracleId, newCards);
@@ -510,7 +525,7 @@ export const useBoardStore = defineStore('board', () => {
     return zoneNameToId(zone, pos);
   }
 
-  return { setBoardState, processBoardUpdate, processOracleInfo, processLog, cardToOracleId, oracleInfo, updateHandPos, cards, moveCard, cardIsMovable, zoneIsMovable, playerIsMovable, getScreenPositionFromCard, getScreenPositionFromPlayerIndex: getScreenPosition, players, logs, highlightCard, clearHighlight, selectedCards, currentPlayer }
+  return { setBoardState, processBoardUpdate, processOracleInfo, processLog, cardToOracleId, oracleInfo, updateHandPos, cards, moveCard, cardIsMovable, zoneIsMovable, playerIsMovable, getScreenPositionFromCard, getScreenPositionFromPlayerIndex: getScreenPosition, players, spectators, logs, highlightCard, clearHighlight, selectedCards, currentPlayer }
 });
 
 function recalculateHandOrder(handCards: BoardCard[], handBounds: DOMRect) {

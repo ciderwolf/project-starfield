@@ -9,14 +9,18 @@ export interface EventMessage {
 
 export function getEventMessage(event: BoardDiffEvent): EventMessage | null {
     const owner = identifyEventOwner(event);
-    const board = useBoardStore();
-    const name = board.players[owner].name;
+    const name = getOwnerName(owner);
 
     switch (event.type) {
         case "change_attribute":
         case "change_position":
         case "reveal_card":
+        case "spectator_leave":
             return null;
+        case "spectator_join":
+            return {
+                message: `${name} started spectating the game`
+            }
         case "change_index": {
             if (((event.newIndex & 0b11110000) >> 4) === 0 && event.newIndex === 0) {
                 return {
@@ -91,6 +95,10 @@ function identifyEventOwner(event: BoardDiffEvent): string {
         case "scoop_deck":
         case "shuffle_deck":
             return event.playerId;
+        case "spectator_join":
+            return event.user.id;
+        case "spectator_leave":
+            return event.user;
     }
 }
 
@@ -98,6 +106,15 @@ function identifyCardOwner(cardId: CardId): string {
     const idx = extractPlayerIndex(cardId);
     const board = useBoardStore();
     return Object.values(board.players).find(player => player.index === idx)!.id;
+}
+
+function getOwnerName(owner: string) {
+    const board = useBoardStore();
+    if (owner in board.players) {
+        return board.players[owner].name;
+    } else {
+        return board.spectators[owner]?.name;
+    }
 }
 
 function getPlayerReveals(players: string[]): string {

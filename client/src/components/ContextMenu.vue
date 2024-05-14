@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ContextMenuDefinition } from '@/context-menu';
+import type { ContextMenuDefinition, ContextMenuOption } from '@/context-menu';
 import { computed, reactive, ref, onMounted } from 'vue';
 
 interface Position {
@@ -99,6 +99,12 @@ function cancelSubClick(e: MouseEvent) {
   e.stopPropagation();
   e.preventDefault();
 }
+
+function optionClicked(option: ContextMenuOption) {
+  if (option.type == 'text' && !option.disabled) {
+    option.effect();
+  }
+}
 </script>
 
 <template>
@@ -106,8 +112,9 @@ function cancelSubClick(e: MouseEvent) {
     <div class="card-context-menu-options">
       <div v-for="option, index in props.menu.options" ref="optionElements">
         <template v-if="option.type == 'text'">
-          <div class="card-context-menu-option" @click="option.effect()">
-            <div class="card-context-menu-text">{{ option.title }}</div>
+          <div class="card-context-menu-option" @click="optionClicked(option)">
+            <div class="card-context-menu-text" :class="{ ['option-disabled']: option.disabled }">{{ option.title }}
+            </div>
           </div>
         </template>
         <template v-if="option.type == 'number'">
@@ -203,6 +210,11 @@ function cancelSubClick(e: MouseEvent) {
 .card-context-menu-text {
   font-size: 12px;
   margin: 5px 0;
+}
+
+.card-context-menu-text.option-disabled {
+  color: gray;
+  cursor: not-allowed;
 }
 
 .card-context-menu-number-option {

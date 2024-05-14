@@ -50,6 +50,7 @@ type LobbyStateMessage = {
   roomState: LobbyState;
 }
 
+
 export type LobbyState = {
   id: string;
   name: string;
@@ -62,6 +63,12 @@ export type GameState = {
   name: string;
   currentPlayer: number;
   players: PlayerState[];
+  spectators: UserState[];
+}
+
+export type UserState = {
+  name: string;
+  id: string;
 }
 
 export type Zone = 'BATTLEFIELD' | 'HAND' | 'LIBRARY' | 'GRAVEYARD' | 'EXILE' | 'FACE_DOWN' | 'SIDEBOARD';
@@ -188,7 +195,7 @@ export type RevealLogMessage = {
   revealTo: string | null;
 }
 
-export type BoardDiffEvent = ChangeZoneEvent | ChangeIndexEvent | ChangePositionEvent | ChangeAttributeEvent | ChangePlayerAttribute | ScoopDeck | ShuffleDeck | RevealCard | HideCard | CreateCard | DestroyCard;
+export type BoardDiffEvent = ChangeZoneEvent | ChangeIndexEvent | ChangePositionEvent | ChangeAttributeEvent | ChangePlayerAttribute | ScoopDeck | ShuffleDeck | RevealCard | HideCard | CreateCard | DestroyCard | SpectatorJoin | SpectatorLeave;
 
 export type ChangeZoneEvent = {
   type: 'change_zone';
@@ -256,6 +263,16 @@ export type CreateCard = {
 export type DestroyCard = {
   card: CardId;
   type: 'destroy_card';
+}
+
+export type SpectatorJoin = {
+  user: UserState;
+  type: "spectator_join";
+};
+
+export type SpectatorLeave = {
+  user: string;
+  type: "spectator_leave";
 }
 
 export type ClientMessage = ChangeCardAttributeMessage

@@ -174,15 +174,11 @@ class BoardManager(private val owner: UUID, private val ownerIndex: Int, private
                 events.addAll(revealToAll(card))
             } else if (newZone == Zone.HAND) {
                 // visible to just the owner
-                if (card.visibility.add(owner)) {
-                    events.add(BoardDiffEvent.RevealCard(card.id, listOf(owner)))
-                }
+                events.addAll(revealTo(card.id, owner))
             }
         } else {
             // visible to just the owner
-            if (card.visibility.add(owner)) {
-                events.add(BoardDiffEvent.RevealCard(card.id, listOf(owner)))
-            }
+            events.addAll(revealTo(card.id, owner))
         }
 
         events.add(BoardDiffEvent.ChangeZone(card.id, newZone, oldCardId))
@@ -205,24 +201,6 @@ class BoardManager(private val owner: UUID, private val ownerIndex: Int, private
         }
     }
 
-    fun getOracleId(card: CardId): OracleId {
-        return findCard(card)!!.card.id
-    }
-
-    fun getOracleInfo(playerId: UUID): Pair<Map<CardId, OracleId>, Map<OracleId, CardDao.OracleCard>> {
-        val cardToOracle = cards.values.flatten()
-            .filter { it.visibility.contains(playerId) }
-            .associate { Pair(it.id, it.card.id) }
-
-
-        val oracleInfo = cardToOracle.values.associate {
-            val card = game.cardInfoProvider[it]!!.toOracleCard()
-            Pair(card.id, card)
-        }
-
-        return Pair(cardToOracle, oracleInfo)
-    }
-
     fun revealTo(cardId: CardId, revealTo: Id?): List<BoardDiffEvent> {
         val card = findCard(cardId) ?: return listOf()
         val events = mutableListOf<BoardDiffEvent>()
@@ -231,11 +209,31 @@ class BoardManager(private val owner: UUID, private val ownerIndex: Int, private
         }
         else {
             if (card.visibility.add(revealTo)) {
-                events.add(BoardDiffEvent.RevealCard(card.id, listOf(revealTo)))
+                val reveals = tryRevealToSpectators(card)
+                events.add(BoardDiffEvent.RevealCard(card.id, reveals + revealTo))
             }
         }
 
         return events
+    }
+
+    private fun visibleToSpectators(card: BoardCard): Boolean {
+        return card.visibility.size > 0
+    }
+
+    private fun tryRevealToSpectators(card: BoardCard): List<Id> {
+        return if (visibleToSpectators(card)) {
+            val revealedToSpectators = mutableListOf<Id>()
+            val spectators = game.subscribers().toSet() - game.users().toSet()
+            for (spectator in spectators) {
+                if (card.visibility.add(spectator.id)) {
+                    revealedToSpectators.add(spectator.id)
+                }
+            }
+            revealedToSpectators
+        } else {
+            listOf()
+        }
     }
 
     fun unrevealTo(cardId: CardId, revealTo: Id?): List<BoardDiffEvent> {
@@ -252,6 +250,24 @@ class BoardManager(private val owner: UUID, private val ownerIndex: Int, private
         return listOf(
             BoardDiffEvent.HideCard(cardId, revealTo?.let { listOf(it) } ?: listOf()),
         )
+    }
+
+    fun getOracleId(card: CardId): OracleId {
+        return findCard(card)!!.card.id
+    }
+
+    fun getOracleInfo(playerId: UUID): Pair<Map<CardId, OracleId>, Map<OracleId, CardDao.OracleCard>> {
+        val cardToOracle = cards.values.flatten()
+            .filter { it.visibility.contains(playerId) }
+            .associate { Pair(it.id, it.card.id) }
+
+
+        val oracleInfo = cardToOracle.values.associate {
+            val card = game.cardInfoProvider[it]!!.toOracleCard()
+            Pair(card.id, card)
+        }
+
+        return Pair(cardToOracle, oracleInfo)
     }
 
     fun getVirtualIds(): Map<Zone, Map<Id, OracleId>> {
@@ -304,7 +320,6 @@ class BoardManager(private val owner: UUID, private val ownerIndex: Int, private
         return cards[Zone.BATTLEFIELD]!!
             .filter { it.pivot != Pivot.UNTAPPED }
             .flatMap { setAttribute(it.id, CardAttribute.PIVOT,  Pivot.UNTAPPED.ordinal) }
-
     }
 
     fun sideboard(main: List<Id>, side: List<Id>): List<BoardDiffEvent> {
@@ -320,10 +335,9 @@ class BoardManager(private val owner: UUID, private val ownerIndex: Int, private
     }
 
     fun revealCardsToSpectator(user: User): List<BoardDiffEvent> {
-        val allPlayers = game.users().map { it.id }.toSet()
         val publicCards = cards.values
             .flatten()
-            .filter { allPlayers.subtract(it.visibility).isEmpty() }
+            .filter(::visibleToSpectators)
 
         return publicCards.flatMap { revealTo(it.id, user.id) }
     }
