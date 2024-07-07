@@ -193,8 +193,8 @@ onUnmounted(() => {
       <player-counters v-for="player in board.players" :player="player" />
       <player-profile v-for="player in board.players" :player="player" />
     </div>
-    <zone ref="myZones" v-for="zone in ZONES" :zone="zone"></zone>
     <zone ref="opponentZones" v-for="zone in OPPONENT_ZONES" :zone="zone" />
+    <zone ref="myZones" v-for="zone in ZONES" :zone="zone"></zone>
   </div>
 </template>
 
