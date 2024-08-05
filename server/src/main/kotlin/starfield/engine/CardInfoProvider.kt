@@ -6,13 +6,15 @@ import starfield.routing.DeckCard
 
 class CardInfoProvider(sourceCards: List<DeckCard>) {
     private val cards: MutableMap<OracleId, CardDao.CardEntity>
+    private val availableTokens: Map<OracleId, CardDao.Token>
 
     init {
         val dao = CardDao()
-        val cards = runBlocking {
-            dao.getCards(sourceCards.map { it.id }.distinct())
+        val (cards, tokens) = runBlocking {
+            dao.getCardsWithExtras(sourceCards.map { it.id }.distinct())
         }
         this.cards = cards.associateBy { it.id }.toMutableMap()
+        this.availableTokens = tokens.associateBy { it.id }
     }
 
     operator fun get(id: OracleId) = cards[id]

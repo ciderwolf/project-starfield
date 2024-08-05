@@ -1,13 +1,15 @@
 package starfield.data.dao
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.sql.*
+import starfield.cli.CardExtra
+import starfield.data.table.CardExtras
 import starfield.data.table.CardSources
 import starfield.plugins.Id
 import starfield.data.table.Cards
 import starfield.data.table.Tokens
 import starfield.engine.OracleId
-import starfield.plugins.toEnum
 
 class CardDao {
 
@@ -58,6 +60,29 @@ class CardDao {
         }
     }
 
+    suspend fun getCardsWithExtras(ids: Iterable<OracleId>) = DatabaseSingleton.dbQuery {
+        val cards = Cards.leftJoin(CardExtras).selectAll().where { Cards.id inList ids }
+            .map {
+                val card = mapDbCard(it)
+                @Suppress("SENSELESS_COMPARISON")
+                if (it[CardExtras.cardId] != null) {
+                    card.extras = CardExtra(
+                        id = it[CardExtras.cardId],
+                        costs = Json.decodeFromString<List<List<String>>>(it[CardExtras.manaCosts]),
+                        tokens = Json.decodeFromString<List<Id>>(it[CardExtras.tokens]),
+                    )
+                }
+                card
+            }
+
+        val tokenIds = cards.mapNotNull { it.extras }.flatMap { it.tokens }
+        val tokens = getTokens(tokenIds)
+
+        Pair(cards, tokens)
+    }
+
+
+
     suspend fun tryFindCards(names: List<String>): Map<String, List<Card>> {
         val fuzzyNames = names.map(::normalizeName)
         val result = DatabaseSingleton.dbQuery {
@@ -76,6 +101,10 @@ class CardDao {
 
     suspend fun getToken(id: OracleId) = DatabaseSingleton.dbQuery {
         Tokens.selectAll().where { Tokens.id eq id }.single().let(::mapToken)
+    }
+
+    private suspend fun getTokens(tokenIds: List<Id>) = DatabaseSingleton.dbQuery {
+        Tokens.selectAll().where { Tokens.id inList tokenIds }.map(::mapToken)
     }
 
     suspend fun searchForTokens(name: String?, color: String?, types: List<String>, text: String?, pt: String?) = DatabaseSingleton.dbQuery {
@@ -132,6 +161,7 @@ class CardDao {
         val thumbnailImage: String,
         val source: Int
     ) : CardEntity() {
+        var extras: CardExtra? = null
         override fun toOracleCard() = OracleCard(name, id, image, backImage)
     }
 

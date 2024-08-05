@@ -12,7 +12,7 @@ object DatabaseSingleton {
         val driverClassName = "org.postgresql.Driver"
         val database = Database.connect(Config.connectionString, driverClassName)
         transaction(database) {
-            SchemaUtils.create(Cards, Tokens, Users, Decks, DeckCards, CardSources)
+            SchemaUtils.create(Cards, Tokens, Users, Decks, DeckCards, CardSources, CardExtras)
         }
     }
 

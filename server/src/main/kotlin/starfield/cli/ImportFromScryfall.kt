@@ -4,12 +4,14 @@ import com.github.ajalt.clikt.core.CliktCommand
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
 import org.jetbrains.exposed.sql.batchInsert
 import org.jetbrains.exposed.sql.batchUpsert
 import org.jetbrains.exposed.sql.deleteAll
 import starfield.data.dao.CardDao
 import starfield.data.dao.DatabaseSingleton
+import starfield.data.table.CardExtras
 import starfield.data.table.Cards
 import starfield.data.table.Tokens
 import java.net.URI
@@ -46,13 +48,15 @@ object ImportFromScryfall : CliktCommand(help = "Import latest cards from Scryfa
                 HttpResponse.BodyHandlers.ofLines()
             )
         }
+        val tokenIds = downloadTokenIdMap()
+
         val allCardEntities = bulkResponse.body()
             .filter { it != "[" && it != "]" }
             .map { Json.decodeFromString<JsonObject>(it.trim(',')) }
             .filter {
                 it["set_type"]!!.jsonPrimitive.content !in listOf("funny", "memorabilia")
             }
-            .map { parseScryfallEntity(it) }
+            .map { parseScryfallEntity(it, tokenIds) }
             .collect(Collectors.toList())
 
         val cards = allCardEntities.filterIsInstance<CardDao.Card>()
@@ -68,6 +72,14 @@ object ImportFromScryfall : CliktCommand(help = "Import latest cards from Scryfa
                 this[Cards.backImage] = it.backImage
                 this[Cards.thumbnailImage] = it.thumbnailImage
                 this[Cards.src] = it.source
+            }
+        }
+
+        DatabaseSingleton.dbQuery {
+            CardExtras.batchUpsert(cards.mapNotNull { it.extras }) {
+                this[CardExtras.cardId] = it.id
+                this[CardExtras.manaCosts] = Json.encodeToString(it.costs)
+                this[CardExtras.tokens] = Json.encodeToString(it.tokens)
             }
         }
 
@@ -90,11 +102,16 @@ object ImportFromScryfall : CliktCommand(help = "Import latest cards from Scryfa
         return cards.size
     }
 
-    private fun parseScryfallEntity(card: JsonObject): CardDao.CardEntity {
+    private fun parseScryfallEntity(card: JsonObject, tokenIds: Map<UUID, UUID>): CardDao.CardEntity {
         return if (card["set_type"]!!.jsonPrimitive.content == "token" || card["type_line"]!!.jsonPrimitive.content.contains("Token")) {
             parseToken(card)
         } else {
-            parseCard(card)
+            val parsed = parseCard(card)
+            val extras = parseCardExtras(card, parsed.id, tokenIds)
+            if (!extras.isEmpty()) {
+                parsed.extras = extras
+            }
+            parsed
         }
     }
 
@@ -113,13 +130,16 @@ object ImportFromScryfall : CliktCommand(help = "Import latest cards from Scryfa
         } else {
             null
         }
-        val text = if ("oracle_text" in card) {
+        var text = if ("oracle_text" in card) {
             card["oracle_text"]!!.jsonPrimitive.content
         } else {
             val faces =card["card_faces"]!!.jsonArray
             faces[0].jsonObject["oracle_text"]!!.jsonPrimitive.content +
                     " // " +
                     faces[1].jsonObject["oracle_text"]!!.jsonPrimitive.content
+        }
+        if (text.length > 1000) {
+            text = text.substring(0, 1000)
         }
 
         val image = if ("image_uris" !in card) {

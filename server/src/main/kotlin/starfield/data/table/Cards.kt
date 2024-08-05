@@ -37,3 +37,11 @@ object CardSources : IntIdTable("CardSource", "card_source_id") {
     val name = varchar("name", 100)
     val code = varchar("code", 5)
 }
+
+object CardExtras : Table("CardExtra") {
+    val cardId = uuid("card_id").references(Cards.id)
+    val manaCosts = varchar("mana_costs", 1000)
+    val tokens = varchar("tokens", 1000)
+
+    override val primaryKey = PrimaryKey(cardId)
+}
