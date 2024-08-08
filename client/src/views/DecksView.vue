@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { newDeck, deleteDeck } from '@/api/deck';
-import type { Deck, DeckListing } from '@/api/message';
+import type { DeckListing } from '@/api/message';
 import { useDecksCache } from '@/cache/decks';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import StyleButton from '@/components/StyleButton.vue';
+import LoadingButton from '@/components/LoadingButton.vue';
 import { useDecksStore } from '@/stores/decks';
 import { useRouter } from 'vue-router';
 
@@ -43,7 +44,7 @@ function deckThumbnailUrl(deck: DeckListing) {
   <div id="decks">
     <div class="title">
       <h2>Decks</h2>
-      <style-button @click="createDeck" small>+ New Deck</style-button>
+      <loading-button :on-click="createDeck" small>+ New Deck</loading-button>
     </div>
     <div class="empty-container-title" v-if="!decks.isLoaded">
       <h3 class="loading-decks-title">
@@ -55,8 +56,8 @@ function deckThumbnailUrl(deck: DeckListing) {
         <router-link :to="{ name: 'deckbuilder', params: { id: deck.id } }" class="deck-card">
           <img :alt="`${deck.name} Thumnail`" class="deck-card-thumbnail" :src="deckThumbnailUrl(deck)" />
           <h3 class="deck-card-title">{{ deck.name }}</h3>
-          <style-button @click="deleteDeckClicked($event, deck.id)" type="danger" class="delete-deck-button">Delete
-            deck</style-button>
+          <loading-button type="danger" class="delete-deck-button" :on-click="(e) => deleteDeckClicked(e, deck.id)">
+            Delete deck</loading-button>
         </router-link>
       </div>
     </div>

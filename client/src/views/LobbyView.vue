@@ -26,9 +26,17 @@ const deck = ref<Deck | null>(null)
 watchEffect(() => {
   if (game.value && currentUser) {
     const currentDeckId = game.value.users.findIndex(u => u.id === currentUser);
-    deckChoice.value = game.value.decks[currentDeckId] ?? 'none';
+    if (deckChoice.value === 'none') {
+      deckChoice.value = game.value.decks[currentDeckId] ?? 'none';
+    }
   }
 });
+
+watchEffect(() => {
+  if (games.isLoaded && !games.games[gameId]) {
+    router.push('/');
+  }
+})
 
 watchEffect(() => {
   if (deckChoice.value !== 'none') {
@@ -78,7 +86,7 @@ async function startGameClicked() {
     </div>
     <h2>Players</h2>
     <div v-if="game" class="player-status-cards">
-      <div class="player-status-card" v-for="player, i in  game.users " :key="player.id">
+      <div class="player-status-card" v-for="player, i in game.users " :key="player.id">
         <b>{{ player.name }}</b>
         <p>({{ game.decks[i] !== null ? 'Ready' : 'Waiting' }})</p>
         <style-button v-if="isOwner && player.id != currentUser" @click="kickPlayerClicked(player.id)" small

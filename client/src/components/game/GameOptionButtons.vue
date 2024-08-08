@@ -77,10 +77,9 @@ const expanded = ref(false);
 <style scoped>
 .game-options {
   border: none;
-  background-color: #0005;
+  background-color: #aaa;
   font-size: 1rem;
   text-align: center;
-  /* border-radius: 5px; */
   display: flex;
   width: 250px;
   justify-content: center;
@@ -92,7 +91,7 @@ const expanded = ref(false);
 }
 
 .game-options button:hover {
-  background-color: #0008;
+  background-color: #4f4f4f;
 }
 
 .button-group {
@@ -143,7 +142,7 @@ const expanded = ref(false);
   top: 100%;
   transform: translateX(-50%);
   color: white;
-  background: #0005;
+  background: #aaa;
   border: none;
   cursor: pointer;
   width: 25%;
@@ -157,6 +156,6 @@ const expanded = ref(false);
 }
 
 .show-more:hover {
-  background: #0008;
+  background: #4f4f4f;
 }
 </style>

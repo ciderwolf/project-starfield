@@ -31,7 +31,7 @@ function submitGame() {
     <h1>Welcome, {{ userName }}</h1>
     <div class="title">
       <h2>Games</h2>
-      <style-button @click="showCreateGameModal = true" small>Create Game</style-button>
+      <style-button @click="showCreateGameModal = true" small>+ Create Game</style-button>
     </div>
     <Modal :visible="showCreateGameModal" @close="showCreateGameModal = false" title="Create Game">
       <h2>Create Game</h2>
@@ -47,7 +47,7 @@ function submitGame() {
     </div>
     <div v-else class="empty-container-title">
       <h3>No games right now.</h3>
-      <p>Click on 'Create game' to create one.</p>
+      <p>Click on '+ Create game' to create one.</p>
     </div>
     <DecksView />
   </main>

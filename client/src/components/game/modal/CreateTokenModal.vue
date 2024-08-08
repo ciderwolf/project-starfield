@@ -11,6 +11,7 @@ import { client } from '@/ws';
 defineExpose({ open });
 
 const visible = ref(false);
+const hasSearched = ref(false);
 const nameInput = ref("");
 const typeInput = ref("");
 const colorsInput = ref("");
@@ -29,6 +30,7 @@ async function searchClicked(e: MouseEvent) {
 
   const result = await searchForTokens(name, type, colors, text, pt);
   tokens.value = result;
+  hasSearched.value = true;
 }
 
 function open() {
@@ -76,7 +78,8 @@ function createToken(token: OracleCard) {
           <CardThumbnail :card="token" />
           <StyleButton @click="createToken(token)" small>Create</StyleButton>
         </div>
-        <h3 class="no-results-title" v-else><em>No tokens found for those search parameters.</em></h3>
+        <h3 class="no-results-title" v-else-if="hasSearched"><em>No tokens found for those search parameters.</em></h3>
+        <h3 class="no-results-title" v-else><em>Search for a token to see the results here.</em></h3>
       </div>
     </div>
   </Modal>

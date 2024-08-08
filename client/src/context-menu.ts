@@ -427,16 +427,16 @@ function getRevealSubmenu(card: BoardCard, emit: ActionEmit): ContextMenuOption[
       options: getRevealToPlayersSubmenu(card, emit)
     },
     {
+      type: 'submenu',
+      title: 'Unreveal to...',
+      options: getUnrevealToPlayersSubmenu(card, emit)
+    },
+    {
       type: 'text',
       title: 'Reveal to all',
       effect: () => {
         emit('reveal-to', undefined);
       }
-    },
-    {
-      type: 'submenu',
-      title: 'Unreveal to...',
-      options: getUnrevealToPlayersSubmenu(card, emit)
     },
     {
       type: 'text',

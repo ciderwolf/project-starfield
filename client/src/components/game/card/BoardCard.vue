@@ -2,10 +2,10 @@
 import { useZoneStore } from '@/stores/zone';
 import { onMounted, onUnmounted, reactive, ref } from 'vue';
 import { type ComponentExposed } from 'vue-component-type-helpers';
-import { Pivot, type BoardCard } from '@/api/message';
+import { type BoardCard } from '@/api/message';
 import CardImage from './CardImage.vue';
 import { useNotificationsCache } from '@/cache/notifications';
-import { nonRotatedRect } from '@/stores/board';
+import { nonRotatedRect, useBoardStore } from '@/stores/board';
 
 interface Position {
   x: number;
@@ -25,6 +25,7 @@ const emit = defineEmits<{
 
 const zones = useZoneStore();
 const notifications = useNotificationsCache();
+const board = useBoardStore();
 
 const imagePos = reactive<Position>({ x: 0, y: 0 });
 const offsetPos = reactive<Position>({ x: 0, y: 0 });
@@ -59,6 +60,12 @@ function onMouseUp(e: MouseEvent) {
       // move this card to that zone
       const rect = image.value!.getBounds();
       const newPos = zones.pointInZone(otherZone.id, imagePos.x + rect.width / 2, imagePos.y + rect.height / 2);
+
+      // if the card is being moved to hand, track the relative position on client
+      if (otherZone.type == 'HAND') {
+        board.moveCard(props.card.zone, props.card.id, newPos.x, newPos.y);
+      }
+
       emit('move-zone', otherZone.id, newPos.x, newPos.y);
     }
     else {

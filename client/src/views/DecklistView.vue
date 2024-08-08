@@ -117,6 +117,10 @@ async function submitDeckAndCloseClicked() {
 </template>
 
 <style scoped>
+#decklist {
+  margin-left: 10px;
+}
+
 .loading-title {
   display: flex;
   flex-direction: row;
@@ -151,7 +155,7 @@ async function submitDeckAndCloseClicked() {
   font-size: 1em;
   min-width: 300px;
   min-height: 400px;
-  margin: 5px;
+  margin: 5px 0;
 }
 
 #decklist #sideboard-input {

@@ -44,7 +44,7 @@ class BoardManager(private val owner: UUID, private val ownerIndex: Int, private
             } else {
                 cards[Zone.LIBRARY]!!.last()
             }
-            return changeZone(targetCard.id, to).events
+            return changeZone(targetCard.id, to).events + BoardDiffEvent.ChangePosition(targetCard.id, 1.0, 0.5)
         }
         return listOf()
     }

@@ -133,7 +133,7 @@ export function getLogMessage(message: LogInfoMessage, ownerName: string): strin
             return `${ownerName} is sideboarding`;
         case 'reveal':
             const board = useBoardStore();
-            return `${ownerName} is revealing a card to ${board.players[message.revealTo ?? ""]?.name ?? "everyone"}`;
+            return `${ownerName} revealed a card to ${board.players[message.revealTo ?? ""]?.name ?? "everyone"}`;
         case 'scry':
             return `${ownerName} is looking at the top ${message.count} card${message.count === 1 ? "" : "s"} of their deck`;
         case 'roll_die':

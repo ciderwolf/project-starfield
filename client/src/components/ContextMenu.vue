@@ -132,7 +132,7 @@ function optionClicked(option: ContextMenuOption) {
           <div class="card-context-menu-submenu" @mouseenter="yesShow(index)" @mouseleave="noShow(index)"
             @click="yesShow(index, true)">
             <div class="card-context-menu-submenu-title">
-              {{ option.title }} ›
+              {{ option.title }}
             </div>
             <ContextMenu :menu="option" :relative-pos="{ x: submenuVisibilities[index].x, y: 0 }"
               :parent-pos="{ x: displayX, y: submenuVisibilities[index].y }" v-if="showOption(index)">
@@ -187,14 +187,19 @@ function optionClicked(option: ContextMenuOption) {
 .card-context-menu-submenu {
   display: flex;
   flex-direction: column;
-  margin-bottom: 5px;
   position: relative;
+  cursor: pointer;
 }
 
 .card-context-menu-submenu-title {
   font-size: 12px;
   font-weight: bold;
-  margin-bottom: 5px;
+  margin: 5px 0;
+}
+
+.card-context-menu-submenu-title::after {
+  content: '›';
+  float: right;
 }
 
 .card-context-menu-submenu-seperator {

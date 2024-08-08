@@ -234,8 +234,11 @@ export const useBoardStore = defineStore('board', () => {
 
     const handId = getZoneId(event.card, 'HAND');
     if (newZoneId === handId || oldZoneId === handId) {
-      card.x = 1;
       recalculateHandOrder(cards[handId], zones.zoneBounds[handId]);
+    } else {
+      // reset a card's position when it moves zones, except if it was moved to hand.
+      card.x = 0;
+      card.y = 0;
     }
   }
 
@@ -252,6 +255,10 @@ export const useBoardStore = defineStore('board', () => {
     const card = cards[zoneId][cardIndex];
     card.x = event.x;
     card.y = event.y;
+
+    if (zoneId === getZoneId(event.card, 'HAND')) {
+      recalculateHandOrder(cards[zoneId], zones.zoneBounds[zoneId]);
+    }
   }
 
   function processChangeAttribute(event: ChangeAttributeEvent) {
@@ -461,7 +468,6 @@ export const useBoardStore = defineStore('board', () => {
     const card = cards[zoneId][cardIndex];
     if (card) {
       card.highlight = highlight;
-      console.log(card);
     }
   }
 
