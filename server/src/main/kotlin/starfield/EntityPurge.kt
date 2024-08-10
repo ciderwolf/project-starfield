@@ -6,18 +6,20 @@ import starfield.plugins.Location
 import starfield.plugins.connections
 import java.util.*
 import kotlin.concurrent.schedule
+import kotlin.properties.Delegates
 
 
 object EntityPurge {
-    private const val THIRTY_MINUTES = 30 * 60 * 1000L
 
     fun init() {
+        if (Config.entityPurgeTimeout == -1L) {
+            return
+        }
         val timer = Timer()
-        timer.schedule(THIRTY_MINUTES, THIRTY_MINUTES) {
+        timer.schedule(Config.entityPurgeTimeout, Config.entityPurgeTimeout) {
             runBlocking {
                 purgeEntities()
             }
-
         }
     }
 
@@ -26,7 +28,7 @@ object EntityPurge {
         val allGames = games.values.toList()
         for(game in allGames) {
             val timePassed = now - game.lastActionTime()
-            if (timePassed > THIRTY_MINUTES) {
+            if (timePassed > Config.entityPurgeTimeout) {
                 // purge game
                 println("Purging game ${game.id} after $timePassed ms")
                 games.remove(game.id)
@@ -39,9 +41,25 @@ object EntityPurge {
             }
         }
 
+        val allLobbies = lobbies.values.toList()
+        for(lobby in allLobbies) {
+            val timePassed = now - lobby.lastActionTime()
+            if (timePassed > Config.entityPurgeTimeout) {
+                // purge lobby
+                println("Purging lobby ${lobby.id} after $timePassed ms")
+                lobbies.remove(lobby.id)
+                lobby.users().forEach {
+                    it.connection?.send(LocationMessage(Location.HOME, null))
+                }
+                connections.forEach {
+                    it.send(DeleteListingMessage(lobby.id))
+                }
+            }
+        }
+
         val toRemove = connections.filter {
             val timePassed = now - it.lastMessageTime()
-            timePassed > THIRTY_MINUTES
+            timePassed > Config.entityPurgeTimeout
         }.toMutableList()
 
         while(toRemove.isNotEmpty()) {

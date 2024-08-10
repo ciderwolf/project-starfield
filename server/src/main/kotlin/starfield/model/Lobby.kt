@@ -21,6 +21,7 @@ class Lobby(val id: UUID, val owner: User, val name: String, val players: Int): 
     private var otherPlayer: User? = null
     private var ownerDeck: Deck? = null
     private var otherDeck: Deck? = null
+    private val createdTime = System.currentTimeMillis()
 
     fun startGame(): Game? {
         if (players == 1 && ownerDeck != null) {
@@ -101,4 +102,7 @@ class Lobby(val id: UUID, val owner: User, val name: String, val players: Int): 
             id, name, userListings(), listOf(ownerDeck, otherDeck).map { it?.id }
         )
     }
+
+    fun lastActionTime() = createdTime
+
 }
