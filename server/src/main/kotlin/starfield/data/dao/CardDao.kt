@@ -148,7 +148,7 @@ class CardDao {
         val image: String,
         val backImage: String?
     ) : CardEntity() {
-        override fun toOracleCard() = OracleCard(name, id, image, null)
+        override fun toOracleCard() = OracleCard(name, id, image, backImage, null)
     }
 
     data class Card(
@@ -162,7 +162,7 @@ class CardDao {
         val source: Int
     ) : CardEntity() {
         var extras: CardExtra? = null
-        override fun toOracleCard() = OracleCard(name, id, image, backImage)
+        override fun toOracleCard() = OracleCard(name, id, image, backImage, extras?.tokens)
     }
 
     @Serializable
@@ -170,7 +170,8 @@ class CardDao {
         val name: String,
         val id: Id,
         val image: String,
-        val backImage: String?
+        val backImage: String?,
+        val tokens: List<Id>?
     )
 
     data class CardSource(

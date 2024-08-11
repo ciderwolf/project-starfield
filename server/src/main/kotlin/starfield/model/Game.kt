@@ -10,7 +10,13 @@ import starfield.routing.Deck
 import java.util.*
 
 @Serializable
-data class GameState(val id: Id, val name: String, val players: List<PlayerState>, val spectators: List<UserState>, val currentPlayer: Int)
+data class GameState(
+    val id: Id,
+    val name: String,
+    val players: List<PlayerState>,
+    val spectators: List<UserState>,
+    val oracleInfo: Map<OracleId, CardDao.OracleCard>,
+    val currentPlayer: Int)
 
 class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserCollection<GameState>() {
 
@@ -43,7 +49,23 @@ class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserColle
     }
 
     override fun currentState(playerId: UUID): GameState {
-        return GameState(id, name, players.map { it.getState(playerId) }, spectators.map { it.getState() }, currentPlayer)
+        val playerStates = players.map { it.getState(playerId) }
+        val oracleCards = playerStates
+            .flatMap { it.cardToOracleId.values }
+            .map { cardInfoProvider[it]!!.toOracleCard() }
+        val tokens = oracleCards
+            .filter { !it.tokens.isNullOrEmpty() }
+            .flatMap { it.tokens!! }
+            .map { cardInfoProvider.getToken(it)!!.toOracleCard() }
+        val oracleInfo = (oracleCards + tokens).associateBy { it.id }
+
+        return GameState(
+            id,
+            name,
+            playerStates,
+            spectators.map { it.getState() },
+            oracleInfo,
+            currentPlayer)
     }
 
     private fun passTurn(player: Player): List<BoardDiffEvent> {
@@ -110,6 +132,12 @@ class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserColle
                     val card = revealedCardIds[msg.card]!!
                     playerReveals[msg.card] = card
                     oracleCards[card] = revealedCards[card]!!
+                    if (!revealedCards[card]!!.tokens.isNullOrEmpty()) {
+                        revealedCards[card]!!.tokens!!.forEach { token ->
+                            val tokenCard = cardInfoProvider.getToken(token)!!.toOracleCard()
+                            oracleCards[tokenCard.id] = tokenCard
+                        }
+                    }
                 }
 
             val cardHides = hiddenCardIds

@@ -130,6 +130,11 @@ function doMenuAction(name: string, ...args: any[]) {
     case 'copy':
       applyAction(cardId => client.cloneCard(cardId));
       break;
+    case 'create-token':
+      for (const tokenId of args[0]) {
+        client.createToken(tokenId);
+      }
+      break;
     default:
       console.error('Unknown action for battlefield card', name, args);
   }

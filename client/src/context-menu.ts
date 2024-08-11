@@ -60,7 +60,8 @@ export function createBattlefieldContextMenu(card: BoardCard, emit: ActionEmit):
   }
 
   const board = useBoardStore();
-  if (board.oracleInfo[board.cardToOracleId[card.id]]?.backImage) {
+  const oracleCard = board.oracleInfo[board.cardToOracleId[card.id]];
+  if (oracleCard?.backImage) {
     options.push({
       type: 'text',
       title: 'Transform',
@@ -114,6 +115,39 @@ export function createBattlefieldContextMenu(card: BoardCard, emit: ActionEmit):
       }
     }
   );
+
+  if (oracleCard?.tokens && oracleCard.tokens.length > 0) {
+    const tokens = oracleCard.tokens.map(id => board.oracleInfo[id]);
+    const createTokenOptions: ContextMenuOption[] = tokens.map(token => {
+      return {
+        type: 'text' as const,
+        title: token.name,
+        effect: () => emit('create-token', [token.id])
+      }
+    });
+    if (tokens.length > 1) {
+      createTokenOptions.push(
+        {
+          type: 'seperator'
+        },
+        {
+          type: 'text',
+          title: 'All',
+          effect: () => emit('create-token', oracleCard.tokens)
+        }
+      );
+    }
+    options.push(
+      {
+        type: 'seperator'
+      },
+      {
+        type: 'submenu',
+        title: 'Create token...',
+        options: createTokenOptions
+      }
+    );
+  }
   return { options };
 }
 

@@ -14,12 +14,11 @@ data class PlayerState(
     val id: Id,
     val board: Map<Zone, List<CardState>>,
     val cardToOracleId: Map<CardId, OracleId>,
-    val oracleInfo: Map<OracleId, CardDao.OracleCard>,
     val life: Int,
     val poison: Int
 )
 
-class Player(val user: User, userIndex: Int, deck: Deck, game: Game) {
+class Player(val user: User, userIndex: Int, deck: Deck, val game: Game) {
 
     private val board = BoardManager(user.id, userIndex, game, deck)
     private var life = 20
@@ -44,14 +43,14 @@ class Player(val user: User, userIndex: Int, deck: Deck, game: Game) {
     }
 
     fun getState(playerId: UUID): PlayerState {
-        val oracleInfo = board.getOracleInfo(playerId)
+        val cardToOracle = board.getOracleInfo(playerId)
         return PlayerState(
             user.name,
             user.id,
             board.getState(),
-            oracleInfo.first,
-            oracleInfo.second,
-            life, poison
+            cardToOracle,
+            life,
+            poison
         )
     }
 
@@ -143,14 +142,12 @@ class Player(val user: User, userIndex: Int, deck: Deck, game: Game) {
     }
 
     suspend fun createToken(id: OracleId): List<BoardDiffEvent> {
-        val dao = CardDao()
-        val card = dao.getToken(id)
+        val card = game.cardInfoProvider.tryRegisterToken(id)
         return board.createCard(card)
     }
 
     suspend fun createCard(id: OracleId): List<BoardDiffEvent> {
-        val dao = CardDao()
-        val card = dao.getCard(id)!!
+        val card = game.cardInfoProvider.tryRegisterCard(id)
         return board.createCard(card)
     }
 

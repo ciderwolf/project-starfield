@@ -62,6 +62,7 @@ export type GameState = {
   id: string;
   name: string;
   currentPlayer: number;
+  oracleInfo: { [oracleId: string]: OracleCard };
   players: PlayerState[];
   spectators: UserState[];
 }
@@ -78,7 +79,6 @@ export type PlayerState = {
   name: string;
   board: Partial<{ [key in Zone]: BoardCard[] }>;
   cardToOracleId: { [cardId: CardId]: string };
-  oracleInfo: { [oracleId: string]: OracleCard };
   life: number;
   poison: number;
 }
@@ -145,6 +145,7 @@ export type OracleCard = {
   id: string;
   image: string;
   backImage: string | null;
+  tokens: string[] | null;
 }
 
 export type CardAttributeMap = Partial<Record<CardAttribute, number>>;

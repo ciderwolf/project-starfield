@@ -256,18 +256,12 @@ class BoardManager(private val owner: UUID, private val ownerIndex: Int, private
         return findCard(card)!!.card.id
     }
 
-    fun getOracleInfo(playerId: UUID): Pair<Map<CardId, OracleId>, Map<OracleId, CardDao.OracleCard>> {
+    fun getOracleInfo(playerId: UUID): Map<CardId, OracleId> {
         val cardToOracle = cards.values.flatten()
             .filter { it.visibility.contains(playerId) }
             .associate { Pair(it.id, it.card.id) }
 
-
-        val oracleInfo = cardToOracle.values.associate {
-            val card = game.cardInfoProvider[it]!!.toOracleCard()
-            Pair(card.id, card)
-        }
-
-        return Pair(cardToOracle, oracleInfo)
+        return cardToOracle
     }
 
     fun getVirtualIds(): Map<Zone, Map<Id, OracleId>> {
@@ -295,7 +289,6 @@ class BoardManager(private val owner: UUID, private val ownerIndex: Int, private
     }
 
     fun createCard(oracleCard: CardDao.CardEntity): List<BoardDiffEvent> {
-        game.cardInfoProvider.registerCard(oracleCard)
         val boardCard = BoardCard(oracleCard, game.cardIdProvider, ownerIndex, CardOrigin.TOKEN)
         boardCard.zone = Zone.BATTLEFIELD
         cards[Zone.BATTLEFIELD]!!.add(boardCard)

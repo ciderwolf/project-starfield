@@ -1,5 +1,5 @@
 import type { OracleId } from "@/stores/board";
-import { deleteJson, deleteJsonRaw, getJson, postJson } from ".";
+import { deleteJsonRaw, getJson, postJson } from ".";
 import type { OracleCard } from "./message";
 
 type OracleIdMap = { [key: string]: OracleId };
@@ -40,10 +40,10 @@ export async function stopSpectating(gameId: string): Promise<boolean> {
 
 export function searchForTokens(name?: string, type?: string, colors?: string, text?: string, pt?: string): Promise<OracleCard[]> {
   const params = { name, type, colors, text, pt };
-  
+
   const searchParams = new URLSearchParams();
-  for(const [key, value] of Object.entries(params)) {
-    if(value) {
+  for (const [key, value] of Object.entries(params)) {
+    if (value) {
       searchParams.append(key, value);
     }
   }

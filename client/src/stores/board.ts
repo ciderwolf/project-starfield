@@ -107,7 +107,7 @@ export const useBoardStore = defineStore('board', () => {
     logs.value = [];
   }
 
-  function setBoardState(playerStates: PlayerState[], currentPlayerIdx: number) {
+  function setBoardState(playerStates: PlayerState[], currentPlayerIdx: number, gameOracleInfo: { [oracleId: OracleId]: OracleCard }) {
     resetState();
 
     let index = 0;
@@ -140,11 +140,10 @@ export const useBoardStore = defineStore('board', () => {
       for (const [cardId, oracleId] of Object.entries(state.cardToOracleId)) {
         cardToOracleId[Number(cardId)] = oracleId;
       }
-
-      // overwrite oracleInfo from message
-      for (const [oracleId, card] of Object.entries(state.oracleInfo)) {
-        oracleInfo[oracleId] = card;
-      }
+    }
+    // overwrite oracleInfo from message
+    for (const [oracleId, card] of Object.entries(gameOracleInfo)) {
+      oracleInfo[oracleId] = card;
     }
 
     recalculateHandOrder(cards[ZONES.hand.id], zones.zoneBounds[ZONES.hand.id]);

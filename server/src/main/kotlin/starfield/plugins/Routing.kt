@@ -31,6 +31,11 @@ fun Application.configureRouting() {
                 initSession(username, result)
             }
 
+            get("/logout") {
+                call.sessions.clear<UserSession>()
+                call.respondSuccess("Logged out")
+            }
+
             post("/create-account") {
                 val params = call.receive<Map<String, String>>()
                 val username = params["name"]
