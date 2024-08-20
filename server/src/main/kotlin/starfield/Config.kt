@@ -12,4 +12,8 @@ object Config {
     val entityPurgeTimeout by lazy {
         System.getenv("ENTITY_PURGE_TIMEOUT")?.toLong() ?: -1
     }
+
+    fun storagePath(path: String): String {
+        return this.storagePath + path
+    }
 }

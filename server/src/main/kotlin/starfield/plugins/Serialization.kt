@@ -57,7 +57,7 @@ fun tryParseUuid(value: String?): UUID? {
         null
     }
 }
-typealias Id = @Serializable(with= UUIDSerializer::class) UUID
+typealias Id = @Serializable(with = UUIDSerializer::class) UUID
 
 inline fun <reified T : Enum<T>> Int.toEnum(): T? {
     return enumValues<T>().firstOrNull { it.ordinal == this }

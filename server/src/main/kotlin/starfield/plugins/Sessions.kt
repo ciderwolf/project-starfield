@@ -3,21 +3,18 @@ package starfield.plugins
 import io.ktor.server.application.*
 import io.ktor.server.sessions.*
 import kotlinx.serialization.Serializable
+import starfield.Config
 import starfield.model.User
+import java.io.File
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicLong
 
 
 @Serializable
-class UserSession(val username: String, @Serializable(with = UUIDSerializer::class) val id: UUID) {
+class UserSession(val username: String, val id: Id) {
+    private fun connection() = connections.find { it.id == id }
 
-    fun connection() = connections.find { it.id == id }
-
-    companion object {
-        private var lastId = AtomicLong(0)
-
-        fun createNew(username: String, userId: UUID) = UserSession(username, userId)
-    }
+    fun user() = User(username, id, connection())
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -37,14 +34,15 @@ class UserSession(val username: String, @Serializable(with = UUIDSerializer::cla
         return result
     }
 
-    fun user(): User {
-        return User(username, id, connection())
-    }
+
 }
 
 
 fun Application.configureSessions() {
     install(Sessions) {
-        cookie<UserSession>("user_session")
+        cookie<UserSession>("user_session", directorySessionStorage(File(Config.storagePath("sessions")))) {
+            cookie.extensions["SameSite"] = "lax"
+            cookie.secure = true
+        }
     }
 }
