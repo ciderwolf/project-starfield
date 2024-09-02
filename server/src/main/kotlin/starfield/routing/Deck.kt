@@ -181,11 +181,16 @@ suspend fun lookupCards(cards: List<Triple<Int, String, String>>): List<ParseDec
         return listOf()
     }
     val dedupedCards = cards
-        .groupBy { Pair(it.second, it.third.uppercase()) }
+        .groupBy { Pair(CardDao.normalizeName(it.second), it.third.uppercase()) }
         .entries
         .map { kv -> Triple(kv.value.sumOf { it.first }, kv.key.first, kv.key.second) }
     val dao = CardDao()
     val cardData = dao.tryFindCards(dedupedCards.map { it.second })
+
+    // don't try source resolution if there are no real cards
+    if (cardData.isEmpty()) {
+        return dedupedCards.map { ParseDeckCardResult(it.first, null, it.second, it.third) }
+    }
 
     val sourceCounts = cardData.values.flatten().groupingBy { it.source }.eachCount()
     val largestCount = sourceCounts.maxBy { it.value }.value
@@ -198,8 +203,7 @@ suspend fun lookupCards(cards: List<Triple<Int, String, String>>): List<ParseDec
         .map { card ->
             // TODO: What if a card was created as unique but now has conflicts
             val (count, name, sourceCode) = card
-            val normalName = CardDao.normalizeName(name)
-            val candidates = cardData[normalName]
+            val candidates = cardData[name]
                 ?: return@map ParseDeckCardResult(count, null, name, sourceCode)
             if (sourceCode != "") {
                 val source = sources.find { it.code == sourceCode }
