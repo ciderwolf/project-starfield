@@ -1,5 +1,7 @@
 package starfield.data.dao
 
+import com.zaxxer.hikari.HikariConfig
+import com.zaxxer.hikari.HikariDataSource
 import kotlinx.coroutines.*
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.*
@@ -9,8 +11,11 @@ import starfield.data.table.*
 
 object DatabaseSingleton {
     fun init() {
-        val driverClassName = "org.postgresql.Driver"
-        val database = Database.connect(Config.connectionString, driverClassName)
+        val config = HikariConfig()
+        config.jdbcUrl = Config.connectionString
+        config.minimumIdle = 3
+        val dataSource = HikariDataSource(config)
+        val database = Database.connect(dataSource)
         transaction(database) {
             SchemaUtils.create(Cards, Tokens, Users, Decks, DeckCards, CardSources, CardExtras)
         }
