@@ -11,13 +11,14 @@ import { useDataStore } from '@/stores/data';
 
 const showCreateGameModal = ref(false);
 const gameName = ref('');
+const gamePlayers = ref(2);
 const games = useGameStore();
 const router = useRouter();
 const data = useDataStore();
 const userName = computed(() => data.userName);
 
 function submitGame() {
-  createGame(gameName.value).then((state) => {
+  createGame(gameName.value, gamePlayers.value).then((state) => {
     showCreateGameModal.value = false;
     games.processState({ type: 'state', room: 'lobby', roomState: state });
     router.push(`/lobby/${state.id}`);
@@ -36,6 +37,9 @@ function submitGame() {
     <Modal :visible="showCreateGameModal" @close="showCreateGameModal = false" title="Create Game">
       <h2>Create Game</h2>
       <label>Name: <input type="text" v-model="gameName"></label>
+      <br>
+      <br>
+      <label>Players: <input type="number" min="2" max="4" v-model.number="gamePlayers"></label>
       <br>
       <br>
       <style-button @click="submitGame">Create Game</style-button>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ZONES, type ZoneConfig } from '@/zones';
-import { onMounted, onUnmounted, reactive, ref, computed } from 'vue';
+import { onMounted, onUnmounted, reactive, ref, computed, watch } from 'vue';
 import { useBoardStore } from '@/stores/board';
 import { useZoneStore } from '@/stores/zone';
 import ContextMenu from '@/components/ContextMenu.vue';
@@ -138,6 +138,10 @@ onMounted(() => {
   window.addEventListener('resize', resetZoneRect);
   window.addEventListener('mousemove', drag);
   window.addEventListener('mouseup', endDrag);
+  resetZoneRect();
+});
+
+watch(() => props.zone.id, () => {
   resetZoneRect();
 });
 

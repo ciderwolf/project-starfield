@@ -11,7 +11,8 @@ import RollDieModal from '@/components/game/modal/RollDieModal.vue';
 import CardPreview from '@/components/game/CardPreview.vue';
 import PlayerCounters from '@/components/game/PlayerCounters.vue';
 import PlayerProfile from '@/components/game/PlayerProfile.vue';
-import { OPPONENT_ZONES, ZONES } from '@/zones';
+import SelectedOpponentPicker from '@/components/game/SelectedOpponentPicker.vue';
+import { ZONES } from '@/zones';
 import { ref, onMounted, onUnmounted, watchEffect, computed } from 'vue';
 import { client } from '@/ws';
 import { useBoardStore } from '@/stores/board';
@@ -23,15 +24,15 @@ import { useDataStore } from '@/stores/data';
 import { useRouter, useRoute } from 'vue-router';
 import GameOptionButtons from '@/components/game/GameOptionButtons.vue';
 import GameLog from '@/components/game/GameLog.vue';
+import { useZoneStore } from '@/stores/zone';
 
-
-const myZones = ref<HTMLElement[]>([]);
-const opponentZones = ref<HTMLElement[]>([]);
 const router = useRouter();
 const route = useRoute();
 const board = useBoardStore();
 const data = useDataStore();
 const games = useGameStore();
+const zones = useZoneStore();
+
 const gameId = ref('');
 const isSpectator = computed(() => {
   if (games.isLoaded === false) {
@@ -185,16 +186,20 @@ onUnmounted(() => {
     <roll-die-modal ref="rollDieModal" />
     <card-preview ref="cardPreview" />
     <div class="above-deck-elements">
-      <GameOptionButtons :isSpectator="isSpectator" @end-game="endGameClicked" @create-token="createToken"
-        @create-card="createCard" @untap-all="untapAll" @roll-die="rollDie" />
+      <div>
+        <SelectedOpponentPicker />
+        <GameOptionButtons :isSpectator="isSpectator" @end-game="endGameClicked" @create-token="createToken"
+          @create-card="createCard" @untap-all="untapAll" @roll-die="rollDie" />
+      </div>
       <GameLog />
     </div>
     <div class="player-counters">
-      <player-counters v-for="player in board.players" :player="player" />
-      <player-profile v-for="player in board.players" :player="player" />
+      <player-counters v-for="player in [zones.primaryPlayer, zones.secondaryPlayer]" :player="player!" />
+      <player-profile v-for="player in [zones.primaryPlayer, zones.secondaryPlayer]" :player="player!" />
     </div>
-    <zone ref="opponentZones" v-for="zone in OPPONENT_ZONES" :zone="zone" />
-    <zone ref="myZones" v-for="zone in ZONES" :zone="zone"></zone>
+
+    <zone v-for="zone in zones.opponentZones" :zone="zone" />
+    <zone v-for="zone in ZONES" :zone="zone" />
   </div>
 </template>
 

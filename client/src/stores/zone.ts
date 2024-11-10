@@ -1,16 +1,22 @@
-import { zoneFromIndex, type ZoneConfig, ZONES, OPPONENT_ZONES } from "@/zones";
+import { zoneFromIndex, type ZoneConfig, ZONES, getZonesMap, ScreenPosition } from "@/zones";
 import { defineStore } from "pinia";
-import { reactive } from "vue";
-import { useBoardStore } from "./board";
+import { computed, reactive, ref } from "vue";
+import { useBoardStore, type PlayerAttributes } from "./board";
 
 export const useZoneStore = defineStore('zone', () => {
   const zoneBounds: { [id: number]: DOMRect } = reactive({});
+
+  const primaryPlayer = ref<PlayerAttributes | null>(null);
+  const secondaryPlayer = ref<PlayerAttributes | null>(null);
+
+  const opponentHand = computed(() => opponentZones.value?.hand.id);
+  const opponentZones = computed(() => getZonesMap(ScreenPosition.SECONDARY, secondaryPlayer.value?.index));
 
   function overlappingZone(x: number, y: number): ZoneConfig | null {
     for (const [id, bounds] of Object.entries(zoneBounds)) {
       if (bounds && bounds.left < x && x < bounds.right && bounds.top < y && y < bounds.bottom) {
         // count the opponent's battlefield as the same as ours
-        if (Number(id) === OPPONENT_ZONES.play.id) {
+        if (Number(id) === opponentZones.value.play.id) {
           return ZONES.play;
         }
         return zoneFromIndex(Number(id)) ?? null;
@@ -19,7 +25,7 @@ export const useZoneStore = defineStore('zone', () => {
     return null;
   }
 
-  function pointInZone(zoneId: number, x: number, y: number): {x: number, y: number} {
+  function pointInZone(zoneId: number, x: number, y: number): { x: number, y: number } {
     const zone = zoneBounds[zoneId];
     return {
       x: (x - zone.left) / zone.width,
@@ -30,10 +36,26 @@ export const useZoneStore = defineStore('zone', () => {
   function updateZoneBounds(id: number, bounds: DOMRect) {
     zoneBounds[id] = bounds;
     const board = useBoardStore();
-    if (id === ZONES.hand.id || id === OPPONENT_ZONES.hand.id) {
+    if (id === ZONES.hand.id || id === opponentZones.value.hand.id) {
       board.updateHandPos(id, bounds);
     }
   }
 
-  return { zoneBounds, overlappingZone, pointInZone, updateZoneBounds };
+  function playFieldExtents(): { left: number, top: number, bottom: number, right: number } {
+    const play = zoneBounds[ZONES.play.id];
+    const opponentPlay = zoneBounds[opponentZones.value.play.id];
+    return {
+      left: Math.min(play.left, opponentPlay?.left),
+      top: Math.min(play.top, opponentPlay?.top),
+      bottom: Math.max(play.bottom, opponentPlay?.bottom),
+      right: Math.max(play.right, opponentPlay?.right),
+    };
+  }
+
+  function resetState() {
+    primaryPlayer.value = null;
+    secondaryPlayer.value = null;
+  }
+
+  return { zoneBounds, primaryPlayer, secondaryPlayer, opponentZones, opponentHand, overlappingZone, pointInZone, updateZoneBounds, playFieldExtents, resetState };
 })

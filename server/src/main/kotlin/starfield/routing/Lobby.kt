@@ -37,6 +37,9 @@ fun Route.gameRouting() {
         }
 
         val definition = call.receive<CreateGameMessage>()
+        if (definition.players < 1 || definition.players > 4) {
+            return@post call.respondError("Invalid number of players")
+        }
         val lobby = Lobby(UUID.randomUUID(), session.user(), definition.name, definition.players)
         lobbies[lobby.id] = lobby
         val listing = GameListing(lobby.id, lobby.name, lobby.userListings(), false)
@@ -83,6 +86,10 @@ fun Route.gameRouting() {
             val user = session.user()
             lobby.join(user)
             user.connection?.send(LocationMessage(Location.LOBBY, lobby.id))
+            val listing = GameListing(lobby.id, lobby.name, lobby.userListings(), false)
+            connections.forEach {
+                it.send(ListingUpdateMessage(listing))
+            }
             return@post call.respondSuccess(lobby.currentState(user.id))
         } else {
             return@post call.respondError("Can't join that game")

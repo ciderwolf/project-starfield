@@ -16,19 +16,22 @@ data class LobbyState(
     val decks: List<Id?>,
 )
 
+data class LobbyUser(val user: User, var deck: Deck?)
+
 class Lobby(val id: UUID, val owner: User, val name: String, val players: Int): UserCollection<LobbyState>() {
 
-    private var otherPlayer: User? = null
+    private val entrants = mutableMapOf<UUID, LobbyUser>()
+
     private var ownerDeck: Deck? = null
-    private var otherDeck: Deck? = null
+
     private val createdTime = System.currentTimeMillis()
 
     fun startGame(): Game? {
         if (players == 1 && ownerDeck != null) {
             return Game(name, id, mapOf(owner to ownerDeck!!, owner to ownerDeck!!))
         }
-        if (otherPlayer != null && ownerDeck != null && otherDeck != null) {
-            return Game(name, id, mapOf(owner to ownerDeck!!, otherPlayer!! to otherDeck!!))
+        if (ownerDeck != null && entrants.size == players - 1 && entrants.all { it.value.deck != null }) {
+            return Game(name, id, mapOf(owner to ownerDeck!!, *entrants.map { it.value.user to it.value.deck!! }.toTypedArray()))
         }
         return null
     }
@@ -36,17 +39,20 @@ class Lobby(val id: UUID, val owner: User, val name: String, val players: Int): 
     suspend fun setDeck(player: User, deck: Deck) {
         if (player == owner) {
             ownerDeck = deck
-        } else if (player == otherPlayer) {
-            otherDeck = deck
+        } else {
+            val lobbyUser = entrants[player.id]
+            if (lobbyUser != null) {
+                lobbyUser.deck = deck
+            }
         }
         broadcast(StateMessage(currentState(owner.id), "lobby"))
     }
 
-    fun canJoin(): Boolean = otherPlayer == null
+    fun canJoin(): Boolean = entrants.size < players - 1
     suspend fun join(other: User): Boolean {
         if (canJoin()) {
-            otherPlayer = other
-            owner.connection?.send(StateMessage(currentState(owner.id), "lobby"))
+            entrants[other.id] = LobbyUser(other, null)
+            broadcast(StateMessage(currentState(owner.id), "lobby"))
             return true
         }
 
@@ -54,10 +60,8 @@ class Lobby(val id: UUID, val owner: User, val name: String, val players: Int): 
     }
 
     suspend fun leave(user: User): Boolean {
-        val left = if (user == otherPlayer) {
-            otherPlayer = null
-            otherDeck = null
-            true
+        val left = if (user != owner) {
+            entrants.remove(user.id) != null
         } else user == owner
 
         broadcastToEach {
@@ -67,39 +71,39 @@ class Lobby(val id: UUID, val owner: User, val name: String, val players: Int): 
     }
 
     suspend fun remove(other: UUID): Boolean {
-        if (otherPlayer?.id == other) {
-            otherPlayer = null
-            otherDeck = null
+        if (other in entrants) {
+            entrants.remove(other)
             broadcastToEach {
                 StateMessage(currentState(it.id), "lobby")
             }
             return true
         }
         return false
-
     }
 
     fun hasPlayer(userId: UUID): Boolean {
-        return otherPlayer?.id == userId
+        return userId in entrants
                 || owner.id == userId
     }
 
     override fun users(): List<User> {
-        return if (otherPlayer == null) {
-            listOf(owner)
-        } else {
-            listOf(owner, otherPlayer!!)
-        }
+        return listOf(owner) + entrants.values.map { it.user }
     }
 
     override fun currentState(playerId: UUID): LobbyState {
         if (players == 1) {
             return LobbyState(
-                id, name, userListings(), listOf(ownerDeck).map { it?.id }
+                id, name, userListings(), listOf(ownerDeck?.id)
             )
         }
+
+        val decks = mutableListOf(ownerDeck?.id)
+        decks.addAll(entrants.values.map { it.deck?.id })
+        while (decks.size < players) {
+            decks.add(null)
+        }
         return LobbyState(
-            id, name, userListings(), listOf(ownerDeck, otherDeck).map { it?.id }
+            id, name, userListings(), decks
         )
     }
 

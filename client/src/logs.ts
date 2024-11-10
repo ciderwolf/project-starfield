@@ -1,15 +1,17 @@
 import type { BoardDiffEvent, LogInfoMessage } from "./api/message";
 import { extractPlayerIndex, useBoardStore, type CardId } from "./stores/board";
-import { findZoneByName } from "./zones";
+import { zoneName } from "./zones";
 
 export interface EventMessage {
     message: string;
+    owner: string;
     card?: CardId;
 }
 
 export function getEventMessage(event: BoardDiffEvent): EventMessage | null {
     const owner = identifyEventOwner(event);
     const name = getOwnerName(owner);
+    const board = useBoardStore();
 
     switch (event.type) {
         case "change_attribute":
@@ -19,61 +21,75 @@ export function getEventMessage(event: BoardDiffEvent): EventMessage | null {
             return null;
         case "spectator_join":
             return {
-                message: `${name} started spectating the game`
+                message: `${name} started spectating the game`,
+                owner
             }
         case "change_index": {
             if (((event.newIndex & 0b11110000) >> 4) === 0 && event.newIndex === 0) {
                 return {
                     message: `${name} moved a card to the bottom of their deck`,
-                    card: event.card
+                    card: event.card,
+                    owner
                 };
             } else {
                 return {
                     message: `${name} moved a card to position ${event.newIndex} in its zone`,
-                    card: event.card
+                    card: event.card,
+                    owner
                 };
             }
         }
         case "destroy_card":
             return {
                 message: `${name} destroyed a card`,
-                card: event.card
+                card: event.card,
+                owner
             };
         case "change_zone":
             return {
-                message: `${name} moved a card to their ${findZoneByName(event.newZone)!.name}`,
-                card: event.card
+                message: `${name} moved a card to their ${zoneName(event.newZone)}`,
+                card: event.card,
+                owner
             };
         case "hide_card":
             return {
                 message: `${name} hid a card from ${getPlayerReveals(event.players)}`,
-                card: event.card
+                card: event.card,
+                owner
             };
         case "create_card":
             return {
                 message: `${name} created a card`,
-                card: event.state.id
+                card: event.state.id,
+                owner
             };
         case "change_player_attribute":
             if (event.attribute === "ACTIVE_PLAYER") {
                 if (event.newValue === 0) {
+                    // Attribute this event to the player who's turn is starting
+                    const currentPlayer = Object.values(board.players).find(player => player.index === board.currentPlayer);
+                    console.log(currentPlayer?.name);
                     return {
-                        message: `${name} ended their turn`
+                        message: `${name} ended their turn`,
+                        owner: currentPlayer!.id,
                     };
                 } else {
                     return null;
                 }
             }
             return {
-                message: `${name} changed their ${event.attribute.toLowerCase()} to ${event.newValue}`
+                message: `${name} changed their ${event.attribute.toLowerCase()} to ${event.newValue}`,
+                owner
             };
         case "scoop_deck":
             return {
-                message: `${name} scooped their deck`
+                message: `${name} scooped their deck`,
+                owner
             };
         case "shuffle_deck":
             return {
-                message: `${name} shuffled their deck`
+                message: `${name} shuffled their deck`,
+                owner
             };
     }
 }

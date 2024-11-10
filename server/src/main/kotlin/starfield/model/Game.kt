@@ -74,8 +74,8 @@ class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserColle
         }
         val nextPlayer = (currentPlayer + 1) % players.size
         val events = listOf(
-            BoardDiffEvent.ChangePlayerAttribute(players[currentPlayer].user.id, PlayerAttribute.ACTIVE_PLAYER, 0),
-            BoardDiffEvent.ChangePlayerAttribute(players[nextPlayer].user.id, PlayerAttribute.ACTIVE_PLAYER, 1)
+            BoardDiffEvent.ChangePlayerAttribute(players[nextPlayer].user.id, PlayerAttribute.ACTIVE_PLAYER, 1),
+            BoardDiffEvent.ChangePlayerAttribute(players[currentPlayer].user.id, PlayerAttribute.ACTIVE_PLAYER, 0)
         )
         currentPlayer = nextPlayer
         return events

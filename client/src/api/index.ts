@@ -13,8 +13,8 @@ type JsonResponse<T> = {
   message: string;
 }
 
-export async function createGame(name: string): Promise<LobbyState> {
-  const response = await postJson('lobbies', { name, players: 2 });
+export async function createGame(name: string, players: number = 2): Promise<LobbyState> {
+  const response = await postJson('lobbies', { name, players });
   return response;
 }
 
@@ -56,13 +56,13 @@ export async function getJsonRaw<T>(path: string): Promise<JsonResponse<T>> {
 
 export async function postJsonRaw<T>(path: string, payload: any): Promise<JsonResponse<T>> {
   const response = await fetch('/api/' + path,
-  {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(payload),
-  });
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload),
+    });
   return response.json();
 }
 
@@ -72,11 +72,11 @@ export async function deleteJson(path: string): Promise<any> {
 
 export async function deleteJsonRaw(path: string): Promise<JsonResponse<any>> {
   const response = await fetch('/api/' + path,
-  {
-    method: 'DELETE',
-  });
+    {
+      method: 'DELETE',
+    });
   return response.json();
-  
+
 }
 
 function handleApiError<T>(response: JsonResponse<T>): T {

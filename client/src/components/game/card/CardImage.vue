@@ -4,7 +4,7 @@ import { useNotificationsCache } from '@/cache/notifications';
 import { nonRotatedRect, pivotToAngle, useBoardStore } from '@/stores/board';
 import { useDataStore } from '@/stores/data';
 import { useZoneStore } from '@/stores/zone';
-import { OPPONENT_ZONES, ScreenPosition, ZONES, zoneFromIndex } from '@/zones';
+import { ScreenPosition, ZONES, isOpponentZone, zoneFromIndex } from '@/zones';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 
 interface Position {
@@ -117,8 +117,9 @@ function updateScreenPosFromVirtualCoords() {
 }
 
 function clampToBounds(x: number, y: number, rect: DOMRect, parentRect: DOMRect) {
-  const minY = props.card.zone === ZONES.play.id ? zones.zoneBounds[OPPONENT_ZONES.play.id].top : parentRect.top;
-  const maxY = props.card.zone === OPPONENT_ZONES.play.id ? zones.zoneBounds[ZONES.play.id].bottom : parentRect.top + parentRect.height;
+  const { top, bottom } = zones.playFieldExtents();
+  const minY = props.card.zone === ZONES.play.id ? top : parentRect.top;
+  const maxY = isOpponentZone(props.card.zone, 'BATTLEFIELD') ? bottom : parentRect.top + parentRect.height;
   x = Math.max(parentRect.left, Math.min(x, parentRect.left + parentRect.width - rect.width));
   y = Math.max(minY, Math.min(y, maxY - rect.height));
   return { x, y };

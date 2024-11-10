@@ -213,30 +213,60 @@ export enum ScreenPosition {
 export function zoneFromIndex(index: number): ZoneConfig | undefined {
   const zone = Object.values(ZONES).find((zone) => zone.id === index);
   if (zone === undefined) {
-    return Object.values(OPPONENT_ZONES).find((zone) => zone.id === index);
+    const normalizedIndex = index % 10;
+    const negativeIndex = -(normalizedIndex + 1);
+    const oppZone = Object.values(OPPONENT_ZONES).find((zone) => zone.id === negativeIndex);
+    return { ...oppZone, id: index } as ZoneConfig;
   }
   return zone;
 }
 
-export function opponentZone(zone: ZoneConfig): ZoneConfig {
-  return Object.values(OPPONENT_ZONES).find((oZone) => oZone.type === zone.type)!;
+export function findZoneByName(name: string, pos: ScreenPosition, playerIndex: number): ZoneConfig | undefined {
+  return getZones(pos, playerIndex).find((zone) => zone.type === name);
 }
 
-export function findZoneByName(name: string, pos = ScreenPosition.PRIMARY): ZoneConfig | undefined {
-  return getZones(pos).find((zone) => zone.type === name);
-}
-
-
-export function zoneNameToId(zone: Zone, pos = ScreenPosition.PRIMARY): number {
-  return getZones(pos).find((z) => z.type === zone)!.id;
+export function zoneNameToId(zone: Zone, pos: ScreenPosition, playerIndex: number): number {
+  const primaryZone = Object.values(ZONES).find((z) => z.type === zone)!.id;
+  return getZoneIdFromScreenPositionAndPlayerIndex(primaryZone, pos, playerIndex);
 }
 
 
-export function getZones(pos = ScreenPosition.PRIMARY): ZoneConfig[] {
-  if (pos === ScreenPosition.SECONDARY) {
-    return Object.values(OPPONENT_ZONES);
+export function getZones(pos: ScreenPosition, playerIndex: number): ZoneConfig[] {
+  return Object.values(getZonesMap(pos, playerIndex));
+}
+
+export function getZonesMap(pos: ScreenPosition, playerIndex: number | undefined): { [key: string]: ZoneConfig } {
+  if (playerIndex === undefined) {
+    return {};
+  }
+
+  if (pos === ScreenPosition.PRIMARY) {
+    return ZONES;
   }
   else {
-    return Object.values(ZONES);
+    const zones: { [key: string]: ZoneConfig } = {};
+    for (const [key, value] of Object.entries(OPPONENT_ZONES)) {
+      const zoneId = (playerIndex + 2) * 10 + -(value.id + 1);
+      zones[key] = { ...value, id: zoneId };
+    }
+    return zones;
   }
+}
+
+export function isOpponentZone(zoneId: number, type: Zone): boolean {
+  const zone = zoneFromIndex(zoneId);
+  return zone !== undefined && zone.type === type && zone.id < 0;
+}
+
+export function getZoneIdFromScreenPositionAndPlayerIndex(zoneIndex: number, pos: ScreenPosition, playerIndex: number): number {
+  if (pos === ScreenPosition.PRIMARY) {
+    return zoneIndex;
+  }
+  else {
+    return (playerIndex + 2) * 10 + zoneIndex;
+  }
+}
+
+export function zoneName(zone: Zone): string {
+  return Object.values(ZONES).find((z) => z.type === zone)!.name;
 }
