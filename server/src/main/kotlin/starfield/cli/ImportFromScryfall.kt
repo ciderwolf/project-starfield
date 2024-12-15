@@ -84,8 +84,7 @@ object ImportFromScryfall : CliktCommand(help = "Import latest cards from Scryfa
         }
 
         DatabaseSingleton.dbQuery {
-            Tokens.deleteAll()
-            Tokens.batchInsert(tokens) {
+            Tokens.batchUpsert(tokens) {
                 this[Tokens.id] = it.id
                 this[Tokens.name] = it.name
                 this[Tokens.fuzzyName] = it.fuzzyName
