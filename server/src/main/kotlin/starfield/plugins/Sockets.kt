@@ -8,47 +8,11 @@ import io.ktor.websocket.*
 import kotlinx.serialization.*
 import kotlinx.serialization.json.Json
 import starfield.*
-import starfield.model.User
+import starfield.model.Draft
+import starfield.model.Game
 import kotlin.collections.LinkedHashSet
 import java.time.Duration
 import java.util.*
-
-abstract class UserCollection<S> {
-    abstract fun users(): List<User>
-    abstract fun currentState(playerId: UUID): S
-
-    open fun reconnectUser(connection: WSConnection) {
-        val user = users().find { it.id == connection.id }
-        if (user != null) {
-            user.connection = connection
-        }
-    }
-
-    open fun disconnectUser(connection: WSConnection) {
-        val user = users().find { it.id == connection.id }
-        if (user != null) {
-            user.connection = null
-        }
-    }
-
-    fun userListings(): List<UserListing> {
-        return users().map { UserListing(it.id, it.name) }
-    }
-
-    protected suspend inline fun <reified T : ServerMessage> broadcast(message: T) {
-        users().forEach {
-            it.connection?.send(message)
-        }
-    }
-
-    protected suspend inline fun <reified T : ServerMessage> broadcastToEach(messageFactory: (User) -> T) {
-        users().forEach {
-            it.connection?.send(messageFactory(it))
-        }
-    }
-
-}
-
 
 val connections: MutableSet<WSConnection> = Collections.synchronizedSet(LinkedHashSet())
 
@@ -84,7 +48,7 @@ class WSConnection(val id: UUID, val ws: DefaultWebSocketSession) {
 
 
 enum class Location {
-    HOME, LOBBY, GAME, DECK_BUILDER, LOGIN
+    HOME, LOBBY, GAME, DRAFT, DECK_BUILDER, LOGIN
 }
 
 suspend fun reconnect(connection: WSConnection) {
@@ -92,15 +56,17 @@ suspend fun reconnect(connection: WSConnection) {
     lobby?.reconnectUser(connection)
     if (lobby != null) {
         connection.send(LocationMessage(Location.LOBBY, lobby.id))
-        connection.send(StateMessage(lobby.currentState(connection.id), "lobby"))
+        connection.send(StateMessage(lobby.currentState(connection.id), Location.LOBBY))
         return
     }
 
     val game = findGame(connection.id)
     game?.reconnectUser(connection)
     if (game != null) {
-        connection.send(LocationMessage(Location.GAME, game.id))
-        connection.send(StateMessage(game.currentState(connection.id), "game"))
+        val state = game.currentState(connection.id)
+        connection.send(LocationMessage(game.location(), game.id))
+        connection.send(StateMessage(state, game.location()))
+
         return
     }
 }
@@ -142,9 +108,13 @@ fun Application.configureSockets() {
                     frame as? Frame.Text ?: continue
 
                     val message = Json.decodeFromString<ClientMessage>(frame.readText())
-                    connection.receiveMessage()
                     val game = findGame(session.id)
-                    game?.handleMessage(session.id, message)
+                    connection.receiveMessage()
+                    if (message is GameMessage && game is Game) {
+                        game.handleMessage(session.id, message)
+                    } else if (message is DraftMessage && game is Draft) {
+                        game.handleMessage(session.id, message)
+                    }
                 }
             } finally {
                 println("Connection ${connection.id} closed.")

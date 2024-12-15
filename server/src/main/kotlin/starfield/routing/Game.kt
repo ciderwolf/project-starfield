@@ -6,15 +6,11 @@ import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
 import java.util.Random
 import kotlinx.serialization.Serializable
+import starfield.*
 import starfield.data.dao.CardDao
 import starfield.engine.OracleId
 import starfield.engine.Zone
-import starfield.findGame
-import starfield.games
 import starfield.plugins.*
-import starfield.SideboardLogMessage
-import starfield.FindCardLogMessage
-import starfield.RollDieLogMessage
 
 @Serializable
 data class VirtualIdsMessage(
@@ -38,7 +34,7 @@ fun Route.engineRouting() {
                                 status = HttpStatusCode.Unauthorized
                         )
 
-        val game = findGame(session.id) ?: return@get call.respondError("Not in a game")
+        val game = findBoardGame(session.id) ?: return@get call.respondError("Not in a game")
         val ids = game.assignVirtualIds(session.id)[Zone.LIBRARY]!!
         game.broadcastLogMessage(FindCardLogMessage(), session.id)
         val oracleInfo =
@@ -58,7 +54,7 @@ fun Route.engineRouting() {
                                 status = HttpStatusCode.Unauthorized
                         )
 
-        val game = findGame(session.id) ?: return@get call.respondError("Not in a game")
+        val game = findBoardGame(session.id) ?: return@get call.respondError("Not in a game")
         val ids = game.assignVirtualIds(session.id, scoop = true)
         game.broadcastLogMessage(SideboardLogMessage(), session.id)
         val oracleInfo =
@@ -90,11 +86,9 @@ fun Route.engineRouting() {
         if (preexistingGame != null) {
             return@post call.respondError("Can't spectate while in another game")
         }
-        val gameId =
-                tryParseUuid(call.parameters["id"])
+        val gameId = tryParseUuid(call.parameters["id"])
                         ?: return@post call.respondError("Invalid game id")
-        val game =
-                games[gameId]
+        val game = findBoardGame(gameId)
                         ?: return@post call.respondError("Game not found", HttpStatusCode.NotFound)
         game.addSpectator(session.user())
         call.respondSuccess(true)
@@ -107,15 +101,10 @@ fun Route.engineRouting() {
                                 "You must be logged in",
                                 status = HttpStatusCode.Unauthorized
                         )
-        val gameId =
-                tryParseUuid(call.parameters["id"])
-                        ?: return@delete call.respondError("Invalid game id")
-        val game =
-                games[gameId]
-                        ?: return@delete call.respondError(
-                                "Game not found",
-                                HttpStatusCode.NotFound
-                        )
+        val gameId = tryParseUuid(call.parameters["id"])
+            ?: return@delete call.respondError("Invalid game id")
+        val game = findBoardGame(gameId)
+            ?: return@delete call.respondError("Game not found", HttpStatusCode.NotFound)
         game.removeSpectator(session.id)
         call.respondSuccess(true)
     }
@@ -158,7 +147,7 @@ fun Route.engineRouting() {
                                 "You must be logged in",
                                 status = HttpStatusCode.Unauthorized
                         )
-        val game = findGame(session.id) ?: return@get call.respondError("Not in a game")
+        val game = findBoardGame(session.id) ?: return@get call.respondError("Not in a game")
 
         val sides =
                 call.parameters["sides"]?.toIntOrNull()

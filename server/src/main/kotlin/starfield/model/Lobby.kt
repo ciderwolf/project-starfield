@@ -1,32 +1,60 @@
 package starfield.model
 
-import kotlinx.serialization.Serializable
-import starfield.plugins.Id
 import starfield.StateMessage
-import starfield.UserListing
-import starfield.plugins.UserCollection
+import starfield.draft.SetInfo
+import starfield.plugins.Location
 import starfield.routing.Deck
 import java.util.*
 
-@Serializable
-data class LobbyState(
-    val id: Id,
-    val name: String,
-    val users: List<UserListing>,
-    val decks: List<Id?>,
-)
 
-data class LobbyUser(val user: User, var deck: Deck?)
+abstract class Lobby<out TState : ActiveCollectionState, TUser> : UserCollection<LobbyState>() {
 
-class Lobby(val id: UUID, val owner: User, val name: String, val players: Int): UserCollection<LobbyState>() {
+    abstract fun startGame(): ActiveUserCollection<TState>?
+    abstract fun canJoin(): Boolean
+    abstract val owner: User
+    protected val entrants = mutableMapOf<UUID, TUser>()
 
-    private val entrants = mutableMapOf<UUID, LobbyUser>()
+    private val createdTime = System.currentTimeMillis()
+    override fun lastActionTime() = createdTime
+
+
+    suspend fun leave(user: User): Boolean {
+        val left = if (user != owner) {
+            entrants.remove(user.id) != null
+        } else user == owner
+
+        broadcastToEach {
+            StateMessage(currentState(it.id), Location.LOBBY)
+        }
+        return left
+    }
+
+    suspend fun remove(other: UUID): Boolean {
+        if (other in entrants) {
+            entrants.remove(other)
+            broadcastToEach {
+                StateMessage(currentState(it.id), Location.LOBBY)
+            }
+            return true
+        }
+        return false
+    }
+
+    override fun hasPlayer(userId: UUID): Boolean {
+        return userId in entrants
+                || owner.id == userId
+    }
+
+    abstract suspend fun join(user: User): Boolean
+}
+
+class GameLobby(override val id: UUID, override val owner: User, override val name: String, val players: Int): Lobby<GameState, GameLobby.LobbyUser>() {
+
+    data class LobbyUser(val user: User, var deck: Deck?)
 
     private var ownerDeck: Deck? = null
 
-    private val createdTime = System.currentTimeMillis()
-
-    fun startGame(): Game? {
+    override fun startGame(): ActiveUserCollection<GameState>? {
         if (players == 1 && ownerDeck != null) {
             return Game(name, id, mapOf(owner to ownerDeck!!, owner to ownerDeck!!))
         }
@@ -45,45 +73,18 @@ class Lobby(val id: UUID, val owner: User, val name: String, val players: Int): 
                 lobbyUser.deck = deck
             }
         }
-        broadcast(StateMessage(currentState(owner.id), "lobby"))
+        broadcast(StateMessage(currentState(owner.id), Location.LOBBY))
     }
 
-    fun canJoin(): Boolean = entrants.size < players - 1
-    suspend fun join(other: User): Boolean {
+    override fun canJoin(): Boolean = entrants.size < players - 1
+    override suspend fun join(user: User): Boolean {
         if (canJoin()) {
-            entrants[other.id] = LobbyUser(other, null)
-            broadcast(StateMessage(currentState(owner.id), "lobby"))
+            entrants[user.id] = LobbyUser(user, null)
+            broadcast(StateMessage(currentState(owner.id), Location.LOBBY))
             return true
         }
 
         return false
-    }
-
-    suspend fun leave(user: User): Boolean {
-        val left = if (user != owner) {
-            entrants.remove(user.id) != null
-        } else user == owner
-
-        broadcastToEach {
-            StateMessage(currentState(it.id), "lobby")
-        }
-        return left
-    }
-
-    suspend fun remove(other: UUID): Boolean {
-        if (other in entrants) {
-            entrants.remove(other)
-            broadcastToEach {
-                StateMessage(currentState(it.id), "lobby")
-            }
-            return true
-        }
-        return false
-    }
-
-    fun hasPlayer(userId: UUID): Boolean {
-        return userId in entrants
-                || owner.id == userId
     }
 
     override fun users(): List<User> {
@@ -92,7 +93,7 @@ class Lobby(val id: UUID, val owner: User, val name: String, val players: Int): 
 
     override fun currentState(playerId: UUID): LobbyState {
         if (players == 1) {
-            return LobbyState(
+            return GameLobbyState(
                 id, name, userListings(), listOf(ownerDeck?.id)
             )
         }
@@ -102,11 +103,41 @@ class Lobby(val id: UUID, val owner: User, val name: String, val players: Int): 
         while (decks.size < players) {
             decks.add(null)
         }
-        return LobbyState(
+        return GameLobbyState(
             id, name, userListings(), decks
         )
     }
+}
 
-    fun lastActionTime() = createdTime
+class DraftLobby(override val id: UUID, override val owner: User, override val name: String, val players: Int, val set: SetInfo, val bots: Int): Lobby<DraftState, User>() {
+    override fun startGame(): ActiveUserCollection<DraftState>? {
+        if (entrants.size + 1 + bots != players) {
+            return null
+        }
+        val draft = Draft(id, name, set, entrants.values + owner, bots)
+        return draft
+    }
 
+    override fun canJoin(): Boolean {
+        return entrants.size < players - 1
+    }
+
+    override suspend fun join(user: User): Boolean {
+        if (canJoin()) {
+            entrants[user.id] = user
+            broadcast(StateMessage(currentState(owner.id), Location.LOBBY))
+            return true
+        }
+        return false
+    }
+
+    override fun users(): List<User> {
+        return listOf(owner) + entrants.values
+    }
+
+    override fun currentState(playerId: UUID): LobbyState {
+        return DraftLobbyState(
+            id, name, userListings(), bots, set.code
+        )
+    }
 }

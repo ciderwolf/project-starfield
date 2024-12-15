@@ -6,7 +6,6 @@ import starfield.plugins.Location
 import starfield.plugins.connections
 import java.util.*
 import kotlin.concurrent.schedule
-import kotlin.properties.Delegates
 
 
 object EntityPurge {
@@ -25,8 +24,8 @@ object EntityPurge {
 
     private suspend fun purgeEntities() {
         val now = System.currentTimeMillis()
-        val allGames = games.values.toList()
-        for(game in allGames) {
+        val allRooms = games.values.toList() + lobbies.values.toList()
+        for(game in allRooms) {
             val timePassed = now - game.lastActionTime()
             if (timePassed > Config.entityPurgeTimeout) {
                 // purge game
@@ -37,22 +36,6 @@ object EntityPurge {
                 }
                 connections.forEach {
                     it.send(DeleteListingMessage(game.id))
-                }
-            }
-        }
-
-        val allLobbies = lobbies.values.toList()
-        for(lobby in allLobbies) {
-            val timePassed = now - lobby.lastActionTime()
-            if (timePassed > Config.entityPurgeTimeout) {
-                // purge lobby
-                println("Purging lobby ${lobby.id} after $timePassed ms")
-                lobbies.remove(lobby.id)
-                lobby.users().forEach {
-                    it.connection?.send(LocationMessage(Location.HOME, null))
-                }
-                connections.forEach {
-                    it.send(DeleteListingMessage(lobby.id))
                 }
             }
         }

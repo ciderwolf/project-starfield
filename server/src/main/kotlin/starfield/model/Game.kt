@@ -1,24 +1,15 @@
 package starfield.model
 
-import kotlinx.serialization.Serializable
 import starfield.*
 import starfield.data.dao.CardDao
 import starfield.engine.*
 import starfield.plugins.Id
-import starfield.plugins.UserCollection
+import starfield.plugins.Location
 import starfield.routing.Deck
 import java.util.*
 
-@Serializable
-data class GameState(
-    val id: Id,
-    val name: String,
-    val players: List<PlayerState>,
-    val spectators: List<UserState>,
-    val oracleInfo: Map<OracleId, CardDao.OracleCard>,
-    val currentPlayer: Int)
 
-class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserCollection<GameState>() {
+class Game(override val name: String, override val id: UUID, players: Map<User, Deck>) : ActiveUserCollection<GameState>() {
 
     private val players: List<Player>
     private var currentPlayer: Int
@@ -34,9 +25,9 @@ class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserColle
         this.currentPlayer = Random().nextInt(players.size)
     }
 
-    fun lastActionTime() = lastActionTime
+    override fun lastActionTime() = lastActionTime
 
-    fun hasPlayer(userId: UUID): Boolean {
+    override fun hasPlayer(userId: UUID): Boolean {
         return players.any { it.user.id == userId }
     }
 
@@ -81,7 +72,7 @@ class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserColle
         return events
     }
 
-    suspend fun handleMessage(userId: UUID, message: ClientMessage) {
+    suspend fun handleMessage(userId: UUID, message: GameMessage) {
         val player = players.find { it.user.id == userId } ?: return
         lastActionTime = System.currentTimeMillis()
         println("Received message: $message")
@@ -155,11 +146,15 @@ class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserColle
         }
     }
 
-    fun end(user: User): Boolean {
+    override fun end(user: User): Boolean {
         if (users().contains(user)) {
             return true
         }
         return false
+    }
+
+    override fun location(): Location {
+        return Location.GAME
     }
 
     suspend fun assignVirtualIds(userId: UUID, scoop: Boolean = false): Map<Zone, Map<UUID, OracleId>> {
@@ -177,7 +172,7 @@ class Game(val name: String, val id: UUID, players: Map<User, Deck>) : UserColle
         spectators.add(user)
         players.forEach { it.registerSpectator(user) }
         broadcastBoardUpdate(listOf(BoardDiffEvent.SpectatorJoin(user.getState())))
-        user.connection?.send(StateMessage(currentState(user.id), "game"))
+        user.connection?.send(StateMessage(currentState(user.id), Location.GAME))
     }
 
     suspend fun removeSpectator(userId: UUID) {
