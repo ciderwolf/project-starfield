@@ -8,20 +8,27 @@ import io.ktor.server.sessions.*
 import kotlinx.serialization.Serializable
 import starfield.*
 import starfield.data.dao.DeckDao
-import starfield.model.Lobby
+import starfield.draft.SetInfo
+import starfield.model.*
 import starfield.plugins.*
 import java.util.*
 
 @Serializable
 data class DeckSelection(val deckId: Id)
 
+@Serializable
+data class CreateGameMessage(val name: String, val players: Int)
+
+@Serializable
+data class CreateDraftMessage(val name: String, val players: Int, val bots: Int, val set: String)
+
 fun Route.gameRouting() {
 
     get("/") {
         val listings = games.values.map { game ->
-            GameListing(game.id, game.name, game.userListings(), true)
+            GameListing(game.id, game.location(), game.name, game.userListings(), true)
         } + lobbies.values.map { lobby ->
-            GameListing(lobby.id, lobby.name, lobby.userListings(), false)
+            GameListing(lobby.id, Location.LOBBY, lobby.name, lobby.userListings(), false)
         }
 
         call.respondSuccess(listings)
@@ -36,13 +43,31 @@ fun Route.gameRouting() {
             return@post call.respondError("Already in a different game")
         }
 
-        val definition = call.receive<CreateGameMessage>()
-        if (definition.players < 1 || definition.players > 4) {
-            return@post call.respondError("Invalid number of players")
+        val kind = call.parameters["kind"]
+        val lobby = if (kind == "draft") {
+            // create draft
+            val definition = call.receive<CreateDraftMessage>()
+            if (definition.players < 1 || definition.players > 8) {
+                return@post call.respondError("Invalid number of players")
+            }
+
+            if (definition.bots >= definition.players) {
+                return@post call.respondError("Invalid number of bots")
+            }
+
+            val setInfo = SetInfo.create(definition.set)
+            DraftLobby(UUID.randomUUID(), session.user(), definition.name, definition.players, setInfo, definition.bots)
         }
-        val lobby = Lobby(UUID.randomUUID(), session.user(), definition.name, definition.players)
+        else {
+            val definition = call.receive<CreateGameMessage>()
+            if (definition.players < 1 || definition.players > 4) {
+                return@post call.respondError("Invalid number of players")
+            }
+            GameLobby(UUID.randomUUID(), session.user(), definition.name, definition.players)
+        }
+
         lobbies[lobby.id] = lobby
-        val listing = GameListing(lobby.id, lobby.name, lobby.userListings(), false)
+        val listing = GameListing(lobby.id, Location.LOBBY, lobby.name, lobby.userListings(), false)
         val message = ListingUpdateMessage(listing)
         connections.forEach {
             it.send(message)
@@ -59,6 +84,10 @@ fun Route.gameRouting() {
 
         val lobby = findLobby(session.id) ?: return@post call.respondError(
             "You must be in a lobby to chose a deck")
+
+        if (lobby !is GameLobby) {
+            return@post call.respondError("You must be in a game lobby to chose a deck")
+        }
 
         val body = call.receive<DeckSelection>()
         val deckDao = DeckDao()
@@ -86,7 +115,7 @@ fun Route.gameRouting() {
             val user = session.user()
             lobby.join(user)
             user.connection?.send(LocationMessage(Location.LOBBY, lobby.id))
-            val listing = GameListing(lobby.id, lobby.name, lobby.userListings(), false)
+            val listing = GameListing(lobby.id, Location.LOBBY, lobby.name, lobby.userListings(), false)
             connections.forEach {
                 it.send(ListingUpdateMessage(listing))
             }
@@ -118,7 +147,7 @@ fun Route.gameRouting() {
                     it.send(DeleteListingMessage(lobby.id))
                 }
             } else {
-                val listing = GameListing(lobby.id, lobby.name, lobby.userListings(), false)
+                val listing = GameListing(lobby.id, Location.LOBBY, lobby.name, lobby.userListings(), false)
                 connections.forEach {
                     it.send(ListingUpdateMessage(listing))
                 }
@@ -189,18 +218,21 @@ fun Route.gameRouting() {
         }
 
         val game = lobby.startGame() ?: return@post call.respondError("Unable to start game")
+        if (game is Draft) {
+            game.start()
+        }
         
         lobbies.remove(lobby.id)
         games[game.id] = game
 
-        val listing = ListingUpdateMessage(GameListing(game.id, game.name, game.userListings(), true))
+        val listing = ListingUpdateMessage(GameListing(game.id, Location.LOBBY, game.name, game.userListings(), true))
         connections.forEach {
             it.send(listing)
         }
 
         game.users().forEach {
-            it.connection?.send(StateMessage(game.currentState(it.id), "game"))
-            it.connection?.send(LocationMessage(Location.GAME, game.id))
+            it.connection?.send(StateMessage(game.currentState(it.id), game.location()))
+            it.connection?.send(LocationMessage(game.location(), game.id))
         }
 
         call.respondSuccess("OK")

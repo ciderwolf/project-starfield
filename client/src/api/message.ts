@@ -1,10 +1,22 @@
 import type { CardId } from "@/stores/board";
 
-export type WebSocketMessage = LocationMessage | IdentityMessage | ListingUpdateMessage | DeleteListingMessage | RoomStateMessage | BoardUpdateMessage | OracleCardsMessage | GameLogMessage;
+export type WebSocketMessage = LocationMessage | IdentityMessage | ListingUpdateMessage | DeleteListingMessage | RoomStateMessage | BoardUpdateMessage | OracleCardsMessage | GameLogMessage | DraftEventMessage;
+export type Location = 'HOME' | 'LOBBY' | 'DRAFT' | 'GAME' | 'DECK_BUILDER' | 'LOGIN';
+
+
+export type DraftEvent =
+  | { type: 'receive_pack', pack: DraftCard[], pickNumber: number, packNumber: number }
+  | { type: 'pack_queue', packs: { [id: string]: number } }
+  | { type: 'end_draft', deckId: string };
+
+export type DraftEventMessage = {
+  type: 'draft_event';
+  events: DraftEvent[];
+}
 
 type LocationMessage = {
   type: 'location';
-  location: 'HOME' | 'LOBBY' | 'GAME' | 'DECK_BUILDER' | 'LOGIN';
+  location: Location;
   id: string | null;
 };
 
@@ -26,6 +38,7 @@ type DeleteListingMessage = {
 
 export interface GameListing {
   id: string,
+  type: 'GAME' | 'DRAFT' | 'LOBBY',
   name: string,
   players: PlayerListing[],
   inProgress: boolean,
@@ -36,26 +49,43 @@ export interface PlayerListing {
   name: string;
 }
 
-export type RoomStateMessage = GameStateMessage | LobbyStateMessage;
+export type RoomStateMessage = GameStateMessage | LobbyStateMessage | DraftStateMessage;
 
 type GameStateMessage = {
   type: 'state';
-  room: 'game';
+  room: 'GAME';
   roomState: GameState;
 }
 
 type LobbyStateMessage = {
   type: 'state';
-  room: 'lobby';
+  room: 'LOBBY';
   roomState: LobbyState;
 }
 
+type DraftStateMessage = {
+  type: 'state';
+  room: 'DRAFT';
+  roomState: DraftState;
+}
 
-export type LobbyState = {
+export type LobbyState = GameLobbyState | DraftLobbyState;
+
+export type GameLobbyState = {
+  type: 'game_lobby';
   id: string;
   name: string;
   users: PlayerListing[];
   decks: (string | null)[];
+}
+
+export type DraftLobbyState = {
+  type: 'draft_lobby';
+  id: string;
+  name: string;
+  users: PlayerListing[];
+  set: string;
+  bots: number;
 }
 
 export type GameState = {
@@ -70,6 +100,18 @@ export type GameState = {
 export type UserState = {
   name: string;
   id: string;
+}
+
+export type DraftState = {
+  id: string;
+  name: string;
+  players: PlayerListing[];
+  pack: DraftCard[];
+  picks: DraftCard[];
+  packQueues: { [id: string]: number };
+  set: string;
+  pickNumber: number;
+  packNumber: number;
 }
 
 export type Zone = 'BATTLEFIELD' | 'HAND' | 'LIBRARY' | 'GRAVEYARD' | 'EXILE' | 'FACE_DOWN' | 'SIDEBOARD';
@@ -292,7 +334,8 @@ export type ClientMessage = ChangeCardAttributeMessage
   | CreateCardMessage
   | CloneCardMessage
   | SideboardMessage
-  | EndTurnMessage;
+  | EndTurnMessage
+  | { type: 'pick', card: string };
 
 type ChangeCardAttributeMessage = {
   attribute: CardAttribute;
@@ -397,3 +440,5 @@ type MoveCardVirtualMessage = {
   index: number;
   type: "move_virtual";
 }
+
+export type DraftCard = Card & { foil: boolean; id: string };

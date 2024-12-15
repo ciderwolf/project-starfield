@@ -22,9 +22,10 @@ const currentUser = useDataStore().userId;
 const isOwner = computed(() => game.value?.users[0].id == currentUser);
 const deckChoice = ref('none');
 const deck = ref<Deck | null>(null)
+const canStartGame = computed(() => isOwner && game.value && (game.value.type != 'game_lobby' || game.value.decks.every(d => d !== null)));
 
 watchEffect(() => {
-  if (game.value && currentUser) {
+  if (game.value && game.value.type == 'game_lobby' && currentUser) {
     const currentDeckId = game.value.users.findIndex(u => u.id === currentUser);
     if (deckChoice.value === 'none') {
       deckChoice.value = game.value.decks[currentDeckId] ?? 'none';
@@ -46,7 +47,8 @@ watchEffect(() => {
 
 watchEffect(() => {
   if (games.games[gameId]?.inProgress) {
-    router.push(`/game/${gameId}`);
+    const path = game.value?.type == 'game_lobby' ? 'game' : 'draft'
+    router.push(`/${path}/${gameId}`);
   }
 });
 
@@ -70,7 +72,12 @@ async function kickPlayerClicked(player: string) {
 
 async function startGameClicked() {
   await startGame(gameId);
-  router.push(`/game/${gameId}`);
+  if (game.value?.type == 'draft_lobby') {
+    router.push(`/draft/${gameId}`);
+  }
+  else {
+    router.push(`/game/${gameId}`);
+  }
 }
 
 </script>
@@ -81,22 +88,27 @@ async function startGameClicked() {
       <h1>Lobby <span v-if="game">&mdash; {{ game.name }}</span></h1>
       <style-button v-if="isOwner" @click="leaveGameClicked" type="danger">Cancel game</style-button>
       <style-button v-else @click="leaveGameClicked" type="danger">Leave game</style-button>
-      <style-button v-if="isOwner && game && game.decks.every(d => d !== null)" @click="startGameClicked">Start
+      <style-button v-if="canStartGame" @click="startGameClicked">Start
         game</style-button>
     </div>
     <h2>Players</h2>
     <div v-if="game" class="player-status-cards">
       <div class="player-status-card" v-for="player, i in game.users " :key="player.id">
         <b>{{ player.name }}</b>
-        <p>({{ game.decks[i] !== null ? 'Ready' : 'Waiting' }})</p>
+        <p>({{ game.type != 'game_lobby' || game.decks[i] !== null ? 'Ready' : 'Waiting' }})</p>
         <style-button v-if="isOwner && player.id != currentUser" @click="kickPlayerClicked(player.id)" small
-          type="danger">Kick
-          Player</style-button>
-        <style-button v-if="player.id === currentUser" @click="submitDeckChoiceId" small
+          type="danger">Kick Player</style-button>
+        <style-button v-if="player.id === currentUser && game.type == 'game_lobby'" @click="submitDeckChoiceId" small
           :disabled="deckChoice === 'none'">Confirm deck</style-button>
       </div>
     </div>
-    <div class="deck-select-section">
+    <div v-if="game && game.type === 'draft_lobby'" class="player-status-cards">
+      <div class="bot-status-card" v-for="i in game.bots">
+        <span class="material-symbols-rounded" style="font-size: 36px">robot_2</span>
+        <b>Bot {{ i }}</b>
+      </div>
+    </div>
+    <div class="deck-select-section" v-if="game && game.type == 'game_lobby'">
       <h3>Select a deck</h3>
       <select class="deck-select" v-model="deckChoice">
         <option value="none" disabled>Select a deck...</option>
@@ -120,7 +132,7 @@ async function startGameClicked() {
   gap: 20px;
   margin: 0 auto;
   width: fit-content;
-
+  flex-wrap: wrap;
 }
 
 .player-status-card {
@@ -131,6 +143,16 @@ async function startGameClicked() {
   margin: 0 auto;
   width: 250px;
   height: 150px;
+  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.5);
+  padding: 20px;
+}
+
+.bot-status-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin: 50px auto;
+  width: 150px;
   box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.5);
   padding: 20px;
 }

@@ -13,6 +13,7 @@ sealed class ActiveCollectionState
 @Serializable
 @SerialName("draft_state")
 data class DraftState(
+    val id: Id,
     val name: String,
     val set: String,
     val players: List<UserListing>,

@@ -4,6 +4,7 @@ import { useDataStore } from "@/stores/data";
 import { useBoardStore } from "@/stores/board";
 import { useAlertsStore } from "@/stores/alerts";
 import { useDecksStore } from "@/stores/decks";
+import { useDraftStore } from "@/stores/draft";
 
 function websocketUrl() {
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -22,6 +23,7 @@ export class WebSocketConnection {
     const message: WebSocketMessage = JSON.parse(event.data);
     const gamesStore = useGameStore();
     const boardStore = useBoardStore();
+    const draftStore = useDraftStore();
     const login = useDataStore();
     switch (message.type) {
       case 'location':
@@ -45,8 +47,11 @@ export class WebSocketConnection {
       case 'state':
         console.log('state', message.room, message.roomState);
         gamesStore.processState(message);
-        if (message.room === 'game') {
+        if (message.room === 'GAME') {
           boardStore.setBoardState(message.roomState.players, message.roomState.currentPlayer, message.roomState.oracleInfo);
+        }
+        else if (message.room === 'DRAFT') {
+          draftStore.setDraftState(message.roomState);
         }
         // const gameStore = useGameStore();
         // gameStore.processState(message.roomState);
@@ -62,6 +67,11 @@ export class WebSocketConnection {
       case 'board_update':
         console.log('board_update', message);
         boardStore.processBoardUpdate(message.events);
+        break;
+      case 'draft_event':
+        console.log('draft_event', message);
+        message.events.forEach(event => draftStore.processEvent(event));
+        // draftStore.processEvent(message.event);
         break;
       default:
         const _exhaustiveCheck: never = message;

@@ -40,6 +40,11 @@ const router = createRouter({
       path: '/deckbuilder/:id',
       name: 'deckbuilder',
       component: () => import('../views/DecklistView.vue')
+    },
+    {
+      path: '/draft/:id',
+      name: 'draft',
+      component: () => import('../views/DraftView.vue')
     }
   ]
 })

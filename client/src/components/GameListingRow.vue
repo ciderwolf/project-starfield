@@ -19,7 +19,7 @@ function myGame(players: { id: string }[]) {
 function joinGameClicked(id: string) {
   joinGame(id).then((state) => {
     if (state) {
-      games.processState({ type: 'state', room: 'lobby', roomState: state });
+      games.processState({ type: 'state', room: 'LOBBY', roomState: state });
       router.push(`/lobby/${id}`);
     }
   });
@@ -27,7 +27,11 @@ function joinGameClicked(id: string) {
 
 function rejoinGameClicked(game: GameListing) {
   if (game.inProgress) {
-    router.push(`/game/${game.id}`);
+    if (game.type === 'DRAFT') {
+      router.push(`/draft/${game.id}`);
+    } else {
+      router.push(`/game/${game.id}`);
+    }
   } else {
     router.push(`/lobby/${game.id}`);
   }
@@ -50,8 +54,8 @@ function spectateGameClicked(id: string) {
     </span>
 
     <style-button v-if="myGame(game.players)" @click="rejoinGameClicked(game)" small>Rejoin</style-button>
-    <style-button v-else-if="game.inProgress" @click="spectateGameClicked(game.id)" small>Spectate</style-button>
-    <style-button v-else @click="joinGameClicked(game.id)" small>Join</style-button>
+    <style-button v-else-if="game.type === 'GAME'" @click="spectateGameClicked(game.id)" small>Spectate</style-button>
+    <style-button v-else @click="joinGameClicked(game.id)" small :disabled="game.inProgress">Join</style-button>
   </div>
 </template>
 

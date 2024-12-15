@@ -64,6 +64,25 @@ class DeckDao {
         Deck(id.value, userId, "New Deck", null, listOf(), listOf())
     }
 
+    suspend fun createDeck(userId: UUID, deckName: String, maindeck: List<Pair<Int, UUID>>) = DatabaseSingleton.dbQuery {
+        val id = Decks.insertAndGetId {
+            it[id] = UUID.randomUUID()
+            it[ownerId] = userId
+            it[name] = deckName
+            it[thumbnailId] = maindeck.first().second
+        }
+
+        DeckCards.batchInsert(maindeck) {
+            val (count, card) = it
+            this[DeckCards.deckId] = id.value
+            this[DeckCards.cardId] = card
+            this[DeckCards.count] = count.toByte()
+            this[DeckCards.startingZone] = StartingZone.Main.ordinal.toByte()
+            this[DeckCards.conflictResolutionStrategy] = ConflictResolutionStrategy.NoConflict.ordinal.toByte()
+        }
+        return@dbQuery id.value
+    }
+
     suspend fun getDeck(deckId: UUID) = DatabaseSingleton.dbQuery {
         Decks.leftJoin(Cards).selectAll().where { Decks.id eq deckId }.singleOrNull()?.let {
             val cards = DeckCards.leftJoin(Cards).innerJoin(CardSources).selectAll().where { DeckCards.deckId eq deckId }

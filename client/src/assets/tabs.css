@@ -1,0 +1,50 @@
+.tabs-component-tabs {
+  list-style-type: none;
+  display: flex;
+  margin: 0;
+  padding: 0;
+  justify-content: center;
+}
+
+.tabs-component-tab {
+  border: 1px solid rgb(78, 128, 220);
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+  font-size: 1.25em;
+
+  width: fit-content;
+}
+
+.tabs-component-tab:first-child {
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
+}
+
+.tabs-component-tab:last-child {
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
+}
+
+.tabs-component-tab:hover {
+  background: #EEF6
+}
+
+.tabs-component-tab.is-active {
+  /* color: #557; */
+  background: rgb(78, 128, 220);
+  color: white;
+}
+
+.tabs-component-tab.is-disabled * {
+  color: #cdcdcd;
+  cursor: not-allowed !important;
+}
+
+.tabs-component-tab-a {
+  align-items: center;
+  color: inherit;
+  display: flex;
+  padding: 0.5em 1em;
+  text-decoration: none;
+}

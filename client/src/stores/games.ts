@@ -1,7 +1,7 @@
 import { ref, reactive } from 'vue'
 import { defineStore } from 'pinia'
 import { getGames } from '@/api';
-import type { GameListing, GameState, LobbyState, RoomStateMessage } from '@/api/message';
+import type { DraftState, GameListing, GameState, LobbyState, RoomStateMessage } from '@/api/message';
 import { useRouter } from 'vue-router';
 
 type GameMap = { [id: string]: GameListing }
@@ -10,7 +10,7 @@ export const useGameStore = defineStore('games', () => {
   const router = useRouter();
   const isLoaded = ref(false);
   getGames().then((gameInfo) => {
-    for(const game of gameInfo) {
+    for (const game of gameInfo) {
       games[game.id] = game;
     }
     isLoaded.value = true;
@@ -32,14 +32,18 @@ export const useGameStore = defineStore('games', () => {
 
   const gameState = ref<GameState | null>(null);
   const lobbyState = ref<LobbyState | null>(null);
+  const draftState = ref<DraftState | null>(null);
   function processState(message: RoomStateMessage) {
     switch (message.room) {
-      case 'lobby':
+      case 'LOBBY':
         lobbyState.value = message.roomState;
         break;
-      case 'game':
+      case 'GAME':
         gameState.value = message.roomState;
         break;
+      case 'DRAFT':
+        draftState.value = message.roomState;
+        break
       default:
         const _exhaustiveCheck: never = message;
         console.error(_exhaustiveCheck);

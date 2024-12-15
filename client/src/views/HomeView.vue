@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { createGame } from '@/api';
+import { createGame, createDraft } from '@/api';
 import Modal from '@/components/Modal.vue';
 import StyleButton from '@/components/StyleButton.vue';
 import GameListingRow from '@/components/GameListingRow.vue';
@@ -8,21 +8,41 @@ import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import DecksView from './DecksView.vue';
 import { useDataStore } from '@/stores/data';
+import { Tabs, Tab } from 'vue3-tabs-component';
 
 const showCreateGameModal = ref(false);
 const gameName = ref('');
 const gamePlayers = ref(2);
+const botPlayers = ref(0);
+const draftSet = ref('');
+
 const games = useGameStore();
 const router = useRouter();
 const data = useDataStore();
 const userName = computed(() => data.userName);
 
-function submitGame() {
-  createGame(gameName.value, gamePlayers.value).then((state) => {
-    showCreateGameModal.value = false;
-    games.processState({ type: 'state', room: 'lobby', roomState: state });
-    router.push(`/lobby/${state.id}`);
-  });
+async function submitGame() {
+  const state = await createGame(gameName.value, gamePlayers.value)
+  showCreateGameModal.value = false;
+  games.processState({ type: 'state', room: 'LOBBY', roomState: state });
+  router.push(`/lobby/${state.id}`);
+}
+
+async function submitDraft() {
+  const state = await createDraft(gameName.value, gamePlayers.value, draftSet.value, botPlayers.value)
+  showCreateGameModal.value = false;
+  games.processState({ type: 'state', room: 'LOBBY', roomState: state });
+  router.push(`/lobby/${state.id}`);
+}
+
+function tabChanged(tab: any) {
+  if (tab.tab.name === 'Draft') {
+    gamePlayers.value = 8;
+  }
+  else {
+    gamePlayers.value = 2;
+  }
+
 }
 
 </script>
@@ -35,14 +55,27 @@ function submitGame() {
       <style-button @click="showCreateGameModal = true" small>+ Create Game</style-button>
     </div>
     <Modal :visible="showCreateGameModal" @close="showCreateGameModal = false" title="Create Game">
-      <h2>Create Game</h2>
-      <label>Name: <input type="text" v-model="gameName"></label>
-      <br>
-      <br>
-      <label>Players: <input type="number" min="2" max="4" v-model.number="gamePlayers"></label>
-      <br>
-      <br>
-      <style-button @click="submitGame">Create Game</style-button>
+      <Tabs :options="{ useUrlFragment: false }" @changed="tabChanged">
+        <Tab name="Game">
+          <div class="create-game-form">
+            <h2>Create Game</h2>
+            <label>Name: <input type="text" v-model="gameName"></label>
+            <label>Players: <input type="number" min="2" max="4" v-model.number="gamePlayers"></label>
+            <style-button @click="submitGame">Create Game</style-button>
+          </div>
+        </Tab>
+        <Tab name="Draft">
+          <div class="create-game-form">
+            <h2>Create Draft</h2>
+            <label>Name: <input type="text" v-model="gameName"></label>
+            <label>Players: <input type="number" min="2" max="8" v-model.number="gamePlayers"></label>
+            <label>Bot Players: <input type="number" min="0" max="8" v-model.number="botPlayers"></label>
+            <label>Set: <input type="text" v-model="draftSet"></label>
+            <style-button @click="submitDraft">Create Draft</style-button>
+          </div>
+        </Tab>
+      </Tabs>
+
     </Modal>
     <div v-if="Object.keys(games.games).length > 0">
       <div v-for="game in games.games" :key="game.id">
@@ -59,6 +92,8 @@ function submitGame() {
 
 
 <style>
+@import url("@/assets/tabs.css");
+
 .title {
   display: flex;
   gap: 20px;
@@ -76,5 +111,11 @@ function submitGame() {
 
 main {
   padding: 0 2em;
+}
+
+.create-game-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
 }
 </style>

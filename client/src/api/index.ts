@@ -14,7 +14,12 @@ type JsonResponse<T> = {
 }
 
 export async function createGame(name: string, players: number = 2): Promise<LobbyState> {
-  const response = await postJson('lobbies', { name, players });
+  const response = await postJson('lobbies?kind=game', { name, players });
+  return response;
+}
+
+export async function createDraft(name: string, players: number, set: string, bots: number): Promise<LobbyState> {
+  const response = await postJson('lobbies?kind=draft', { name, players, set, bots });
   return response;
 }
 
