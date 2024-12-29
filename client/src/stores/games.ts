@@ -24,7 +24,10 @@ export const useGameStore = defineStore('games', () => {
     if (gameState.value?.id === id || lobbyState.value?.id === id) {
       gameState.value = null;
       lobbyState.value = null;
-      router.push('/');
+      if (draftState.value?.id !== id) {
+        // drafts shouldn't automatically kick users out to the home page
+        router.push('/');
+      }
     }
     delete games[id];
   }

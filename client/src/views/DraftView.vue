@@ -4,6 +4,7 @@ import DraftCardElement from '@/components/draft/DraftCard.vue';
 import DraftPackQueues from '@/components/draft/DraftPackQueues.vue';
 import DraftPool from '@/components/draft/DraftPool.vue';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
+import { useDecksStore } from '@/stores/decks';
 import { useDraftStore } from '@/stores/draft';
 import { useGameStore } from '@/stores/games';
 import { draftClient } from '@/ws';
@@ -14,14 +15,21 @@ const draft = useDraftStore();
 const route = useRoute();
 const router = useRouter();
 const games = useGameStore();
+const decks = useDecksStore();
 
 watchEffect(() => {
   const gameId = route.params.id as string;
-  if (games.isLoaded && !games.games[gameId]) {
+  if (games.isLoaded && !games.games[gameId] && !draft.isEnded) {
     router.push('/');
   }
 })
 
+
+watchEffect(() => {
+  if (draft.isEnded) {
+    decks.reloadDecks();
+  }
+})
 
 function pickCard(card: DraftCard) {
   draftClient.pickCard(card.id);
