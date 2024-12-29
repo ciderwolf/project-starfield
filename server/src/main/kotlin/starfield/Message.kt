@@ -77,6 +77,10 @@ sealed class DraftMessage : ClientMessage()
 @SerialName("pick")
 data class PickMessage(val card: Id) : DraftMessage()
 
+@Serializable
+@SerialName("move_zone")
+data class MoveDraftZoneMessage(val card: Id, val sideboard: Boolean) : DraftMessage()
+
 
 @Serializable
 sealed class GameMessage : ClientMessage()

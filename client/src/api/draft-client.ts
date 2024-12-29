@@ -10,4 +10,12 @@ export class WebSocketDraftClient {
       card
     });
   }
+
+  moveCard(card: string, sideboard: boolean): void {
+    this.ws.send({
+      type: 'move_zone',
+      card,
+      sideboard
+    });
+  }
 }

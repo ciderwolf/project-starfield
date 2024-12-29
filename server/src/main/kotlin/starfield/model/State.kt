@@ -18,13 +18,16 @@ data class DraftState(
     val set: String,
     val players: List<UserListing>,
     val packQueues: Map<Id, Int>,
-    val picks: List<DraftCard>,
+    val picks: List<PoolCard>,
     val pack: List<DraftCard>,
     val pickNumber: Int,
     val packNumber: Int) : ActiveCollectionState()
 
 @Serializable
 data class DraftCard(val name: String, val id: Id, val foil: Boolean, val image: String, val backImage: String?)
+
+@Serializable
+data class PoolCard(val card: DraftCard, var count: Int, val sideboard: Boolean)
 
 @Serializable
 @SerialName("game_state")

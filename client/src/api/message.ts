@@ -1,4 +1,5 @@
 import type { CardId } from "@/stores/board";
+import type { PoolCard } from "@/stores/draft";
 
 export type WebSocketMessage = LocationMessage | IdentityMessage | ListingUpdateMessage | DeleteListingMessage | RoomStateMessage | BoardUpdateMessage | OracleCardsMessage | GameLogMessage | DraftEventMessage;
 export type Location = 'HOME' | 'LOBBY' | 'DRAFT' | 'GAME' | 'DECK_BUILDER' | 'LOGIN';
@@ -6,6 +7,7 @@ export type Location = 'HOME' | 'LOBBY' | 'DRAFT' | 'GAME' | 'DECK_BUILDER' | 'L
 
 export type DraftEvent =
   | { type: 'receive_pack', pack: DraftCard[], pickNumber: number, packNumber: number }
+  | { type: 'move_card', cardId: string, toSideboard: boolean }
   | { type: 'pack_queue', packs: { [id: string]: number } }
   | { type: 'end_draft', deckId: string };
 
@@ -107,7 +109,7 @@ export type DraftState = {
   name: string;
   players: PlayerListing[];
   pack: DraftCard[];
-  picks: DraftCard[];
+  picks: PoolCard[];
   packQueues: { [id: string]: number };
   set: string;
   pickNumber: number;
@@ -335,7 +337,8 @@ export type ClientMessage = ChangeCardAttributeMessage
   | CloneCardMessage
   | SideboardMessage
   | EndTurnMessage
-  | { type: 'pick', card: string };
+  | { type: 'pick', card: string }
+  | { type: 'move_zone', card: string, sideboard: boolean };
 
 type ChangeCardAttributeMessage = {
   attribute: CardAttribute;

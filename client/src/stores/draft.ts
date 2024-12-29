@@ -3,7 +3,7 @@ import { defineStore } from "pinia";
 import { reactive, ref } from "vue";
 import { useDataStore } from "./data";
 
-export type PoolCard = DraftCard & { count: number, sideboard: boolean };
+export type PoolCard = { card: DraftCard, count: number, sideboard: boolean };
 
 export const useDraftStore = defineStore('draft', () => {
   const packNumber = ref(0);
@@ -25,16 +25,7 @@ export const useDraftStore = defineStore('draft', () => {
       packQueues[id] = queue;
     }
 
-    // group state picks by id
-    const groupedPicks: { [id: string]: PoolCard } = {};
-    for (const pick of state.picks) {
-      if (groupedPicks[pick.id]) {
-        groupedPicks[pick.id].count++;
-      } else {
-        groupedPicks[pick.id] = { ...pick, count: 1, sideboard: false };
-      }
-    }
-    pool.value = Object.values(groupedPicks);
+    pool.value = state.picks;
 
     pickNumber.value = state.pickNumber;
     packNumber.value = state.packNumber;
@@ -49,6 +40,9 @@ export const useDraftStore = defineStore('draft', () => {
         packNumber.value = event.packNumber;
         pickNumber.value = event.pickNumber;
         break;
+      case 'move_card':
+        setZoneById(event.cardId, event.toSideboard);
+        break;
       case 'pack_queue':
         for (const [id, queue] of Object.entries(event.packs)) {
           packQueues[id] = queue;
@@ -59,10 +53,12 @@ export const useDraftStore = defineStore('draft', () => {
         }
         break;
       case 'end_draft':
-        alert('Draft has ended');
         isEnded.value = true;
         deckId.value = event.deckId;
         break;
+      default:
+        const _exhaustiveCheck: never = event;
+        console.error(_exhaustiveCheck);
     }
   }
 
@@ -71,23 +67,32 @@ export const useDraftStore = defineStore('draft', () => {
   }
 
   function pickCard(card: DraftCard) {
-    const preexisting = pool.value.find(c => c.id === card.id && c.sideboard === false);
+    const preexisting = pool.value.find(c => c.card.id === card.id && c.sideboard === false);
     if (preexisting) {
       preexisting.count++;
     } else {
-      pool.value.push({ ...card, count: 1, sideboard: false });
+      pool.value.push({ card, count: 1, sideboard: false });
     }
   }
 
+  function setZoneById(cardId: string, sideboard: boolean) {
+    const card = pool.value.find(c => c.card.id === cardId && c.sideboard === !sideboard);
+    if (!card) {
+      console.error('Card not found');
+      return;
+    }
+    setZone(card, sideboard);
+  }
+
   function setZone(card: PoolCard, sideboard: boolean) {
-    const preexisting = pool.value.find(c => c.id === card.id && c.sideboard === sideboard);
+    const preexisting = pool.value.find(c => c.card.id === card.card.id && c.sideboard === sideboard);
     if (preexisting) {
       preexisting.count++;
     } else {
       pool.value.push({ ...card, count: 1, sideboard });
     }
     if (card.count === 1) {
-      pool.value = pool.value.filter(c => c.id !== card.id || c.sideboard !== !sideboard);
+      pool.value = pool.value.filter(c => c.card.id !== card.card.id || c.sideboard !== !sideboard);
     } else {
       card.count--;
     }

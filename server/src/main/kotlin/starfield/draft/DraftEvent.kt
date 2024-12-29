@@ -16,6 +16,10 @@ sealed class DraftEvent {
     data class PackQueueMessage(val packs: Map<Id, Int>) : DraftEvent()
 
     @Serializable
+    @SerialName("move_card")
+    data class MoveCardMessage(val cardId: Id, val toSideboard: Boolean) : DraftEvent()
+
+    @Serializable
     @SerialName("end_draft")
     data class EndDraftMessage(val deckId: Id) : DraftEvent()
 }

@@ -16,7 +16,7 @@ class Draft(override val id: Id, override val name: String, val set: SetInfo, va
     private var currentPack = 0
     private var lastActionTime = System.currentTimeMillis()
     private val agents = (players.map { HumanDraftingAgent(it) } + (1..bots).map { RandomDraftingAgent(this) }).shuffled()
-    private val pools = agents.map { mutableListOf<DraftCard>() }
+    private val pools = agents.map { DraftPool() }
     private val packQueue = List(agents.size) { index -> Pair(index, mutableListOf<Pack>()) }.toMap()
 
     suspend fun start() {
@@ -28,7 +28,15 @@ class Draft(override val id: Id, override val name: String, val set: SetInfo, va
         val player = agents.first { it.id == userId }
         when (message) {
             is PickMessage -> handlePick(player, message.card)
+            is MoveDraftZoneMessage -> handleMoveDraftZone(player, message.card, message.sideboard)
         }
+    }
+
+    private suspend fun handleMoveDraftZone(player: DraftingAgent, card: Id, sideboard: Boolean) {
+        val playerIndex = agents.indexOf(player)
+        val pool = pools[playerIndex]
+        pool.moveCard(card, sideboard)
+        players.first { it.id == player.id }.connection?.send(DraftEventMessage(listOf(DraftEvent.MoveCardMessage(card, sideboard))))
     }
 
     private suspend fun handlePick(player: DraftingAgent, cardId: Id) {
@@ -41,7 +49,7 @@ class Draft(override val id: Id, override val name: String, val set: SetInfo, va
         val card = pack.cards.firstOrNull { it.id == cardId } ?: return
         println("Card: ${card.name}")
         pack.remove(card)
-        pools[playerIndex].add(card)
+        pools[playerIndex].pickCard(card)
         passPack(playerIndex)
         if (packQueue.all { it.value.isEmpty() }) {
             nextPack()
@@ -93,7 +101,7 @@ class Draft(override val id: Id, override val name: String, val set: SetInfo, va
                         }
                         is BotDraftingAgent -> {
                             val picked = agent.makePick(pack)
-                            pools[index].add(picked)
+                            pools[index].pickCard(picked)
                             pack.remove(picked)
                             passPack(index)
                             anyPicked = true
@@ -121,7 +129,7 @@ class Draft(override val id: Id, override val name: String, val set: SetInfo, va
             set.code,
             players.map { UserListing(it.id, it.name) },
             getPackQueue(),
-            pools[index],
+            pools[index].mainCards + pools[index].sideboardCards,
             packQueue[index]?.firstOrNull()?.cards ?: emptyList(),
             packNumber = currentPack,
             pickNumber = pools[index].size % set.cardsPerPack
@@ -136,11 +144,14 @@ class Draft(override val id: Id, override val name: String, val set: SetInfo, va
         for (player in players) {
             val agent = agents.first { it.id == player.id }
             val pool = pools[agents.indexOf(agent)]
-            val cardsGroup = pool.groupBy { it.id }.map { it.value.size to it.key }
+            val cardsGroup = pool.mainCards.groupBy { it.card.id }.map { it.value.size to it.key }
+            val sideGroup = pool.sideboardCards.groupBy { it.card.id }.map { it.value.size to it.key }
+
             val deck = deckDao.createDeck(
                 player.id,
                 deckName,
-                cardsGroup
+                cardsGroup,
+                sideGroup
             )
             player.connection?.send(DraftEventMessage(listOf(DraftEvent.EndDraftMessage(deck))))
         }

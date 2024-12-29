@@ -5,22 +5,25 @@ import { computed } from 'vue';
 import StyleButton from '../StyleButton.vue';
 import { endGame } from '@/api/lobby';
 import { useRouter } from 'vue-router';
+import { draftClient } from '@/ws';
 
 const draft = useDraftStore();
 const router = useRouter();
 
-const maindeck = computed(() => draft.pool.filter(card => !card.sideboard));
-const sideboard = computed(() => draft.pool.filter(card => card.sideboard));
+const maindeck = computed(() => draft.pool.filter(card => !card.sideboard).map(card => ({ ...card.card, count: card.count })));
+const sideboard = computed(() => draft.pool.filter(card => card.sideboard).map(card => ({ ...card.card, count: card.count })));
 
 const maindeckCount = computed(() => maindeck.value.reduce((acc, card) => acc + card.count, 0));
 const sideboardCount = computed(() => sideboard.value.reduce((acc, card) => acc + card.count, 0));
 
-function moveToSideboard(card: PoolCard) {
-  draft.setZone(card, !card.sideboard);
+function moveToSideboard(cardId: string) {
+  // draft.setZone(card, !card.sideboard);
+  draftClient.moveCard(cardId, true);
 }
 
-function moveToMaindeck(card: PoolCard) {
-  draft.setZone(card, !card.sideboard);
+function moveToMaindeck(cardId: string) {
+  // draft.setZone(card, !card.sideboard);
+  draftClient.moveCard(cardId, false);
 }
 
 function goHome() {
@@ -36,9 +39,9 @@ function leaveDraft() {
   <div>
     <div class="draft-pool">
       <h3>Picks ({{ maindeckCount }})</h3>
-      <CardPreview :card="card" v-for="card in maindeck" :key="card.name" @click="moveToSideboard(card)" />
+      <CardPreview :card="card" v-for="card in maindeck" :key="card.name" @click="moveToSideboard(card.id)" />
       <h3>Sideboard ({{ sideboardCount }})</h3>
-      <CardPreview :card="card" v-for="card in sideboard" :key="card.name" @click="moveToMaindeck(card)" />
+      <CardPreview :card="card" v-for="card in sideboard" :key="card.name" @click="moveToMaindeck(card.id)" />
     </div>
     <div class="leave-draft-control">
       <style-button @click="leaveDraft" small type="danger">End Draft</style-button>
