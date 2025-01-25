@@ -11,6 +11,7 @@ type JsonResponse<T> = {
 } | {
   success: false;
   message: string;
+  code: number;
 }
 
 export async function createGame(name: string, players: number = 2): Promise<LobbyState> {
@@ -87,7 +88,11 @@ export async function deleteJsonRaw(path: string): Promise<JsonResponse<any>> {
 function handleApiError<T>(response: JsonResponse<T>): T {
   if (!response.success) {
     const alerts = useAlertsStore();
-    alerts.addAlert('Encountered an unexpected error', 'Check the console for more information', 'error');
+    if (response.code === 422) {
+      alerts.addAlert('Encountered an error', response.message, 'error');
+    } else {
+      alerts.addAlert('Encountered an unexpected error', 'Check the console for more information', 'error');
+    }
     throw new Error(response.message);
   }
   return response.content;

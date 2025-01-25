@@ -48,24 +48,24 @@ fun Route.gameRouting() {
             // create draft
             val definition = call.receive<CreateDraftMessage>()
             if (definition.players < 1 || definition.players > 8) {
-                return@post call.respondError("Invalid number of players")
+                return@post call.respondValidationError("Invalid number of players")
             }
 
             if (definition.bots >= definition.players) {
-                return@post call.respondError("Invalid number of bots")
+                return@post call.respondValidationError("Invalid number of bots")
             }
 
             val setInfo = try {
                 SetInfo.create(definition.set)
             } catch (e: Exception) {
-                return@post call.respondError("Invalid set")
+                return@post call.respondValidationError("Invalid set")
             }
             DraftLobby(UUID.randomUUID(), session.user(), definition.name, definition.players, setInfo, definition.bots)
         }
         else {
             val definition = call.receive<CreateGameMessage>()
             if (definition.players < 1 || definition.players > 4) {
-                return@post call.respondError("Invalid number of players")
+                return@post call.respondValidationError("Invalid number of players")
             }
             GameLobby(UUID.randomUUID(), session.user(), definition.name, definition.players)
         }

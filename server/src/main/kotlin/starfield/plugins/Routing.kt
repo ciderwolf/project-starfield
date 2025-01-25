@@ -101,6 +101,7 @@ sealed class ResponseMessage(val success: Boolean)
 @Serializable
 data class ErrorMessage(
     val message: String,
+    val code: Int
 ) : ResponseMessage(false)
 
 @Serializable
@@ -108,8 +109,12 @@ data class SuccessMessage<T>(
     val content: T
 ) : ResponseMessage(true)
 
+suspend fun ApplicationCall.respondValidationError(message: String) {
+    this.respondError(message, HttpStatusCode.UnprocessableEntity)
+}
+
 suspend fun ApplicationCall.respondError(message: String, status: HttpStatusCode = HttpStatusCode.BadRequest) {
-    this.respond(status, ErrorMessage(message))
+    this.respond(status, ErrorMessage(message, status.value))
 }
 
 suspend inline fun <reified T> ApplicationCall.respondSuccess(message: T, status: HttpStatusCode = HttpStatusCode.OK) {
