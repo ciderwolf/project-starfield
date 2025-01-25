@@ -15,9 +15,17 @@ class Draft(override val id: Id, override val name: String, val set: SetInfo, va
     private val maxPacks = 3
     private var currentPack = 0
     private var lastActionTime = System.currentTimeMillis()
-    private val agents = (players.map { HumanDraftingAgent(it) } + (1..bots).map { RandomDraftingAgent(this) }).shuffled()
+    private val agents = (players.map { HumanDraftingAgent(it) } + (1..bots).map { createDraftBot() }).shuffled()
     private val pools = agents.map { DraftPool() }
     private val packQueue = List(agents.size) { index -> Pair(index, mutableListOf<Pack>()) }.toMap()
+
+    private fun createDraftBot(): BotDraftingAgent {
+        return if (set.strategyInfo != null) {
+            ColorPieDrafter(set.strategyInfo, this)
+        } else {
+            RandomDraftingAgent(this)
+        }
+    }
 
     suspend fun start() {
         nextPack()
@@ -154,6 +162,18 @@ class Draft(override val id: Id, override val name: String, val set: SetInfo, va
                 sideGroup
             )
             player.connection?.send(DraftEventMessage(listOf(DraftEvent.EndDraftMessage(deck))))
+        }
+
+        for (i in agents.indices) {
+            val agent = agents[i]
+            if (agent is BotDraftingAgent) {
+                println("Bot deck at seat $i")
+                for (card in pools[i].mainCards) {
+                    println(card.card.name)
+                }
+
+                println("\n\n")
+            }
         }
 
         games.remove(id)

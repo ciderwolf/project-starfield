@@ -5,6 +5,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import starfield.Config
+import starfield.draft.StrategyInfo
 import starfield.plugins.Id
 import java.io.File
 import java.net.URI
@@ -61,6 +62,16 @@ data class BoosterSheet(
 class MtgJsonDao {
     private val setUrl = "https://mtgjson.com/api/v5/%s.json"
     private val json = Json { ignoreUnknownKeys = true }
+
+    fun getDraftStrategy(code: String): StrategyInfo? {
+        val setPath = Config.storagePath("sets/$code-strategy.json")
+        val setFile = File(setPath)
+        if (setFile.exists()) {
+            return json.decodeFromString<StrategyInfo>(setFile.readText())
+        }
+        println("Failed to load strategy for $code")
+        return null
+    }
 
     suspend fun getBoosterInfo(code: String): BoosterConfig {
         // check file system

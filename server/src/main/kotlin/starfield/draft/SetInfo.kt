@@ -4,9 +4,14 @@ import starfield.data.dao.BoosterConfig
 import starfield.data.dao.CardDao
 import starfield.data.dao.MtgJsonDao
 import starfield.model.DraftCard
+import starfield.plugins.Id
 import java.util.*
 
-class SetInfo(val code: String, private val cards: Map<UUID, DraftCard>, private val boosterInfo: BoosterConfig) {
+class SetInfo(
+    val code: String,
+    private val cards: Map<UUID, DraftCard>,
+    private val boosterInfo: BoosterConfig,
+    val strategyInfo: StrategyInfo?) {
 
     val cardsPerPack: Int
         get() = boosterInfo.boosters.first().contents.values.sum()
@@ -30,11 +35,12 @@ class SetInfo(val code: String, private val cards: Map<UUID, DraftCard>, private
         suspend fun create(code: String): SetInfo {
             val setInfoDao = MtgJsonDao()
             val boosterInfo = setInfoDao.getBoosterInfo(code)
+            val strategy = setInfoDao.getDraftStrategy(code)
             val cardIds = boosterInfo.sheets.values.flatMap { it.cards.keys }.distinct()
             val cardDao = CardDao()
             val cardData = cardDao.getCards(cardIds)
             val cards = cardData.map { DraftCard(it.name, it.id, false, it.image, it.backImage) }
-            return SetInfo(code, cards.associateBy { it.id }, boosterInfo)
+            return SetInfo(code, cards.associateBy { it.id }, boosterInfo, strategy)
         }
     }
 }

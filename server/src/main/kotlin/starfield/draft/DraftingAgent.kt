@@ -21,7 +21,7 @@ class HumanDraftingAgent(val user: User) : DraftingAgent() {
     }
 }
 
-abstract class BotDraftingAgent(private val draft: Draft) : DraftingAgent() {
+abstract class BotDraftingAgent(protected val draft: Draft) : DraftingAgent() {
     override val id: Id = UUID.randomUUID()
 
     abstract fun makePick(pack: Pack): DraftCard
