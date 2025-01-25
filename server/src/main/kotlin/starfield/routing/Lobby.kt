@@ -55,7 +55,11 @@ fun Route.gameRouting() {
                 return@post call.respondError("Invalid number of bots")
             }
 
-            val setInfo = SetInfo.create(definition.set)
+            val setInfo = try {
+                SetInfo.create(definition.set)
+            } catch (e: Exception) {
+                return@post call.respondError("Invalid set")
+            }
             DraftLobby(UUID.randomUUID(), session.user(), definition.name, definition.players, setInfo, definition.bots)
         }
         else {

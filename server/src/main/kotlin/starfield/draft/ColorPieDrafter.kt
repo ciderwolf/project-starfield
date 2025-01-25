@@ -4,7 +4,6 @@ import starfield.model.Draft
 import starfield.model.DraftCard
 import starfield.draft.StrategyInfo.BotCard
 import kotlin.math.max
-import kotlin.math.min
 
 class ColorPieDrafter(private val setInfo: StrategyInfo, draft: Draft) : BotDraftingAgent(draft) {
     private val pickedCards = mutableListOf<BotCard>()

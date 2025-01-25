@@ -4,7 +4,6 @@ import starfield.data.dao.BoosterConfig
 import starfield.data.dao.CardDao
 import starfield.data.dao.MtgJsonDao
 import starfield.model.DraftCard
-import starfield.plugins.Id
 import java.util.*
 
 class SetInfo(
