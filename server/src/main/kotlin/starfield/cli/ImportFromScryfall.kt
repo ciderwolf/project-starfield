@@ -6,13 +6,12 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
-import org.jetbrains.exposed.sql.batchInsert
 import org.jetbrains.exposed.sql.batchUpsert
-import org.jetbrains.exposed.sql.deleteAll
 import starfield.data.dao.CardDao
 import starfield.data.dao.DatabaseSingleton
 import starfield.data.table.CardExtras
 import starfield.data.table.Cards
+import starfield.data.table.Printings
 import starfield.data.table.Tokens
 import java.net.URI
 import java.net.http.HttpClient
@@ -48,7 +47,7 @@ object ImportFromScryfall : CliktCommand(help = "Import latest cards from Scryfa
                 HttpResponse.BodyHandlers.ofLines()
             )
         }
-        val tokenIds = downloadTokenIdMap()
+        val printings = downloadTokenIdMap()
 
         val allCardEntities = bulkResponse.body()
             .filter { it != "[" && it != "]" }
@@ -56,11 +55,13 @@ object ImportFromScryfall : CliktCommand(help = "Import latest cards from Scryfa
             .filter {
                 it["set_type"]!!.jsonPrimitive.content !in listOf("funny", "memorabilia")
             }
-            .map { parseScryfallEntity(it, tokenIds) }
+            .map { parseScryfallEntity(it, printings) }
             .collect(Collectors.toList())
 
         val cards = allCardEntities.filterIsInstance<CardDao.Card>()
         val tokens = allCardEntities.filterIsInstance<CardDao.Token>()
+
+        val cardIds = cards.map { it.id }.toSet()
 
         DatabaseSingleton.dbQuery {
             Cards.batchUpsert(cards) {
@@ -68,10 +69,18 @@ object ImportFromScryfall : CliktCommand(help = "Import latest cards from Scryfa
                 this[Cards.name] = it.name
                 this[Cards.fuzzyName] = CardDao.normalizeName(it.name)
                 this[Cards.type] = it.type
-                this[Cards.image] = it.image
-                this[Cards.backImage] = it.backImage
-                this[Cards.thumbnailImage] = it.thumbnailImage
-                this[Cards.src] = it.source
+                this[Cards.preferredPrintingId] = it.preferredPrinting
+            }
+        }
+
+        DatabaseSingleton.dbQuery {
+            Printings.batchUpsert(printings.values.filter { it.cardId in cardIds }) {
+                this[Printings.id] = it.id
+                this[Printings.cardId] = it.cardId
+                this[Printings.image] = it.image
+                this[Printings.backImage] = it.backImage
+                this[Printings.thumbnailImage] = it.thumbnailImage
+                this[Printings.src] = it.source
             }
         }
 
@@ -101,12 +110,12 @@ object ImportFromScryfall : CliktCommand(help = "Import latest cards from Scryfa
         return cards.size
     }
 
-    private fun parseScryfallEntity(card: JsonObject, tokenIds: Map<UUID, UUID>): CardDao.CardEntity {
+    private fun parseScryfallEntity(card: JsonObject, printings: Map<UUID, CardDao.Printing>): CardDao.CardEntity {
         return if (card["set_type"]!!.jsonPrimitive.content == "token" || card["type_line"]!!.jsonPrimitive.content.contains("Token")) {
             parseToken(card)
         } else {
             val parsed = parseCard(card)
-            val extras = parseCardExtras(card, parsed.id, tokenIds)
+            val extras = parseCardExtras(card, parsed.id, printings)
             if (!extras.isEmpty()) {
                 parsed.extras = extras
             }
@@ -192,50 +201,19 @@ object ImportFromScryfall : CliktCommand(help = "Import latest cards from Scryfa
 
         val type = card["type_line"]!!.jsonPrimitive.content.split(" — ")[0].split(" ").last().trim()
 
-        val image = if ("image_uris" !in card) {
-            card["card_faces"]!!
-                .jsonArray[0]
-                .jsonObject["image_uris"]!!
-                .jsonObject["normal"]!!
-                .jsonPrimitive.content
-        } else {
-            card["image_uris"]!!
-                .jsonObject["normal"]!!
-                .jsonPrimitive.content
-        }
-
-        val thumbnailImage = if ("image_uris" !in card) {
-            card["card_faces"]!!
-                .jsonArray[0]
-                .jsonObject["image_uris"]!!
-                .jsonObject["art_crop"]!!
-                .jsonPrimitive.content
-        } else {
-            card["image_uris"]!!
-                .jsonObject["art_crop"]!!
-                .jsonPrimitive.content
-        }
-
-        val backImage = if ("image_uris" !in card) {
-            card["card_faces"]!!
-                .jsonArray[1]
-                .jsonObject["image_uris"]!!
-                .jsonObject["normal"]!!
-                .jsonPrimitive.content
-        } else {
-            null
-        }
 
         val id = UUID.fromString(card["oracle_id"]!!.jsonPrimitive.content)
+        val preferredPrintingId = UUID.fromString(card["id"]!!.jsonPrimitive.content)
 
         return CardDao.Card(
             name,
             CardDao.normalizeName(name),
             type,
             id,
-            image,
-            backImage,
-            thumbnailImage,
+            preferredPrintingId,
+            "",
+            null,
+            "",
             0
         )
     }

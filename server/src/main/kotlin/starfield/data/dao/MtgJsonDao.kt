@@ -99,7 +99,7 @@ class MtgJsonDao {
         val setResponse = json.decodeFromString<SetResponse>(response.body())
 
         val booster = getDefaultBooster(setResponse.data)
-        val cardIdMap = setResponse.data.cards.associate { Pair(it.uuid, it.identifiers.scryfallOracleId) }
+        val cardIdMap = setResponse.data.cards.associate { Pair(it.uuid, it.identifiers.scryfallId) }
 
         val result = booster.copy(sheets = booster.sheets.mapValues { (_, sheet) ->
             val cards = sheet.cards.map { (id, weight) -> Pair(cardIdMap[id], weight) }

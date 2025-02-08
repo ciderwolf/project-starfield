@@ -3,6 +3,7 @@ package starfield.cli
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.*
+import starfield.data.dao.CardDao
 import starfield.plugins.Id
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -19,7 +20,7 @@ data class CardExtra(val id: Id, val costs: List<List<String>>, val tokens: List
     }
 }
 
-fun parseCardExtras(card: JsonObject, id: Id, tokenIds: Map<Id, Id>): CardExtra {
+fun parseCardExtras(card: JsonObject, id: Id, tokenIds: Map<Id, CardDao.Printing>): CardExtra {
     val manaCosts = mutableListOf<List<String>>()
     val tokens = mutableListOf<Id>()
 
@@ -48,7 +49,7 @@ fun parseCardExtras(card: JsonObject, id: Id, tokenIds: Map<Id, Id>): CardExtra 
 //                    println("Token not found for $scryfallId")
                     continue
                 }
-                tokens.add(tokenId)
+                tokens.add(tokenId.cardId)
             }
         }
     }
@@ -72,7 +73,7 @@ fun parseCost(cost: String): List<String> {
     return cost.trim('}', '{').split("}{").filter { it.isNotEmpty() }
 }
 
-suspend fun downloadTokenIdMap(): Map<UUID, UUID> {
+suspend fun downloadTokenIdMap(): Map<UUID, CardDao.Printing> {
     // Step 1: Get the response from https://api.scryfall.com/bulk-data/default-cards
     val bulkDataUrl = URL("https://api.scryfall.com/bulk-data/default-cards")
     val bulkDataResponse = withContext(Dispatchers.IO) {
@@ -100,8 +101,59 @@ suspend fun downloadTokenIdMap(): Map<UUID, UUID> {
     // Step 4: Parse the file and create a map from `id` to `oracle_id`
     val cards = Json.decodeFromString<JsonArray>(cardsJson)
     return cards
-        .filter { "oracle_id" in it.jsonObject }
-        .associate { UUID.fromString(it.jsonObject["id"]!!.jsonPrimitive.content) to
-                UUID.fromString(it.jsonObject["oracle_id"]!!.jsonPrimitive.content)
-    }
+        .filter {
+            "oracle_id" in it.jsonObject
+                    && ("image_uris" in it.jsonObject || "card_faces" in it.jsonObject)
+                    && it.jsonObject["image_status"]?.jsonPrimitive?.content != "missing"
+        }
+        .associate {
+            val id = UUID.fromString(it.jsonObject["id"]!!.jsonPrimitive.content)
+            val oracleId = UUID.fromString(it.jsonObject["oracle_id"]!!.jsonPrimitive.content)
+
+            val card = it.jsonObject
+            val image = if ("image_uris" !in card) {
+                card["card_faces"]!!
+                    .jsonArray[0]
+                    .jsonObject["image_uris"]!!
+                    .jsonObject["normal"]!!
+                    .jsonPrimitive.content
+            } else {
+                card["image_uris"]!!
+                    .jsonObject["normal"]!!
+                    .jsonPrimitive.content
+            }
+
+            val thumbnailImage = if ("image_uris" !in card) {
+                card["card_faces"]!!
+                    .jsonArray[0]
+                    .jsonObject["image_uris"]!!
+                    .jsonObject["art_crop"]!!
+                    .jsonPrimitive.content
+            } else {
+                card["image_uris"]!!
+                    .jsonObject["art_crop"]!!
+                    .jsonPrimitive.content
+            }
+
+            val backImage = if ("image_uris" !in card) {
+                card["card_faces"]!!
+                    .jsonArray[1]
+                    .jsonObject["image_uris"]!!
+                    .jsonObject["normal"]!!
+                    .jsonPrimitive.content
+            } else {
+                null
+            }
+
+            val printing = CardDao.Printing(
+                id = id,
+                cardId = oracleId,
+                image = image,
+                backImage = backImage,
+                thumbnailImage = thumbnailImage,
+                source = 0
+            )
+            return@associate (id to printing)
+
+        }
 }

@@ -2,10 +2,7 @@ package starfield.data.dao
 
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import starfield.data.table.CardSources
-import starfield.data.table.Cards
-import starfield.data.table.DeckCards
-import starfield.data.table.Decks
+import starfield.data.table.*
 import starfield.plugins.Id
 import starfield.plugins.toEnum
 import starfield.routing.Deck
@@ -37,16 +34,16 @@ class DeckDao {
             }
         }
 
-        return Deck(deckId, deckRow[Decks.ownerId], deckRow[Decks.name], deckRow[Cards.thumbnailImage], main, side)
+        return Deck(deckId, deckRow[Decks.ownerId], deckRow[Decks.name], deckRow[Printings.thumbnailImage], main, side)
     }
 
     private fun mapCard(card: ResultRow): DeckCard {
         return DeckCard(
             card[Cards.name],
             card[Cards.type],
-            card[Cards.image],
+            card[Printings.image],
             card[Cards.id],
-            card[Cards.backImage],
+            card[Printings.backImage],
             card[DeckCards.count].toInt(),
             card[CardSources.code],
             card[DeckCards.conflictResolutionStrategy].toEnum<ConflictResolutionStrategy>()!!
@@ -92,16 +89,37 @@ class DeckDao {
     }
 
     suspend fun getDeck(deckId: UUID) = DatabaseSingleton.dbQuery {
-        Decks.leftJoin(Cards).selectAll().where { Decks.id eq deckId }.singleOrNull()?.let {
-            val cards = DeckCards.leftJoin(Cards).innerJoin(CardSources).selectAll().where { DeckCards.deckId eq deckId }
-            mapDeck(it, cards.toList())
+        Decks
+            .leftJoin(Cards)
+            .leftJoin(Printings, { Cards.preferredPrintingId }, { id })
+            .selectAll()
+            .where { Decks.id eq deckId }
+            .singleOrNull()?.let {
+                val cards = DeckCards
+                    .leftJoin(Cards)
+                    .innerJoin(Printings, { Cards.preferredPrintingId }, { id })
+                    .innerJoin(CardSources)
+                    .selectAll()
+                    .where { DeckCards.deckId eq deckId }
+                mapDeck(it, cards.toList())
         }
     }
 
     suspend fun getDecks(userId: UUID) = DatabaseSingleton.dbQuery {
-        val decks = Decks.leftJoin(Cards).selectAll().where { Decks.ownerId eq userId }.toList()
+        val decks = Decks
+            .leftJoin(Cards)
+            .leftJoin(Printings, { Cards.preferredPrintingId }, { id })
+            .selectAll()
+            .where { Decks.ownerId eq userId }
+            .toList()
         val deckIds = decks.map {it[Decks.id].value }
-        val cards = DeckCards.leftJoin(Cards).innerJoin(CardSources).selectAll().where { DeckCards.deckId inList deckIds }.toList()
+        val cards = DeckCards
+            .leftJoin(Cards)
+            .innerJoin(Printings, { Cards.preferredPrintingId }, { id })
+            .innerJoin(CardSources)
+            .selectAll()
+            .where { DeckCards.deckId inList deckIds }
+            .toList()
         decks.map { mapDeck(it, cards) }
     }
 

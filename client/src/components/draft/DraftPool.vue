@@ -44,7 +44,7 @@ function leaveDraft() {
       <CardPreview :card="card" v-for="card in sideboard" :key="card.name" @click="moveToMaindeck(card.id)" />
     </div>
     <div class="leave-draft-control">
-      <style-button @click="leaveDraft" small type="danger">End Draft</style-button>
+      <style-button v-if="!draft.isEnded" @click="leaveDraft" small type="danger">End Draft</style-button>
       <style-button @click="goHome" small>Go Home</style-button>
     </div>
   </div>

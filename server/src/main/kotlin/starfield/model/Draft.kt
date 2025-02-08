@@ -140,7 +140,7 @@ class Draft(override val id: Id, override val name: String, val set: SetInfo, va
             pools[index].mainCards + pools[index].sideboardCards,
             packQueue[index]?.firstOrNull()?.cards ?: emptyList(),
             packNumber = currentPack,
-            pickNumber = pools[index].size % set.cardsPerPack
+            pickNumber = pickNumber(index)
         )
     }
 
@@ -152,8 +152,8 @@ class Draft(override val id: Id, override val name: String, val set: SetInfo, va
         for (player in players) {
             val agent = agents.first { it.id == player.id }
             val pool = pools[agents.indexOf(agent)]
-            val cardsGroup = pool.mainCards.groupBy { it.card.id }.map { it.value.size to it.key }
-            val sideGroup = pool.sideboardCards.groupBy { it.card.id }.map { it.value.size to it.key }
+            val cardsGroup = pool.mainCards.map { it.count to it.card.oracleId }
+            val sideGroup = pool.sideboardCards.map { it.count to it.card.oracleId }
 
             val deck = deckDao.createDeck(
                 player.id,

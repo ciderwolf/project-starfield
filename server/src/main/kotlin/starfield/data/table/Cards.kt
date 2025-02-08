@@ -10,10 +10,18 @@ object Cards : Table("Card") {
     val name = varchar("name", 200)
     val fuzzyName = varchar("fuzzy_name", 200).index(isUnique = false)
     val type = varchar("type", 50)
-    val src = integer("source").references(CardSources.id)
+    val preferredPrintingId = uuid("preferred_printing_id").references(Printings.id).nullable()
+
+    override val primaryKey = PrimaryKey(id)
+}
+
+object Printings : Table("Printing") {
+    val id = uuid("printing_id")
+    val cardId = uuid("card_id").references(Cards.id)
     val image = varchar("image", 100)
     val backImage = varchar("back_image", 100).nullable()
     val thumbnailImage = varchar("thumbnail_image", 100)
+    val src = integer("source").references(CardSources.id)
 
     override val primaryKey = PrimaryKey(id)
 }

@@ -15,7 +15,7 @@ class DraftPool {
         get() = side.values.toList()
 
     val size: Int
-        get() = main.size + side.size
+        get() = main.values.sumOf { it.count } + side.values.sumOf { it.count }
 
 
     fun pickCard(card: DraftCard, intoSideboard: Boolean = false) {

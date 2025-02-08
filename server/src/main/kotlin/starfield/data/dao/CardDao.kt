@@ -4,12 +4,10 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.sql.*
 import starfield.cli.CardExtra
-import starfield.data.table.CardExtras
-import starfield.data.table.CardSources
+import starfield.data.table.*
 import starfield.plugins.Id
-import starfield.data.table.Cards
-import starfield.data.table.Tokens
 import starfield.engine.OracleId
+import java.util.*
 
 class CardDao {
 
@@ -27,10 +25,11 @@ class CardDao {
             fuzzyName = row[Cards.fuzzyName],
             type = row[Cards.type],
             id = row[Cards.id],
-            image = row[Cards.image],
-            backImage = row[Cards.backImage],
-            thumbnailImage = row[Cards.thumbnailImage],
-            source = row[Cards.src]
+            preferredPrinting = row[Cards.preferredPrintingId],
+            image = row[Printings.image],
+            backImage = row[Printings.backImage],
+            thumbnailImage = row[Printings.thumbnailImage],
+            source = row[Printings.src]
         )
     }
 
@@ -50,18 +49,45 @@ class CardDao {
     }
 
     suspend fun getCard(id: OracleId) = DatabaseSingleton.dbQuery {
-        Cards.selectAll().where { Cards.id eq id}.singleOrNull()?.let(::mapDbCard)
+        Cards
+            .innerJoin(Printings, { preferredPrintingId }, { Printings.id })
+            .selectAll()
+            .where { Cards.id eq id}
+            .singleOrNull()?.let(::mapDbCard)
     }
 
     suspend fun getCards(ids: Iterable<OracleId>): List<Card> {
         return DatabaseSingleton.dbQuery {
-            Cards.selectAll().where { Cards.id inList ids }
+            Cards
+                .innerJoin(Printings, { preferredPrintingId }, { id })
+                .selectAll()
+                .where { Cards.id inList ids }
                 .map(::mapDbCard)
         }
     }
 
+    suspend fun getCardPrintings(ids: Iterable<Id>) = DatabaseSingleton.dbQuery {
+        Printings
+            .innerJoin(Cards, { Cards.id }, { Printings.cardId })
+            .selectAll()
+            .where { Printings.id inList ids }
+            .map { row ->
+                CardPrinting(
+                    name = row[Cards.name],
+                    id = row[Printings.id],
+                    oracleId = row[Cards.id],
+                    image = row[Printings.image],
+                    backImage = row[Printings.backImage]
+                )
+            }
+    }
+
     suspend fun getCardsWithExtras(ids: Iterable<OracleId>) = DatabaseSingleton.dbQuery {
-        val cards = Cards.leftJoin(CardExtras).selectAll().where { Cards.id inList ids }
+        val cards = Cards
+            .innerJoin(Printings, { preferredPrintingId }, { id })
+            .leftJoin(CardExtras)
+            .selectAll()
+            .where { Cards.id inList ids }
             .map {
                 val card = mapDbCard(it)
                 @Suppress("SENSELESS_COMPARISON")
@@ -86,7 +112,10 @@ class CardDao {
     suspend fun tryFindCards(names: List<String>): Map<String, List<Card>> {
         val fuzzyNames = names.map(::normalizeName)
         val result = DatabaseSingleton.dbQuery {
-            Cards.selectAll().where { Cards.fuzzyName inList fuzzyNames }
+            Cards
+                .innerJoin(Printings, { preferredPrintingId }, { id })
+                .selectAll()
+                .where { Cards.fuzzyName inList fuzzyNames }
                 .map(::mapDbCard)
                 .groupBy { it.fuzzyName }
         }
@@ -96,7 +125,11 @@ class CardDao {
 
     suspend fun searchForCards(name: String): List<Card> = DatabaseSingleton.dbQuery {
         val normalizedName = normalizeName(name)
-        Cards.selectAll().where { Cards.fuzzyName like "%${normalizedName}%" }.map(::mapDbCard)
+        Cards
+            .innerJoin(Printings, { preferredPrintingId }, { id })
+            .selectAll()
+            .where { Cards.fuzzyName like "%${normalizedName}%" }
+            .map(::mapDbCard)
     }
 
     suspend fun getToken(id: OracleId) = DatabaseSingleton.dbQuery {
@@ -156,6 +189,7 @@ class CardDao {
         val fuzzyName: String,
         val type: String,
         override val id: Id,
+        val preferredPrinting: Id?,
         val image: String,
         val backImage: String?,
         val thumbnailImage: String,
@@ -164,6 +198,22 @@ class CardDao {
         var extras: CardExtra? = null
         override fun toOracleCard() = OracleCard(name, id, image, backImage, extras?.tokens)
     }
+
+    data class Printing(
+        val id: Id,
+        val cardId: Id,
+        val image: String,
+        val backImage: String?,
+        val thumbnailImage: String,
+        val source: Int
+    )
+
+    data class CardPrinting(
+        val name: String,
+        val id: UUID,
+        val oracleId: UUID,
+        val image: String,
+        val backImage: String?)
 
     @Serializable
     data class OracleCard (
@@ -189,5 +239,4 @@ class CardDao {
             return normalizedName.lowercase().replace(Regex("[^\\w ]"), "").trim()
         }
     }
-
 }

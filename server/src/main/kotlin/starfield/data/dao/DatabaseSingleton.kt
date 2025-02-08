@@ -17,7 +17,7 @@ object DatabaseSingleton {
         val dataSource = HikariDataSource(config)
         val database = Database.connect(dataSource)
         transaction(database) {
-            SchemaUtils.create(Cards, Tokens, Users, Decks, DeckCards, CardSources, CardExtras)
+            SchemaUtils.create(Cards, Tokens, Users, Decks, DeckCards, CardSources, CardExtras, Printings)
         }
     }
 
