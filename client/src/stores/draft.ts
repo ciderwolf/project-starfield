@@ -2,6 +2,7 @@ import { type PlayerListing, type DraftCard, type DraftEvent, type DraftState } 
 import { defineStore } from "pinia";
 import { reactive, ref } from "vue";
 import { useDataStore } from "./data";
+import { resetReactive } from ".";
 
 export type PoolCard = { card: DraftCard, count: number, sideboard: boolean };
 
@@ -21,6 +22,8 @@ export const useDraftStore = defineStore('draft', () => {
     draftId.value = state.id;
     players.value = state.players;
 
+    resetReactive(packQueues);
+    console.log(Object.keys(packQueues), state.packQueues);
     for (const [id, queue] of Object.entries(state.packQueues)) {
       packQueues[id] = queue;
     }
@@ -29,7 +32,9 @@ export const useDraftStore = defineStore('draft', () => {
 
     pickNumber.value = state.pickNumber;
     packNumber.value = state.packNumber;
+
     isEnded.value = false;
+    deckId.value = null;
   }
 
   function processEvent(event: DraftEvent) {

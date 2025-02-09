@@ -5,6 +5,7 @@ import { type BoardDiffEvent, type BoardCard, type ChangeAttributeEvent, type Ch
 import { useZoneStore } from './zone';
 import { useDataStore } from './data';
 import { getLogMessage, getEventMessage, type EventMessage } from '@/logs';
+import { resetReactive } from '.';
 
 
 export enum Pivot {
@@ -64,14 +65,6 @@ export function extractPlayerIndex(cardId: CardId): number {
   return cardId & 0b00001111;
 }
 
-function resetReactive(obj: Record<string, any>) {
-  const baseReactive = reactive({});
-  for (const key in obj) {
-    if (!baseReactive.hasOwnProperty(key)) {
-      delete obj[key];
-    }
-  }
-}
 
 export const useBoardStore = defineStore('board', () => {
 
