@@ -81,7 +81,7 @@ class Draft(override val id: Id, override val name: String, val set: SetInfo, va
     }
 
     private suspend fun passPack(playerIndex: Int) {
-        val nextPlayerIndex = (playerIndex + 1) % agents.size
+        val nextPlayerIndex = nextPlayerForPack(playerIndex)
         println("Passing pack: $playerIndex -> $nextPlayerIndex")
         val pack = packQueue[playerIndex]?.removeAt(0) ?: return
         println("Pack ${pack.id} size: ${pack.size}")
@@ -94,6 +94,12 @@ class Draft(override val id: Id, override val name: String, val set: SetInfo, va
         println("Player $nextPlayerIndex has ${packQueue[nextPlayerIndex]?.size} packs waiting")
 
         resolveQueue()
+    }
+
+    private fun nextPlayerForPack(currentPlayer: Int): Int {
+        // pass to the left for packs 1 and 3, right for pack 2
+        val direction = if (currentPack % 2 == 0) 1 else -1
+        return (currentPlayer + direction + agents.size) % agents.size
     }
 
     private suspend fun resolveQueue() {
