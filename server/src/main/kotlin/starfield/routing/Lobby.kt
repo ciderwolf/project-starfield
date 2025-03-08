@@ -229,7 +229,7 @@ fun Route.gameRouting() {
         lobbies.remove(lobby.id)
         games[game.id] = game
 
-        val listing = ListingUpdateMessage(GameListing(game.id, Location.LOBBY, game.name, game.userListings(), true))
+        val listing = ListingUpdateMessage(GameListing(game.id, game.location(), game.name, game.userListings(), true))
         connections.forEach {
             it.send(listing)
         }
