@@ -63,7 +63,9 @@ function checkHotkey(e: KeyboardEvent) {
     notificationsCache.findCards();
   }
   else if (e.key === 'm') {
-    client.mulligan();
+    if (confirm('Are you sure you want to scoop your deck and mulligan?')) {
+      client.mulligan();
+    }
   }
   else if (e.key === 'v') {
     client.shuffle();
