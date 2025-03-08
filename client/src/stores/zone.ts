@@ -8,8 +8,9 @@ export const useZoneStore = defineStore('zone', () => {
 
   const primaryPlayer = ref<PlayerAttributes | null>(null);
   const secondaryPlayer = ref<PlayerAttributes | null>(null);
+  const availablePlayers = computed(() => [primaryPlayer.value, secondaryPlayer.value].filter((p) => p !== null) as PlayerAttributes[]);
 
-  const opponentHand = computed(() => opponentZones.value?.hand.id);
+  const opponentHand = computed(() => opponentZones.value?.hand?.id);
   const opponentZones = computed(() => getZonesMap(ScreenPosition.SECONDARY, secondaryPlayer.value?.index));
 
   function overlappingZone(x: number, y: number): ZoneConfig | null {
@@ -36,7 +37,7 @@ export const useZoneStore = defineStore('zone', () => {
   function updateZoneBounds(id: number, bounds: DOMRect) {
     zoneBounds[id] = bounds;
     const board = useBoardStore();
-    if (id === ZONES.hand.id || id === opponentZones.value.hand.id) {
+    if (id === ZONES.hand.id || id === opponentHand.value) {
       board.updateHandPos(id, bounds);
     }
   }
@@ -57,5 +58,7 @@ export const useZoneStore = defineStore('zone', () => {
     secondaryPlayer.value = null;
   }
 
-  return { zoneBounds, primaryPlayer, secondaryPlayer, opponentZones, opponentHand, overlappingZone, pointInZone, updateZoneBounds, playFieldExtents, resetState };
+
+
+  return { zoneBounds, primaryPlayer, secondaryPlayer, availablePlayers, opponentZones, opponentHand, overlappingZone, pointInZone, updateZoneBounds, playFieldExtents, resetState };
 })
