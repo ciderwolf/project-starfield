@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 
-defineProps<{ visible: boolean, title?: string }>()
+const props = defineProps<{ visible: boolean, title?: string }>()
 const minimized = ref(false);
 
 const emit = defineEmits(['close']);
@@ -13,6 +13,21 @@ function minimize() {
 function maximize() {
   minimized.value = false;
 }
+
+function keyPressed(event: KeyboardEvent) {
+  if (event.key === 'Escape' && props.visible) {
+    maximize();
+    emit('close')
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', keyPressed);
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', keyPressed);
+})
 </script>
 
 <template>
