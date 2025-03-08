@@ -13,6 +13,7 @@ import starfield.data.table.CardExtras
 import starfield.data.table.Cards
 import starfield.data.table.Printings
 import starfield.data.table.Tokens
+import starfield.plugins.UUIDListSerializer
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
@@ -88,7 +89,7 @@ object ImportFromScryfall : CliktCommand(help = "Import latest cards from Scryfa
             CardExtras.batchUpsert(cards.mapNotNull { it.extras }) {
                 this[CardExtras.cardId] = it.id
                 this[CardExtras.manaCosts] = Json.encodeToString(it.costs)
-                this[CardExtras.tokens] = Json.encodeToString(it.tokens)
+                this[CardExtras.tokens] = Json.encodeToString(UUIDListSerializer, it.tokens)
             }
         }
 

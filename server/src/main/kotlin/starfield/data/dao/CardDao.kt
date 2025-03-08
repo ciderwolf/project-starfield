@@ -7,6 +7,7 @@ import starfield.cli.CardExtra
 import starfield.data.table.*
 import starfield.plugins.Id
 import starfield.engine.OracleId
+import starfield.plugins.UUIDListSerializer
 import java.util.*
 
 class CardDao {
@@ -95,7 +96,7 @@ class CardDao {
                     card.extras = CardExtra(
                         id = it[CardExtras.cardId],
                         costs = Json.decodeFromString<List<List<String>>>(it[CardExtras.manaCosts]),
-                        tokens = Json.decodeFromString<List<Id>>(it[CardExtras.tokens]),
+                        tokens = Json.decodeFromString(UUIDListSerializer, it[CardExtras.tokens]),
                     )
                 }
                 card

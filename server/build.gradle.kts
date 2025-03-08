@@ -8,9 +8,9 @@ val bcrypt_version: String by project
 val opencsv_version: String by project
 
 plugins {
-    kotlin("jvm") version "1.9.10"
-    id("io.ktor.plugin") version "2.3.4"
-    id("org.jetbrains.kotlin.plugin.serialization") version "1.9.10"
+    kotlin("jvm") version "2.1.0"
+    id("io.ktor.plugin") version "3.1.1"
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.1.0"
 }
 
 group = "starfield"
@@ -45,6 +45,6 @@ dependencies {
     implementation("com.opencsv:opencsv:$opencsv_version")
     implementation("com.github.ajalt.clikt:clikt:4.2.2")
 
-    testImplementation("io.ktor:ktor-server-tests-jvm")
+//    testImplementation("io.ktor:ktor-server-tests-jvm")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
 }

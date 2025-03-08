@@ -2,6 +2,7 @@ package starfield.cli
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
 import starfield.data.dao.CardDao
 import starfield.plugins.Id
@@ -14,6 +15,7 @@ val manaCostRegex = Regex("(?:\\{[1-9WUBRGCXYZS/]})+")
 val excludeCostsRegex = Regex("(costs? ${manaCostRegex.pattern} (more|less))|(add ${manaCostRegex.pattern})|(${
     manaCostRegex.pattern} was (spent|paid))", RegexOption.IGNORE_CASE)
 
+@Serializable
 data class CardExtra(val id: Id, val costs: List<List<String>>, val tokens: List<Id>) {
     fun isEmpty(): Boolean {
         return costs.isEmpty() && tokens.isEmpty()

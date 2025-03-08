@@ -5,13 +5,12 @@ import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
 import io.ktor.server.websocket.*
 import io.ktor.websocket.*
-import kotlinx.serialization.*
 import kotlinx.serialization.json.Json
 import starfield.*
 import starfield.model.Draft
 import starfield.model.Game
 import kotlin.collections.LinkedHashSet
-import java.time.Duration
+import kotlin.time.Duration
 import java.util.*
 
 val connections: MutableSet<WSConnection> = Collections.synchronizedSet(LinkedHashSet())
@@ -86,8 +85,8 @@ suspend fun disconnect(connection: WSConnection) {
 
 fun Application.configureSockets() {
     install(WebSockets) {
-        pingPeriod = Duration.ofSeconds(15)
-        timeout = Duration.ofSeconds(15)
+        pingPeriod = Duration.parse("15s")
+        timeout = Duration.parse("15s")
         maxFrameSize = Long.MAX_VALUE
         masking = false
     }

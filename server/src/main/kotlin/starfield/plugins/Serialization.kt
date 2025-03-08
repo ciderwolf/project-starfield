@@ -3,15 +3,14 @@ package starfield.plugins
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.contentnegotiation.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import starfield.data.dao.CardDao
 import starfield.engine.Pivot
 import java.lang.IllegalArgumentException
 import java.util.*
@@ -43,6 +42,20 @@ object UUIDSerializer : KSerializer<UUID> {
 
     override fun serialize(encoder: Encoder, value: UUID) {
         encoder.encodeString(value.toString())
+    }
+}
+
+object UUIDListSerializer : KSerializer<List<UUID>> {
+    override val descriptor = PrimitiveSerialDescriptor("UUIDList", PrimitiveKind.STRING)
+
+    override fun deserialize(decoder: Decoder): List<UUID> {
+        val jsonArray = decoder.decodeSerializableValue(ListSerializer(String.serializer()))
+        return jsonArray.map { UUID.fromString(it) }
+    }
+
+    override fun serialize(encoder: Encoder, value: List<UUID>) {
+        val jsonArray = value.map { it.toString() }
+        encoder.encodeSerializableValue(ListSerializer(String.serializer()), jsonArray)
     }
 }
 

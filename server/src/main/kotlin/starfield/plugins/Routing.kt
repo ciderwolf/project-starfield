@@ -84,7 +84,7 @@ fun Application.configureRouting() {
     }
 }
 
-suspend fun PipelineContext<Unit, ApplicationCall>.initSession(username: String, userId: UUID) {
+suspend fun RoutingContext.initSession(username: String, userId: UUID) {
     val currentSession = call.sessions.get<UserSession>()
     if (currentSession == null) {
         val session = UserSession(username, userId)

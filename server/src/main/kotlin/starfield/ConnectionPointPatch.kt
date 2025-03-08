@@ -22,16 +22,12 @@ class MutableOriginConnectionPoint internal constructor (
     override var method: HttpMethod by AssignableWithDelegate { delegate.method }
     override var scheme: String by AssignableWithDelegate { delegate.scheme }
 
-    @Suppress("DEPRECATION")
-    @Deprecated("Use localHost or serverHost instead")
-    override var host: String by AssignableWithDelegate { delegate.host }
+    override var host: String by AssignableWithDelegate { delegate.serverHost }
     override var localHost: String by AssignableWithDelegate { delegate.localHost }
     override var serverHost: String by AssignableWithDelegate { delegate.serverHost }
     override var localAddress: String by AssignableWithDelegate { delegate.localAddress }
 
-    @Suppress("DEPRECATION")
-    @Deprecated("Use localPort or serverPort instead")
-    override var port: Int by AssignableWithDelegate { delegate.port }
+    override var port: Int by AssignableWithDelegate { delegate.serverPort }
     override var localPort: Int by AssignableWithDelegate { delegate.localPort }
     override var serverPort: Int by AssignableWithDelegate { delegate.serverPort }
     override var remoteHost: String by AssignableWithDelegate { delegate.remoteHost }
