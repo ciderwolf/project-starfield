@@ -88,7 +88,7 @@ fun Route.engineRouting() {
         }
         val gameId = tryParseUuid(call.parameters["id"])
                         ?: return@post call.respondError("Invalid game id")
-        val game = findBoardGame(gameId)
+        val game = findAnyBoardGame(gameId)
                         ?: return@post call.respondError("Game not found", HttpStatusCode.NotFound)
         game.addSpectator(session.user())
         call.respondSuccess(true)
@@ -103,8 +103,11 @@ fun Route.engineRouting() {
                         )
         val gameId = tryParseUuid(call.parameters["id"])
             ?: return@delete call.respondError("Invalid game id")
-        val game = findBoardGame(gameId)
+        val game = findGameSpectating(session.id)
             ?: return@delete call.respondError("Game not found", HttpStatusCode.NotFound)
+        if (game.id != gameId) {
+            return@delete call.respondError("Not spectating this game")
+        }
         game.removeSpectator(session.id)
         call.respondSuccess(true)
     }

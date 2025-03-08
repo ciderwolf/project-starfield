@@ -23,6 +23,12 @@ fun findBoardGame(userId: UUID): Game? {
     return result as? Game
 }
 
+fun findAnyBoardGame(gameId: UUID): Game? {
+    val result = games.values.find { it is Game && it.id == gameId }
+    return result as? Game
+}
+
+
 fun findGameSpectating(userId: UUID): Game? {
     val result = games.values.find { it is Game && it.hasSpectator(userId) }
     return result as? Game
