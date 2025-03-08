@@ -8,6 +8,7 @@ import EndGameModal from '@/components/game/modal/EndGameModal.vue';
 import SideboardModal from '@/components/game/modal/SideboardModal.vue';
 import CreateCardModal from '@/components/game/modal/CreateCardModal.vue';
 import RollDieModal from '@/components/game/modal/RollDieModal.vue';
+import TipsAndShortcutsModal from '@/components/game/modal/TipsAndShortcutsModal.vue';
 import CardPreview from '@/components/game/CardPreview.vue';
 import PlayerCounters from '@/components/game/PlayerCounters.vue';
 import PlayerProfile from '@/components/game/PlayerProfile.vue';
@@ -97,6 +98,10 @@ function rollDie() {
   rollDieModal.value?.open();
 }
 
+function showTips() {
+  tipsAndShortcutsModal.value?.open();
+}
+
 const findCardsModal = ref<ComponentExposed<typeof FindCardsModal>>();
 const scryModal = ref<ComponentExposed<typeof ScryModal>>();
 const viewZoneModal = ref<ComponentExposed<typeof ViewZoneModal>>();
@@ -106,6 +111,7 @@ const sideboardModal = ref<ComponentExposed<typeof SideboardModal>>();
 const createCardModal = ref<ComponentExposed<typeof CreateCardModal>>();
 const rollDieModal = ref<ComponentExposed<typeof RollDieModal>>();
 const cardPreview = ref<ComponentExposed<typeof CardPreview>>();
+const tipsAndShortcutsModal = ref<ComponentExposed<typeof TipsAndShortcutsModal>>();
 const notificationsCache = useNotificationsCache();
 
 
@@ -184,18 +190,19 @@ onUnmounted(() => {
     <sideboard-modal ref="sideboardModal" />
     <create-card-modal ref="createCardModal" />
     <roll-die-modal ref="rollDieModal" />
+    <tips-and-shortcuts-modal ref="tipsAndShortcutsModal" />
     <card-preview ref="cardPreview" />
     <div class="above-deck-elements">
       <div>
         <SelectedOpponentPicker />
         <GameOptionButtons :isSpectator="isSpectator" @end-game="endGameClicked" @create-token="createToken"
-          @create-card="createCard" @untap-all="untapAll" @roll-die="rollDie" />
+          @create-card="createCard" @untap-all="untapAll" @roll-die="rollDie" @show-tips="showTips" />
       </div>
       <GameLog />
     </div>
     <div class="player-counters">
-      <player-counters v-for="player in [zones.primaryPlayer, zones.secondaryPlayer]" :player="player!" />
-      <player-profile v-for="player in [zones.primaryPlayer, zones.secondaryPlayer]" :player="player!" />
+      <player-counters v-for="player in zones.availablePlayers" :player="player" />
+      <player-profile v-for="player in zones.availablePlayers" :player="player" />
     </div>
 
     <zone v-for="zone in zones.opponentZones" :zone="zone" />

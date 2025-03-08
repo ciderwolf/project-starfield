@@ -9,6 +9,7 @@ const emit = defineEmits<{
   createCard: []
   untapAll: []
   rollDie: []
+  showTips: []
 }>();
 
 const expanded = ref(false);
@@ -50,7 +51,7 @@ const expanded = ref(false);
         <span class="material-symbols-rounded">texture_add</span>
         <span class="icon-button-text">Create Token</span>
       </button>
-      <button class="icon-button" :class="{ expanded }" @click="emit('createCard')" title="Create Card">
+      <button class="icon-button" :class="{ expanded }" v-if="expanded" @click="emit('createCard')" title="Create Card">
         <span class="material-symbols-rounded">add_box</span>
         <span class="icon-button-text">Create Card</span>
       </button>
@@ -64,6 +65,16 @@ const expanded = ref(false);
         <span class="material-symbols-rounded">rotate_90_degrees_ccw</span>
         <span class="icon-button-text">Untap All</span>
       </button>
+    </div>
+    <div class="button-group">
+      <button class="icon-button" :class="{ expanded }" @click="emit('showTips')" title="Tips and Shortcuts">
+        <span class="material-symbols-rounded">lightbulb</span>
+        <span class="icon-button-text">Tips and Shortcuts</span>
+      </button>
+      <!-- <button class="icon-button" :class="{ expanded }" @click="expanded = !expanded" title="Show Details">
+        <span class="material-symbols-rounded">{{ expanded ? 'unfold_less' : 'unfold_more' }}</span>
+        <span class="icon-button-text">Show Less</span>
+      </button> -->
     </div>
     <button class="show-more" :class="{ expanded }" @click="expanded = !expanded" title="Show Details">
       <span v-if="expanded" class="material-symbols-rounded">expand_less</span>
