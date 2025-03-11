@@ -22,7 +22,7 @@ const currentUser = useDataStore().userId;
 const isOwner = computed(() => game.value?.users[0].id == currentUser);
 const deckChoice = ref('none');
 const deck = ref<Deck | null>(null)
-const canStartGame = computed(() => isOwner && game.value && (game.value.type != 'game_lobby' || game.value.decks.every(d => d !== null)));
+const canStartGame = computed(() => isOwner.value && game.value && (game.value.type != 'game_lobby' || game.value.decks.every(d => d !== null)));
 
 watchEffect(() => {
   if (game.value && game.value.type == 'game_lobby' && currentUser) {
@@ -88,12 +88,11 @@ async function startGameClicked() {
       <h1>Lobby <span v-if="game">&mdash; {{ game.name }}</span></h1>
       <style-button v-if="isOwner" @click="leaveGameClicked" type="danger">Cancel game</style-button>
       <style-button v-else @click="leaveGameClicked" type="danger">Leave game</style-button>
-      <style-button v-if="canStartGame" @click="startGameClicked">Start
-        game</style-button>
+      <style-button v-if="canStartGame" @click="startGameClicked">Start game</style-button>
     </div>
     <h2>Players</h2>
     <div v-if="game" class="player-status-cards">
-      <div class="player-status-card" v-for="player, i in game.users " :key="player.id">
+      <div class="player-status-card" v-for="player, i in game.users" :key="player.id">
         <b>{{ player.name }}</b>
         <p>({{ game.type != 'game_lobby' || game.decks[i] !== null ? 'Ready' : 'Waiting' }})</p>
         <style-button v-if="isOwner && player.id != currentUser" @click="kickPlayerClicked(player.id)" small
