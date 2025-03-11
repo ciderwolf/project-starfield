@@ -9,6 +9,7 @@ import { useRouter } from 'vue-router';
 import DecksView from './DecksView.vue';
 import { useDataStore } from '@/stores/data';
 import { Tabs, Tab } from 'vue3-tabs-component';
+import { CLIENT_VERSION } from '@/version';
 
 const showCreateGameModal = ref(false);
 const gameName = ref('');
@@ -87,6 +88,7 @@ function tabChanged(tab: any) {
       <p>Click on '+ Create game' to create one.</p>
     </div>
     <DecksView />
+    <p class="version-info" v-if="CLIENT_VERSION">Client version {{ CLIENT_VERSION }}</p>
   </main>
 </template>
 
@@ -117,5 +119,12 @@ main {
   display: flex;
   flex-direction: column;
   gap: 1em;
+}
+
+.version-info {
+  padding: 1em;
+  font-size: 0.8em;
+  text-align: center;
+  color: #666;
 }
 </style>
