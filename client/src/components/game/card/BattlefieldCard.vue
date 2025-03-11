@@ -69,6 +69,7 @@ function moveCard(x: number, y: number) {
 
     const card = board.cards[zone].find(c => c.id === cardId)!;
     client.moveCard(zone, cardId, card.x + deltaX, card.y + deltaY);
+    board.moveCard(zone, cardId, card.x + deltaX, card.y + deltaY);
   }
   applyAction(action);
 }
