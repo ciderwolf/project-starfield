@@ -49,47 +49,51 @@ function tabChanged(tab: any) {
 </script>
 
 <template>
-  <main>
-    <h1>Welcome, {{ userName }}</h1>
-    <div class="title">
-      <h2>Games</h2>
-      <style-button @click="showCreateGameModal = true" small>+ Create Game</style-button>
-    </div>
-    <Modal :visible="showCreateGameModal" @close="showCreateGameModal = false" title="Create Game">
-      <Tabs :options="{ useUrlFragment: false }" @changed="tabChanged">
-        <Tab name="Game">
-          <div class="create-game-form">
-            <h2>Create Game</h2>
-            <label>Name: <input type="text" v-model="gameName"></label>
-            <label>Players: <input type="number" min="2" max="4" v-model.number="gamePlayers"></label>
-            <style-button @click="submitGame">Create Game</style-button>
-          </div>
-        </Tab>
-        <Tab name="Draft">
-          <div class="create-game-form">
-            <h2>Create Draft</h2>
-            <label>Name: <input type="text" v-model="gameName"></label>
-            <label>Players: <input type="number" min="2" max="8" v-model.number="gamePlayers"></label>
-            <label>Bot Players: <input type="number" min="0" max="8" v-model.number="botPlayers"></label>
-            <label>Set: <input type="text" v-model="draftSet"></label>
-            <style-button @click="submitDraft">Create Draft</style-button>
-          </div>
-        </Tab>
-      </Tabs>
-
-    </Modal>
-    <div v-if="Object.keys(games.games).length > 0">
-      <div v-for="game in games.games" :key="game.id">
-        <game-listing-row :game="game"></game-listing-row>
+  <div id="main">
+    <main>
+      <h1>Welcome, {{ userName }}</h1>
+      <div class="title">
+        <h2>Games</h2>
+        <style-button @click="showCreateGameModal = true" small>+ Create Game</style-button>
       </div>
-    </div>
-    <div v-else class="empty-container-title">
-      <h3>No games right now.</h3>
-      <p>Click on '+ Create game' to create one.</p>
-    </div>
-    <DecksView />
+      <Modal :visible="showCreateGameModal" @close="showCreateGameModal = false" title="Create Game">
+        <Tabs :options="{ useUrlFragment: false }" @changed="tabChanged">
+          <Tab name="Game">
+            <div class="create-game-form">
+              <h2>Create Game</h2>
+              <label>Name: <input type="text" v-model="gameName"></label>
+              <label>Players: <input type="number" min="2" max="4" v-model.number="gamePlayers"></label>
+              <style-button @click="submitGame">Create Game</style-button>
+            </div>
+          </Tab>
+          <Tab name="Draft">
+            <div class="create-game-form">
+              <h2>Create Draft</h2>
+              <label>Name: <input type="text" v-model="gameName"></label>
+              <label>Players: <input type="number" min="2" max="8" v-model.number="gamePlayers"></label>
+              <label>Bot Players: <input type="number" min="0" max="8" v-model.number="botPlayers"></label>
+              <label>Set: <input type="text" v-model="draftSet"></label>
+              <style-button @click="submitDraft">Create Draft</style-button>
+            </div>
+          </Tab>
+        </Tabs>
+
+      </Modal>
+      <div v-if="Object.keys(games.games).length > 0">
+        <div v-for="game in games.games" :key="game.id">
+          <game-listing-row :game="game"></game-listing-row>
+        </div>
+      </div>
+      <div v-else class="empty-container-title">
+        <h3>No games right now.</h3>
+        <p>Click on '+ Create game' to create one.</p>
+      </div>
+      <DecksView />
+
+
+    </main>
     <p class="version-info" v-if="CLIENT_VERSION">Client version {{ CLIENT_VERSION }}</p>
-  </main>
+  </div>
 </template>
 
 
@@ -111,8 +115,12 @@ function tabChanged(tab: any) {
   font-style: italic;
 }
 
-main {
+#main {
   padding: 0 2em;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .create-game-form {
