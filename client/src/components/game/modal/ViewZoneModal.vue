@@ -2,12 +2,14 @@
 import MoveCardsModal from './MoveCardsModal.vue';
 import { computed, ref } from 'vue';
 import type { ComponentExposed } from 'vue-component-type-helpers';
-import { useBoardStore, type OracleId } from '@/stores/board';
+import { useBoardStore, UserType, type OracleId } from '@/stores/board';
 import { zoneFromIndex } from '@/zones';
 import { client } from '@/ws';
 
 const zoneId = ref(0);
-const readOnly = ref(false);
+const userType = ref<UserType>(UserType.PLAYER);
+const readOnly = computed(() => userType.value === UserType.SPECTATOR);
+const multiSelect = computed(() => userType.value === UserType.PLAYER);
 const zoneName = computed(() => zoneFromIndex(zoneId.value)?.name);
 
 const board = useBoardStore();
@@ -35,9 +37,9 @@ const order = computed(() => {
 const modal = ref<ComponentExposed<typeof MoveCardsModal>>();
 defineExpose({ open });
 
-function open(zoneIdValue: number, readOnlyValue = false) {
+function open(zoneIdValue: number) {
   zoneId.value = zoneIdValue;
-  readOnly.value = readOnlyValue;
+  userType.value = board.zoneUserType(zoneIdValue);
   modal.value?.open();
 }
 
@@ -45,9 +47,15 @@ function select(ids: string[], zoneId: number, index: number) {
   client.moveCardsToZone(ids.map(Number), zoneId, index);
 }
 
+function copyFaceDown(id: string) {
+  client.cloneCardWithAttributes(Number(id), {
+    FLIPPED: 1,
+  })
+}
+
 </script>
 
 <template>
-  <MoveCardsModal ref="modal" multi-select :title="`Viewing ${zoneName}`" :cards="cards" :order="order"
-    :read-only="readOnly" @select="select" />
+  <MoveCardsModal ref="modal" :multi-select="multiSelect" :title="`Viewing ${zoneName}`" :cards="cards" :order="order"
+    :read-only="readOnly" @select="select" @copy-face-down="copyFaceDown" />
 </template>

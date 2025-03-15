@@ -28,7 +28,6 @@ const showMenu = ref(false);
 const menuPos = reactive({ x: 0, y: 0 });
 const menuDefinition = ref<ContextMenuDefinition>({ options: [] });
 function showOptions(e: MouseEvent) {
-
   menuDefinition.value = getZoneContextMenu(props.zone.id, isMe.value, doMenuAction);
 
   showMenu.value = true;
@@ -41,7 +40,7 @@ function doMenuAction(action: string, ...args: any[]) {
   showMenu.value = false;
   switch (action) {
     case 'view-all-cards':
-      notifications.viewZone(props.zone.id, !board.zoneIsMovable(props.zone.id));
+      notifications.viewZone(props.zone.id);
       break;
     case 'move-zone':
       client.moveCardsToZone(board.cards[props.zone.id].map(card => card.id), args[0], args[1] ?? -1);

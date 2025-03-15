@@ -195,6 +195,15 @@ export class WebSocketGameClient extends GameClient {
     this.ws.send({
       type: 'clone_card',
       id,
+      attributes: {},
+    });
+  }
+
+  cloneCardWithAttributes(id: CardId, attributes: CardAttributeMap): void {
+    this.ws.send({
+      type: 'clone_card',
+      id,
+      attributes,
     });
   }
 

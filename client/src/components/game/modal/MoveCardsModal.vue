@@ -3,8 +3,8 @@ import Modal from '@/components/Modal.vue'
 import ContextMenu from '@/components/ContextMenu.vue';
 import StyleButton from '@/components/StyleButton.vue';
 import CardThumbnail from '@/components/game/modal/CardThumbnail.vue';
-import { computed, reactive, ref } from 'vue';
-import { getMoveZoneActions } from '@/context-menu';
+import { computed, onMounted, onUnmounted, reactive, ref, type ComputedRef } from 'vue';
+import { getMoveZoneActions, type ContextMenuDefinition, type ContextMenuOption } from '@/context-menu';
 import { useBoardStore, type OracleId } from '@/stores/board';
 import type { OracleCard } from '@/api/message';
 
@@ -15,6 +15,7 @@ type IdentifiedDeckCard = { uid: string } & OracleCard;
 defineExpose({ open, close });
 const emit = defineEmits<{
   (event: 'select', ids: string[], zoneId: number, index: number): void
+  (event: 'copy-face-down', id: string): void
 }>()
 
 const board = useBoardStore();
@@ -37,6 +38,7 @@ const expandedCards = computed(() => {
 const visible = ref(false);
 function open() {
   selected.value.clear();
+  singleSelected.value = null;
   cardFilter.value = '';
   visible.value = true;
 }
@@ -45,6 +47,7 @@ function close() {
 }
 
 const selected = ref<Set<string>>(new Set());
+const singleSelected = ref<string | null>(null);
 const cardFilter = ref('');
 
 
@@ -76,7 +79,8 @@ function selectCard(e: MouseEvent, id: string) {
     return;
   }
 
-  if (props.multiSelect) {
+  if (props.multiSelect && isShiftPressed.value) {
+    singleSelected.value = null;
     if (selected.value.has(id)) {
       selected.value.delete(id);
     }
@@ -84,13 +88,39 @@ function selectCard(e: MouseEvent, id: string) {
       selected.value.add(id);
     }
   } else {
+    selected.value.clear();
     moveSelected(e);
+    singleSelected.value = id;
   }
 }
 
 const contextMenuPos = reactive({ x: 0, y: 0 });
 const showMenu = ref(false);
-const menuOptions = { options: getMoveZoneActions(0, doMenuAction) };
+const menuOptionValues: ComputedRef<ContextMenuOption[]> = computed(() => {
+  const copyAction: ContextMenuOption = {
+    title: 'Copy Face Down',
+    effect: () => doMenuAction('copy-face-down'),
+    type: 'text',
+  };
+  if (props.multiSelect === true && selected.value.size === 0) {
+    return [
+      ...getMoveZoneActions(0, doMenuAction),
+      {
+        type: 'seperator'
+      },
+      copyAction
+    ]
+  }
+  else if (props.multiSelect === true) {
+    return getMoveZoneActions(0, doMenuAction);
+  }
+  else {
+    return [
+      copyAction
+    ];
+  }
+})
+const menuOptions: ComputedRef<ContextMenuDefinition> = computed(() => ({ options: menuOptionValues.value }));
 function moveSelected(e: MouseEvent) {
   contextMenuPos.x = e.clientX;
   contextMenuPos.y = e.clientY;
@@ -98,26 +128,73 @@ function moveSelected(e: MouseEvent) {
   showMenu.value = true;
 }
 
-function doMenuAction(_: string, ...args: any[]) {
+function getSelectedCards() {
+  if (singleSelected.value) {
+    return [singleSelected.value];
+  } else if (selected.value.size > 0) {
+    return Array.from(selected.value);
+  } else {
+    return [];
+  }
+}
+
+function doMenuAction(action: string, ...args: any[]) {
   showMenu.value = false;
-  const targetIndex = args[1] ?? -1;
-  emit('select', Array.from(selected.value), args[0], targetIndex);
+  switch (action) {
+    case 'copy-face-down':
+      emit('copy-face-down', getSelectedCards()[0]);
+      return;
+    case 'move-zone':
+      const targetIndex = args[1] ?? -1;
+      emit('select', getSelectedCards(), args[0], targetIndex);
+      break;
+    default:
+      console.error('Unknown action', args);
+      return;
+  }
+
+  singleSelected.value = null;
   selected.value.clear();
   if (!props.persist) {
     close();
   }
 }
+
+const isShiftPressed = ref(false);
+function keyPressed(e: KeyboardEvent) {
+  if (e.key === 'Shift') {
+    isShiftPressed.value = true;
+  }
+}
+
+function keyReleased(e: KeyboardEvent) {
+  if (e.key === 'Shift') {
+    isShiftPressed.value = false;
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', keyPressed);
+  window.addEventListener('keyup', keyReleased);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', keyPressed);
+  window.removeEventListener('keyup', keyReleased);
+});
+
 </script>
 
 <template>
   <ContextMenu v-if="showMenu" v-click-outside="() => showMenu = false" :menu="menuOptions" :real-pos="contextMenuPos"
-    :z-index="2000" />
+    :z-index="2000000" />
   <Modal :visible="visible" @close="visible = false" :title="title">
     <h2>{{ title }}</h2>
     <div class="inputs">
       <input type="text" placeholder="Filter cards..." v-model="cardFilter">
       <style-button @click="moveSelected" :disabled="selected.size === 0" v-if="multiSelect && !readOnly" small>Move
         to...</style-button>
+      <i v-if="multiSelect">Hold Shift to select multiple cards</i>
     </div>
     <div class="cards">
       <card-thumbnail v-for="card in filteredCards" :class="getClassString(card, true)" :card="card"
@@ -139,6 +216,11 @@ function doMenuAction(_: string, ...args: any[]) {
 .inputs {
   display: flex;
   gap: 10px;
+  align-items: center;
+}
+
+.inputs i {
+  color: gray;
 }
 </style>
 
@@ -158,6 +240,6 @@ img.card-thumbnail__card {
 
 .card-thumbnail__card.selected {
   border-color: red;
-  box-shadow: 0 0 1rem rgb(206, 131, 131);
+  box-shadow: 0 0 0.3rem rgb(206, 131, 131);
 }
 </style>

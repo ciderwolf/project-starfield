@@ -3,20 +3,20 @@ import { createLocalCache } from ".";
 
 interface ModalHooks {
   findCards: () => void;
-  viewZone: (zoneId: number, readOnly?: boolean) => void;
+  viewZone: (zoneId: number) => void;
   scry: (count: number) => void;
   showCardPreview: (oracleId: OracleId, backFace: boolean) => void;
   hideCardPreview: () => void;
   sideboard(): void;
 }
 
-export const useNotificationsCache = createLocalCache<ModalHooks>(() => { 
+export const useNotificationsCache = createLocalCache<ModalHooks>(() => {
   return {
-    findCards: () => {},
-    viewZone: () => {},
-    scry: () => {},
-    showCardPreview: () => {},
-    hideCardPreview: () => {},
-    sideboard: () => {},
+    findCards: () => { },
+    viewZone: () => { },
+    scry: () => { },
+    showCardPreview: () => { },
+    hideCardPreview: () => { },
+    sideboard: () => { },
   };
 });

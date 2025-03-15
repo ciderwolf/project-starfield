@@ -1,12 +1,17 @@
 import { computed, reactive, ref } from 'vue'
 import { defineStore } from 'pinia'
-import { ScreenPosition, ZONES, getZoneIdFromScreenPositionAndPlayerIndex, getZones, zoneNameToId } from '@/zones';
+import { ScreenPosition, ZONES, getZoneIdFromScreenPositionAndPlayerIndex, getZones, isAnyOpponentZone, zoneNameToId } from '@/zones';
 import { type BoardDiffEvent, type BoardCard, type ChangeAttributeEvent, type ChangeIndexEvent, type ChangePlayerAttribute, type ChangePositionEvent, type ChangeZoneEvent, type PlayerState, type ScoopDeck, type ShuffleDeck, type Zone, type OracleCard, type CreateCard, type DestroyCard, type LogInfoMessage, type RevealCard, type HideCard, Highlight, type SpectatorJoin, type SpectatorLeave, type UserState } from '@/api/message';
 import { useZoneStore } from './zone';
 import { useDataStore } from './data';
 import { getLogMessage, getEventMessage, type EventMessage } from '@/logs';
 import { resetReactive } from '.';
 
+export enum UserType {
+  PLAYER,
+  OPPONENT,
+  SPECTATOR,
+}
 
 export enum Pivot {
   UNTAPPED,
@@ -448,9 +453,21 @@ export const useBoardStore = defineStore('board', () => {
   }
 
   function zoneIsMovable(zoneId: number): boolean {
-    const pos = zoneId < 0 ? ScreenPosition.SECONDARY : ScreenPosition.PRIMARY;
+    const pos = isAnyOpponentZone(zoneId) ? ScreenPosition.SECONDARY : ScreenPosition.PRIMARY;
     const data = useDataStore();
     return pos == ScreenPosition.PRIMARY && data.userId! in players;
+  }
+
+  function zoneUserType(zoneId: number): UserType {
+    const pos = isAnyOpponentZone(zoneId) ? ScreenPosition.SECONDARY : ScreenPosition.PRIMARY;
+    const data = useDataStore();
+    if (pos == ScreenPosition.PRIMARY && data.userId! in players) {
+      return UserType.PLAYER;
+    } else if (pos == ScreenPosition.SECONDARY && data.userId! in players) {
+      return UserType.OPPONENT;
+    } else {
+      return UserType.SPECTATOR;
+    }
   }
 
   function updateHandPos(id: number, bounds: DOMRect) {
@@ -517,7 +534,7 @@ export const useBoardStore = defineStore('board', () => {
     return zoneNameToId(zone, pos, playerIndex);
   }
 
-  return { setBoardState, processBoardUpdate, processOracleInfo, processLog, cardToOracleId, oracleInfo, updateHandPos, cards, moveCard, cardIsMovable, zoneIsMovable, playerIsMovable, getScreenPositionFromCard, getScreenPositionFromPlayerIndex: getScreenPosition, players, spectators, logs, highlightCard, clearHighlight, selectedCards, currentPlayer }
+  return { setBoardState, processBoardUpdate, processOracleInfo, processLog, cardToOracleId, oracleInfo, updateHandPos, cards, moveCard, cardIsMovable, zoneIsMovable, playerIsMovable, getScreenPositionFromCard, getScreenPositionFromPlayerIndex: getScreenPosition, zoneUserType, players, spectators, logs, highlightCard, clearHighlight, selectedCards, currentPlayer }
 });
 
 function recalculateHandOrder(handCards: BoardCard[], handBounds: DOMRect) {

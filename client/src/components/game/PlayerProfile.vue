@@ -95,7 +95,7 @@ function doMenuAction(action: string) {
       <i>Waiting</i>
     </span>
     <span v-else style="color: gray; cursor: not-allowed;" class="end-turn-indicator end-turn-button">
-      <span class="material-symbols-rounded" >{{ arrow }}</span>
+      <span class="material-symbols-rounded">{{ arrow }}</span>
       <i>End Turn</i>
     </span>
   </div>

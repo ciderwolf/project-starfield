@@ -126,8 +126,8 @@ onMounted(() => {
     });
   };
 
-  notificationsCache.viewZone = (zoneId: number, readOnly = false) => {
-    viewZoneModal.value?.open(zoneId, readOnly);
+  notificationsCache.viewZone = (zoneId: number) => {
+    viewZoneModal.value?.open(zoneId);
   }
 
   notificationsCache.scry = (count: number) => {

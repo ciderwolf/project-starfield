@@ -141,7 +141,7 @@ class BoardManager(private val owner: UUID, private val ownerIndex: Int, private
         return events
     }
 
-    private fun findCard(id: CardId): BoardCard? {
+    fun findCard(id: CardId): BoardCard? {
         val zone = CardIdProvider.getZone(id)
         return cards[zone]!!.find { it.id == id }
     }
@@ -288,12 +288,17 @@ class BoardManager(private val owner: UUID, private val ownerIndex: Int, private
         return virtualIds.mapNotNull { cards[it] }
     }
 
-    fun createCard(oracleCard: CardDao.CardEntity): List<BoardDiffEvent> {
+    fun createCard(oracleCard: CardDao.CardEntity, faceDown: Boolean = false): List<BoardDiffEvent> {
         val boardCard = BoardCard(oracleCard, game.cardIdProvider, ownerIndex, CardOrigin.TOKEN)
         boardCard.zone = Zone.BATTLEFIELD
         cards[Zone.BATTLEFIELD]!!.add(boardCard)
-        return listOf(BoardDiffEvent.CreateCard(boardCard.getState(cards[Zone.BATTLEFIELD]!!.size - 1))) +
-                revealToAll(boardCard)
+        val events: MutableList<BoardDiffEvent> = mutableListOf(BoardDiffEvent.CreateCard(boardCard.getState(cards[Zone.BATTLEFIELD]!!.size - 1)))
+        if (!faceDown) {
+            events.addAll(revealToAll(boardCard))
+        } else {
+            events.addAll(revealTo(boardCard.id, owner))
+        }
+        return events
     }
 
     fun cloneCard(id: CardId): List<BoardDiffEvent> {

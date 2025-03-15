@@ -168,7 +168,8 @@ data class CreateCardMessage(
 @Serializable
 @SerialName("clone_card")
 data class CloneCardMessage(
-    val id: CardId
+    val id: CardId,
+    val attributes: Map<CardAttribute, Int>
 ) : GameMessage()
 
 @Serializable

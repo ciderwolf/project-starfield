@@ -258,6 +258,11 @@ export function isOpponentZone(zoneId: number, type: Zone): boolean {
   return zone !== undefined && zone.type === type && zone.id > 10;
 }
 
+export function isAnyOpponentZone(zoneId: number): boolean {
+  const zone = zoneFromIndex(zoneId);
+  return zone !== undefined && zone.id > 10;
+}
+
 export function getZoneIdFromScreenPositionAndPlayerIndex(zoneIndex: number, pos: ScreenPosition, playerIndex: number): number {
   if (pos === ScreenPosition.PRIMARY) {
     return zoneIndex;

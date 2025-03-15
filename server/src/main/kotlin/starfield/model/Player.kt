@@ -1,6 +1,7 @@
 package starfield.model
 
 import kotlinx.serialization.Serializable
+import starfield.RevealCardMessage
 import starfield.plugins.Id
 import starfield.data.dao.CardDao
 import starfield.engine.*
@@ -146,13 +147,17 @@ class Player(val user: User, userIndex: Int, deck: Deck, val game: Game) {
         return board.createCard(card)
     }
 
-    suspend fun createCard(id: OracleId): List<BoardDiffEvent> {
+    suspend fun createCard(id: OracleId, attributes: Map<CardAttribute, Int>): List<BoardDiffEvent> {
         val card = game.cardInfoProvider.tryRegisterCard(id)
-        return board.createCard(card)
+        val events = board.createCard(card, attributes[CardAttribute.FLIPPED] == 1)
+        val newCardId = events.filterIsInstance<BoardDiffEvent.CreateCard>().first().state.id
+        return events + attributes.flatMap { board.setAttribute(newCardId, it.key, it.value) }
     }
 
-    fun cloneCard(card: CardId): List<BoardDiffEvent> {
-        return board.cloneCard(card)
+    fun cloneCard(card: CardId, attributes: Map<CardAttribute, Int>): List<BoardDiffEvent> {
+        val events = board.cloneCard(card)
+        val newCard = events.filterIsInstance<BoardDiffEvent.CreateCard>().first().state.id
+        return events + attributes.flatMap { board.setAttribute(newCard, it.key, it.value) }
     }
 
     fun untapAll(): List<BoardDiffEvent> {
@@ -165,6 +170,10 @@ class Player(val user: User, userIndex: Int, deck: Deck, val game: Game) {
 
     fun registerSpectator(user: User) {
         board.revealCardsToSpectator(user)
+    }
+
+    fun hasCard(cardId: CardId): Boolean {
+        return board.findCard(cardId) != null
     }
 }
 

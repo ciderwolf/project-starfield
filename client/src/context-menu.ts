@@ -415,7 +415,7 @@ export function getZoneContextMenu(zoneId: number, isInteractive: boolean, emit:
       options: getMoveZoneActions(zoneId, emit)
     });
   }
-  if (zoneId === ZONES.library.id) {
+  if (zoneId === ZONES.library.id && isInteractive) {
     options.push(
       {
         type: 'seperator'

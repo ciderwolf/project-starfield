@@ -424,6 +424,7 @@ type CreateCardMessage = {
 
 type CloneCardMessage = {
   id: CardId;
+  attributes: CardAttributeMap;
   type: "clone_card";
 }
 

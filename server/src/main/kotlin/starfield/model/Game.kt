@@ -72,6 +72,11 @@ class Game(override val name: String, override val id: UUID, players: Map<User, 
         return events
     }
 
+    private fun findCardOwner(cardId: CardId): Player {
+        return players.find { it.hasCard(cardId) }
+            ?: throw IllegalArgumentException("Card $cardId not found in any player's board")
+    }
+
     suspend fun handleMessage(userId: UUID, message: GameMessage) {
         val player = players.find { it.user.id == userId } ?: return
         lastActionTime = System.currentTimeMillis()
@@ -88,8 +93,15 @@ class Game(override val name: String, override val id: UUID, players: Map<User, 
             is RevealCardMessage -> player.revealCard(message.card, message.revealTo, message.reveal)
             is ScryMessage -> player.scry(message.count)
             is CreateTokenMessage -> player.createToken(message.id)
-            is CreateCardMessage -> player.createCard(message.id)
-            is CloneCardMessage -> player.cloneCard(message.id)
+            is CreateCardMessage -> player.createCard(message.id, mapOf())
+            is CloneCardMessage -> {
+                val owner = findCardOwner(message.id)
+                if (owner.user.id == player.user.id) {
+                    player.cloneCard(message.id, message.attributes)
+                } else {
+                    player.createCard(owner.getOracleCard(message.id), message.attributes)
+                }
+            }
             is SideboardMessage -> player.sideboard(message.main, message.side)
             is SpecialActionMessage -> when(message.action) {
                 SpecialAction.MULLIGAN -> player.mulligan()
