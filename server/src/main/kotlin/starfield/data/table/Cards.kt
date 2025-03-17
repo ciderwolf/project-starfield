@@ -37,6 +37,7 @@ object Tokens : Table("Token") {
     val text = varchar("text", 1000)
     val image = varchar("image", 100)
     val backImage = varchar("back_image", 100).nullable()
+    val src = integer("source").references(CardSources.id)
 
     override val primaryKey = PrimaryKey(id)
 }
@@ -50,6 +51,9 @@ object CardExtras : Table("CardExtra") {
     val cardId = uuid("card_id").references(Cards.id)
     val manaCosts = varchar("mana_costs", 1000)
     val tokens = varchar("tokens", 1000)
+    val entersTapped = bool("enters_tapped")
+    val isSideways = bool("is_sideways")
+    val counters = integer("counters").nullable()
 
     override val primaryKey = PrimaryKey(cardId)
 }

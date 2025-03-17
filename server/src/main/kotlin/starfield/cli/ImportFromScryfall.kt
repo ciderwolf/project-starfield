@@ -105,6 +105,7 @@ object ImportFromScryfall : CliktCommand(help = "Import latest cards from Scryfa
                 this[Tokens.pt] = it.pt
                 this[Tokens.image] = it.image
                 this[Tokens.backImage] = it.backImage
+                this[Tokens.src] = 0
             }
         }
 
