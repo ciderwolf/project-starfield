@@ -120,7 +120,7 @@ export function createBattlefieldContextMenu(card: BoardCard, emit: ActionEmit):
     const tokens = oracleCard.tokens.map(id => board.oracleInfo[id]);
     const createTokenOptions: ContextMenuOption[] = tokens.map(token => {
       return {
-        type: 'text' as const,
+        type: 'text',
         title: token.name,
         effect: () => emit('create-token', [token.id])
       }
@@ -137,16 +137,25 @@ export function createBattlefieldContextMenu(card: BoardCard, emit: ActionEmit):
         }
       );
     }
-    options.push(
-      {
-        type: 'seperator'
-      },
-      {
-        type: 'submenu',
-        title: 'Create token...',
-        options: createTokenOptions
-      }
-    );
+    if (tokens.length === 1) {
+      options.push({
+        type: 'text',
+        title: `Create ${tokens[0].name} token`,
+        effect: () => emit('create-token', [tokens[0].id])
+      });
+    }
+    else {
+      options.push(
+        {
+          type: 'seperator'
+        },
+        {
+          type: 'submenu',
+          title: 'Create token...',
+          options: createTokenOptions
+        }
+      );
+    }
   }
   return { options };
 }
