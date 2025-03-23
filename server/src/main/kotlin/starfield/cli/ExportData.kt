@@ -39,7 +39,7 @@ class ExportData : CliktCommand(help = "Export data from DB", name = "export") {
 
             while(results.next()) {
                 val row = (1..colCount).map {
-                    results.getString(it)
+                    results.getObject(it).toString()
                 }.toTypedArray()
                 writer.writeNext(row)
             }

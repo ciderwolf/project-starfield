@@ -23,7 +23,11 @@ object DataIngest {
                     } else {
                         if (col.columnType.sqlType() == "INT") {
                             this[col as Column<Any>] = rowVal!!.toInt()
-                        } else {
+                        }
+                        else if (col.columnType.sqlType() == "BOOLEAN") {
+                            this[col as Column<Any>] = rowVal!!.toBoolean()
+                        }
+                        else {
                             this[col as Column<Any>] = col.columnType.valueToDB(rowVal)!!
                         }
                     }
