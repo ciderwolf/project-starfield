@@ -97,6 +97,9 @@ class CardDao {
                         id = it[CardExtras.cardId],
                         costs = Json.decodeFromString<List<List<String>>>(it[CardExtras.manaCosts]),
                         tokens = Json.decodeFromString(UUIDListSerializer, it[CardExtras.tokens]),
+                        isSideways = it[CardExtras.isSideways],
+                        entersTapped = it[CardExtras.entersTapped],
+                        counters = it[CardExtras.counters] ?: 0,
                     )
                 }
                 card

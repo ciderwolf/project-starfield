@@ -167,6 +167,7 @@ class BoardManager(private val owner: UUID, private val ownerIndex: Int, private
 
         card.reset(clearVisibility = false)
         card.zone = newZone
+        events.add(BoardDiffEvent.ChangeZone(card.id, newZone, oldCardId))
 
         if (!playFaceDown) {
             if (newZone.isPublic) {
@@ -176,12 +177,26 @@ class BoardManager(private val owner: UUID, private val ownerIndex: Int, private
                 // visible to just the owner
                 events.addAll(revealTo(card.id, owner))
             }
+
+            if (newZone == Zone.BATTLEFIELD && card.card is CardDao.Card) {
+                val extras = card.card.extras
+                if (extras != null) {
+                    if (extras.counters > 0) {
+                        card.counter = extras.counters
+                        events.add(BoardDiffEvent.ChangeAttribute(card.id, CardAttribute.COUNTER, extras.counters))
+                    }
+                    if (extras.entersTapped) {
+                        card.pivot = Pivot.TAPPED
+                        events.add(BoardDiffEvent.ChangeAttribute(card.id, CardAttribute.PIVOT, Pivot.TAPPED.ordinal))
+                    }
+                }
+            }
         } else {
             // visible to just the owner
             events.addAll(revealTo(card.id, owner))
         }
 
-        events.add(BoardDiffEvent.ChangeZone(card.id, newZone, oldCardId))
+
 
         return MoveZoneResult(events, card.id)
     }

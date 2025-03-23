@@ -16,7 +16,7 @@ val excludeCostsRegex = Regex("(costs? ${manaCostRegex.pattern} (more|less))|(ad
     manaCostRegex.pattern} was (spent|paid))", RegexOption.IGNORE_CASE)
 
 @Serializable
-data class CardExtra(val id: Id, val costs: List<List<String>>, val tokens: List<Id>) {
+data class CardExtra(val id: Id, val costs: List<List<String>>, val tokens: List<Id>, val isSideways: Boolean = false, val entersTapped: Boolean = false, val counters: Int = 0) {
     fun isEmpty(): Boolean {
         return costs.isEmpty() && tokens.isEmpty()
     }
