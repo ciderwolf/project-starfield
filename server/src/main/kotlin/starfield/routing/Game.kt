@@ -36,13 +36,9 @@ fun Route.engineRouting() {
 
         val game = findBoardGame(session.id) ?: return@get call.respondError("Not in a game")
         val ids = game.assignVirtualIds(session.id)[Zone.LIBRARY]!!
-        game.broadcastLogMessage(FindCardLogMessage(), session.id)
-        val oracleInfo =
-                CardDao().getCards(ids.values).associate {
-                    val card = it.toOracleCard()
-                    Pair(card.id, card)
-                }
 
+        game.broadcastLogMessage(FindCardLogMessage(), session.id)
+        val oracleInfo = ids.values.associateWith { game.cardInfoProvider[it]!!.toOracleCard() }
         call.respondSuccess(VirtualIdsMessage(ids, oracleInfo))
     }
 
@@ -57,11 +53,9 @@ fun Route.engineRouting() {
         val game = findBoardGame(session.id) ?: return@get call.respondError("Not in a game")
         val ids = game.assignVirtualIds(session.id, scoop = true)
         game.broadcastLogMessage(SideboardLogMessage(), session.id)
-        val oracleInfo =
-                CardDao().getCards(ids.values.flatMap { it.values }).associate {
-                    val card = it.toOracleCard()
-                    Pair(card.id, card)
-                }
+        val oracleInfo = ids.values
+            .flatMap { it.values }
+            .associateWith { game.cardInfoProvider[it]!!.toOracleCard() }
 
         val main =
                 ids.entries
