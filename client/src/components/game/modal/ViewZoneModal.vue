@@ -8,8 +8,6 @@ import { client } from '@/ws';
 
 const zoneId = ref(0);
 const userType = ref<UserType>(UserType.PLAYER);
-const readOnly = computed(() => userType.value === UserType.SPECTATOR);
-const multiSelect = computed(() => userType.value === UserType.PLAYER);
 const zoneName = computed(() => zoneFromIndex(zoneId.value)?.name);
 
 const board = useBoardStore();
@@ -53,9 +51,15 @@ function copyFaceDown(id: string) {
   })
 }
 
+function playFaceDown(id: string) {
+  client.playWithAttributes(Number(id), 0, 0, {
+    FLIPPED: 1,
+  })
+}
+
 </script>
 
 <template>
-  <MoveCardsModal ref="modal" :multi-select="multiSelect" :title="`Viewing ${zoneName}`" :cards="cards" :order="order"
-    :read-only="readOnly" @select="select" @copy-face-down="copyFaceDown" />
+  <MoveCardsModal ref="modal" :user-type="userType" :title="`Viewing ${zoneName}`" :cards="cards" :order="order"
+    @select="select" @copy-face-down="copyFaceDown" @play-face-down="playFaceDown" />
 </template>

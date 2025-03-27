@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { client } from '@/ws';
-import type { OracleId } from '@/stores/board';
+import { UserType, type OracleId } from '@/stores/board';
 import MoveCardsModal from './MoveCardsModal.vue';
 import { ref } from 'vue';
 import { type ComponentExposed } from 'vue-component-type-helpers';
@@ -22,5 +22,6 @@ function select(ids: string[], zone: number, targetIndex: number) {
 </script>
 
 <template>
-  <MoveCardsModal ref="modal" multi-select title="Searching your library" :cards="cards" @select="select" />
+  <MoveCardsModal ref="modal" :user-type="UserType.PLAYER" virtual title="Searching your library" :cards="cards"
+    @select="select" />
 </template>

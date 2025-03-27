@@ -2,7 +2,7 @@
 import MoveCardsModal from './MoveCardsModal.vue';
 import { computed, ref } from 'vue';
 import type { ComponentExposed } from 'vue-component-type-helpers';
-import { useBoardStore, type OracleId } from '@/stores/board';
+import { useBoardStore, UserType, type OracleId } from '@/stores/board';
 import { ZONES } from '@/zones';
 import { client } from '@/ws';
 
@@ -49,6 +49,17 @@ function select(ids: string[], zoneId: number, index: number) {
     modal.value?.close();
   }
 }
+
+function playFaceDown(id: string) {
+  client.playWithAttributes(Number(id), 0, 0, {
+    FLIPPED: 1,
+  });
+  count.value -= 1;
+  if (count.value === 0) {
+    modal.value?.close();
+  }
+}
+
 const title = computed(() => {
   const cardCount = Object.keys(cards.value).length;
   if (cardCount === 1) {
@@ -61,5 +72,6 @@ const title = computed(() => {
 </script>
 
 <template>
-  <MoveCardsModal ref="modal" multi-select persist :title="title" :cards="cards" @select="select" :order="cardOrder" />
+  <MoveCardsModal ref="modal" :user-type="UserType.PLAYER" persist :title="title" :cards="cards" @select="select"
+    @play-face-down="playFaceDown" :order="cardOrder" />
 </template>

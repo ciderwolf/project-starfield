@@ -5,10 +5,10 @@ import StyleButton from '@/components/StyleButton.vue';
 import CardThumbnail from '@/components/game/modal/CardThumbnail.vue';
 import { computed, onMounted, onUnmounted, reactive, ref, type ComputedRef } from 'vue';
 import { getMoveZoneActions, type ContextMenuDefinition, type ContextMenuOption } from '@/context-menu';
-import { useBoardStore, type OracleId } from '@/stores/board';
+import { useBoardStore, UserType, type OracleId } from '@/stores/board';
 import type { OracleCard } from '@/api/message';
 
-const props = defineProps<{ cards: { [id: string]: OracleId }, multiSelect: boolean, title: string, readOnly?: boolean, order?: string[], persist?: boolean }>();
+const props = defineProps<{ cards: { [id: string]: OracleId }, title: string, userType: UserType, order?: string[], persist?: boolean, virtual?: boolean }>();
 
 type IdentifiedDeckCard = { uid: string } & OracleCard;
 
@@ -16,9 +16,11 @@ defineExpose({ open, close });
 const emit = defineEmits<{
   (event: 'select', ids: string[], zoneId: number, index: number): void
   (event: 'copy-face-down', id: string): void
+  (event: 'play-face-down', id: string): void
 }>()
-
 const board = useBoardStore();
+const multiSelect = computed(() => props.userType === UserType.PLAYER);
+const readOnly = computed(() => props.userType === UserType.SPECTATOR);
 
 const expandedCards = computed(() => {
   const expanded: IdentifiedDeckCard[] = [];
@@ -75,11 +77,11 @@ function getClassString(card: IdentifiedDeckCard, filter: boolean) {
   return classes.join(' ');
 }
 function selectCard(e: MouseEvent, id: string) {
-  if (props.readOnly) {
+  if (readOnly.value) {
     return;
   }
 
-  if (props.multiSelect && isShiftPressed.value) {
+  if (multiSelect.value && isShiftPressed.value) {
     singleSelected.value = null;
     if (selected.value.has(id)) {
       selected.value.delete(id);
@@ -97,26 +99,32 @@ function selectCard(e: MouseEvent, id: string) {
 const contextMenuPos = reactive({ x: 0, y: 0 });
 const showMenu = ref(false);
 const menuOptionValues: ComputedRef<ContextMenuOption[]> = computed(() => {
-  const copyAction: ContextMenuOption = {
-    title: 'Copy Face Down',
-    effect: () => doMenuAction('copy-face-down'),
-    type: 'text',
-  };
-  if (props.multiSelect === true && selected.value.size === 0) {
+  if (props.virtual) {
+    return getMoveZoneActions(0, doMenuAction);
+  }
+  if (multiSelect.value === true && selected.value.size === 0) {
     return [
       ...getMoveZoneActions(0, doMenuAction),
       {
         type: 'seperator'
       },
-      copyAction
+      {
+        title: 'Play Face Down',
+        effect: () => doMenuAction('play-face-down'),
+        type: 'text',
+      }
     ]
   }
-  else if (props.multiSelect === true) {
+  else if (multiSelect.value === true) {
     return getMoveZoneActions(0, doMenuAction);
   }
   else {
     return [
-      copyAction
+      {
+        title: 'Copy Face Down',
+        effect: () => doMenuAction('copy-face-down'),
+        type: 'text',
+      }
     ];
   }
 })
@@ -143,6 +151,9 @@ function doMenuAction(action: string, ...args: any[]) {
   switch (action) {
     case 'copy-face-down':
       emit('copy-face-down', getSelectedCards()[0]);
+      return;
+    case 'play-face-down':
+      emit('play-face-down', getSelectedCards()[0]);
       return;
     case 'move-zone':
       const targetIndex = args[1] ?? -1;
