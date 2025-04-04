@@ -7,6 +7,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
 import org.jetbrains.exposed.sql.batchUpsert
+import starfield.cli.scryfall.Card
 import starfield.data.dao.CardDao
 import starfield.data.dao.DatabaseSingleton
 import starfield.data.table.CardExtras
@@ -20,6 +21,7 @@ import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.util.*
 import java.util.stream.Collectors
+
 
 object ImportFromScryfall : CliktCommand(help = "Import latest cards from Scryfall", name="scryfall-import") {
     override fun run() {
@@ -35,13 +37,13 @@ object ImportFromScryfall : CliktCommand(help = "Import latest cards from Scryfa
         val request = HttpRequest.newBuilder(URI("https://api.scryfall.com/bulk-data/oracle-cards")).build()
         val client = HttpClient.newBuilder()
             .build()
-
+//
         val response = withContext(Dispatchers.IO) {
             client.send(request, HttpResponse.BodyHandlers.ofString())
         }
         val data = Json.decodeFromString<Map<String, JsonElement>>(response.body())
         val bulkDataUrl = data["download_uri"]!!.jsonPrimitive.content
-
+//        val bulkDataUrl = "https://api.scryfall.com/bulk-data/oracle-cards?format=file"
         val bulkResponse = withContext(Dispatchers.IO) {
             client.send(
                 HttpRequest.newBuilder(URI(bulkDataUrl)).build(),
@@ -52,9 +54,9 @@ object ImportFromScryfall : CliktCommand(help = "Import latest cards from Scryfa
 
         val allCardEntities = bulkResponse.body()
             .filter { it != "[" && it != "]" }
-            .map { Json.decodeFromString<JsonObject>(it.trim(',')) }
+            .map { json.decodeFromString<Card>(it.trim(',')) }
             .filter {
-                it["set_type"]!!.jsonPrimitive.content !in listOf("funny", "memorabilia")
+                it.setType !in listOf("funny", "memorabilia")
             }
             .map { parseScryfallEntity(it, printings) }
             .collect(Collectors.toList())
@@ -90,6 +92,9 @@ object ImportFromScryfall : CliktCommand(help = "Import latest cards from Scryfa
                 this[CardExtras.cardId] = it.id
                 this[CardExtras.manaCosts] = Json.encodeToString(it.costs)
                 this[CardExtras.tokens] = Json.encodeToString(UUIDListSerializer, it.tokens)
+                this[CardExtras.isSideways] = it.isSideways
+                this[CardExtras.entersTapped] = it.entersTapped
+                this[CardExtras.counters] = it.counters
             }
         }
 
@@ -112,8 +117,8 @@ object ImportFromScryfall : CliktCommand(help = "Import latest cards from Scryfa
         return cards.size
     }
 
-    private fun parseScryfallEntity(card: JsonObject, printings: Map<UUID, CardDao.Printing>): CardDao.CardEntity {
-        return if (card["set_type"]!!.jsonPrimitive.content == "token" || card["type_line"]!!.jsonPrimitive.content.contains("Token")) {
+    private fun parseScryfallEntity(card: Card, printings: Map<UUID, CardDao.Printing>): CardDao.CardEntity {
+        return if (card.setType == "token" || card.typeLine?.contains("Token") == true) {
             parseToken(card)
         } else {
             val parsed = parseCard(card)
@@ -125,70 +130,56 @@ object ImportFromScryfall : CliktCommand(help = "Import latest cards from Scryfa
         }
     }
 
-    private fun parseToken(card: JsonObject): CardDao.Token {
-        val id = UUID.fromString(card["oracle_id"]!!.jsonPrimitive.content)
-        val name = card["name"]!!.jsonPrimitive.content
+    private fun parseToken(card: Card): CardDao.Token {
+        val id = card.oracleId
+        val name = card.name
 
-        val types = card["type_line"]!!.jsonPrimitive.content.split(" // ")
+        val types = card.typeLine!!.split(" // ")
             .map { it.split(" — ") }
             .map { Pair(it[0].trim().split(" "), it.getOrElse(1) { "" }.trim().split(" ")) }
             .reduce { acc, pair -> Pair(acc.first + pair.first, acc.second + pair.second) }
         val superTypes = types.first.distinct().map(CardDao::normalizeName)
         val subTypes = types.second.distinct().map(CardDao::normalizeName)
-        val pt = if ("power" in card && "toughness" in card) {
-            card["power"]!!.jsonPrimitive.content + "/" + card["toughness"]!!.jsonPrimitive.content
+        val pt = if (card.power != null && card.toughness != null) {
+            card.power + "/" + card.toughness
         } else {
             null
         }
-        var text = if ("oracle_text" in card) {
-            card["oracle_text"]!!.jsonPrimitive.content
+        var text = if (card.oracleText != null) {
+            card.oracleText
         } else {
-            val faces =card["card_faces"]!!.jsonArray
-            faces[0].jsonObject["oracle_text"]!!.jsonPrimitive.content +
-                    " // " +
-                    faces[1].jsonObject["oracle_text"]!!.jsonPrimitive.content
+            val faces = card.cardFaces!!
+            faces[0].oracleText + " // " + faces[1].oracleText
         }
         if (text.length > 1000) {
             text = text.substring(0, 1000)
         }
 
-        val image = if ("image_uris" !in card) {
-            card["card_faces"]!!
-                .jsonArray[0]
-                .jsonObject["image_uris"]!!
-                .jsonObject["normal"]!!
-                .jsonPrimitive.content
+        val image = if (card.imageUris == null) {
+            card.cardFaces!![0].imageUris!!.normal
         } else {
-            card["image_uris"]!!
-                .jsonObject["normal"]!!
-                .jsonPrimitive.content
+            card.imageUris.normal
         }
 
-        val backImage = if ("image_uris" !in card) {
-            card["card_faces"]!!
-                .jsonArray[1]
-                .jsonObject["image_uris"]!!
-                .jsonObject["normal"]!!
-                .jsonPrimitive.content
+        val backImage = if (card.imageUris == null) {
+            card.cardFaces!![1].imageUris!!.normal
         } else {
             null
         }
 
-        val colors = card["color_identity"]!!
-            .jsonArray.let {
-                if (it.size == 0) {
+        val colors = card.colorIdentity?.let {
+                if (it.isEmpty()) {
                     "C"
                 } else {
-                    it.map { c -> c.jsonPrimitive.content }
-                        .distinct().sorted().joinToString("")
+                    it.distinct().sorted().joinToString("")
                 }
             }
 
         return CardDao.Token(
-            id,
+            id!!,
             name,
             CardDao.normalizeName(name),
-            colors.lowercase(),
+            colors!!.lowercase(),
             superTypes,
             subTypes,
             pt?.let(CardDao::normalizeName),
@@ -198,20 +189,20 @@ object ImportFromScryfall : CliktCommand(help = "Import latest cards from Scryfa
         )
     }
 
-    private fun parseCard(card: JsonObject): CardDao.Card {
-        val name = card["name"]!!.jsonPrimitive.content
+    private fun parseCard(card: Card): CardDao.Card {
+        val name = card.name
 
-        val type = card["type_line"]!!.jsonPrimitive.content.split(" — ")[0].split(" ").last().trim()
+        val type = card.typeLine!!.split(" — ")[0].split(" ").last().trim()
 
 
-        val id = UUID.fromString(card["oracle_id"]!!.jsonPrimitive.content)
-        val preferredPrintingId = UUID.fromString(card["id"]!!.jsonPrimitive.content)
+        val id = card.oracleId
+        val preferredPrintingId = card.id
 
         return CardDao.Card(
             name,
             CardDao.normalizeName(name),
             type,
-            id,
+            id!!,
             preferredPrintingId,
             "",
             null,

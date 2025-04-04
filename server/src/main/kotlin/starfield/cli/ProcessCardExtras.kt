@@ -4,6 +4,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
+import starfield.cli.scryfall.Card
 import starfield.data.dao.CardDao
 import starfield.plugins.Id
 import java.io.BufferedReader
@@ -15,38 +16,56 @@ val manaCostRegex = Regex("(?:\\{[1-9WUBRGCXYZS/]})+")
 val excludeCostsRegex = Regex("(costs? ${manaCostRegex.pattern} (more|less))|(add ${manaCostRegex.pattern})|(${
     manaCostRegex.pattern} was (spent|paid))", RegexOption.IGNORE_CASE)
 
+val entersTappedRegex = Regex("^This \\w+ enters tapped\\.$", RegexOption.MULTILINE)
+val startingCountersPattern = Regex("^This \\w+ enters with (a|an|one|two|three|four|five|six|seven|eight|nine|ten) [+/\\w]+ counters? on it\\.$", RegexOption.MULTILINE)
+
 @Serializable
 data class CardExtra(val id: Id, val costs: List<List<String>>, val tokens: List<Id>, val isSideways: Boolean = false, val entersTapped: Boolean = false, val counters: Int = 0) {
     fun isEmpty(): Boolean {
-        return costs.isEmpty() && tokens.isEmpty()
+        return costs.isEmpty() && tokens.isEmpty() && !isSideways && !entersTapped && counters == 0
     }
 }
 
-fun parseCardExtras(card: JsonObject, id: Id, tokenIds: Map<Id, CardDao.Printing>): CardExtra {
+fun wordToNumber(word: String?): Int? {
+    return when (word) {
+        "a", "an", "one" -> 1
+        "two" -> 2
+        "three" -> 3
+        "four" -> 4
+        "five" -> 5
+        "six" -> 6
+        "seven" -> 7
+        "eight" -> 8
+        "nine" -> 9
+        "ten" -> 10
+        else -> null
+    }
+}
+
+fun parseCardExtras(card: Card, id: Id, tokenIds: Map<Id, CardDao.Printing>): CardExtra {
     val manaCosts = mutableListOf<List<String>>()
     val tokens = mutableListOf<Id>()
 
-    if ("card_faces" in card) {
-        for(face in card["card_faces"]!!.jsonArray) {
-            if ("mana_cost" in face.jsonObject) {
-                manaCosts.add(parseCost(face.jsonObject["mana_cost"]!!.jsonPrimitive.content))
+    if (card.cardFaces != null) {
+        for(face in card.cardFaces) {
+            if (face.manaCost != null) {
+                manaCosts.add(parseCost(face.manaCost))
             }
-            val oracleText = face.jsonObject["oracle_text"]!!.jsonPrimitive.content
+            val oracleText = face.oracleText ?: ""
             manaCosts.addAll(findManaCosts(oracleText))
         }
     } else {
-        if ("mana_cost" in card) {
-            manaCosts.add(parseCost(card["mana_cost"]!!.jsonPrimitive.content))
+        if (card.manaCost != null) {
+            manaCosts.add(parseCost(card.manaCost))
         }
-        val oracleText = card["oracle_text"]!!.jsonPrimitive.content
+        val oracleText = card.oracleText ?: ""
         manaCosts.addAll(findManaCosts(oracleText))
     }
 
-    if ("all_parts" in card) {
-        for (part in card["all_parts"]!!.jsonArray) {
-            if (part.jsonObject["component"]!!.jsonPrimitive.content == "token") {
-                val scryfallId = UUID.fromString(part.jsonObject["id"]!!.jsonPrimitive.content)
-                val tokenId = tokenIds[scryfallId]
+    if (card.parts != null) {
+        for (part in card.parts) {
+            if (part.component == "token") {
+                val tokenId = tokenIds[part.id]
                 if (tokenId == null) {
 //                    println("Token not found for $scryfallId")
                     continue
@@ -56,7 +75,28 @@ fun parseCardExtras(card: JsonObject, id: Id, tokenIds: Map<Id, CardDao.Printing
         }
     }
 
-    return CardExtra(id, manaCosts.filter { it.isNotEmpty() }.distinct(), tokens)
+    val text = if (card.oracleText != null) {
+        card.oracleText
+    } else {
+        val faces = card.cardFaces!!
+        faces[0].oracleText + " // " + faces[1].oracleText
+    }
+
+    // get starting counters
+    val startingCounters: Int? = card.loyalty?.toIntOrNull()
+        ?: card.defense?.toIntOrNull()
+        ?: card.cardFaces?.getOrNull(0)?.loyalty?.toIntOrNull()
+        ?: card.cardFaces?.getOrNull(0)?.defense?.toIntOrNull()
+        ?: wordToNumber(startingCountersPattern.find(text)?.groupValues?.get(1))
+
+    return CardExtra(
+        id,
+        manaCosts.filter { it.isNotEmpty() }.distinct(),
+        tokens,
+        isSideways = card.typeLine?.contains("Battle") == true,
+        entersTapped = entersTappedRegex.containsMatchIn(text.replace(card.name, "~")),
+        counters = startingCounters ?: 0
+    )
 }
 
 fun findManaCosts(oracleText: String): List<List<String>> {
@@ -74,6 +114,9 @@ fun findManaCosts(oracleText: String): List<List<String>> {
 fun parseCost(cost: String): List<String> {
     return cost.trim('}', '{').split("}{").filter { it.isNotEmpty() }
 }
+
+internal val json = Json { ignoreUnknownKeys = true }
+
 
 suspend fun downloadTokenIdMap(): Map<UUID, CardDao.Printing> {
     // Step 1: Get the response from https://api.scryfall.com/bulk-data/default-cards
@@ -101,48 +144,32 @@ suspend fun downloadTokenIdMap(): Map<UUID, CardDao.Printing> {
     }
 
     // Step 4: Parse the file and create a map from `id` to `oracle_id`
-    val cards = Json.decodeFromString<JsonArray>(cardsJson)
+    val cards = json.decodeFromString<List<Card>>(cardsJson)
     return cards
         .filter {
-            "oracle_id" in it.jsonObject
-                    && ("image_uris" in it.jsonObject || "card_faces" in it.jsonObject)
-                    && it.jsonObject["image_status"]?.jsonPrimitive?.content != "missing"
+            it.oracleId != null
+                    && (it.imageUris != null || it.cardFaces != null)
+                    && it.imageStatus != "missing"
         }
         .associate {
-            val id = UUID.fromString(it.jsonObject["id"]!!.jsonPrimitive.content)
-            val oracleId = UUID.fromString(it.jsonObject["oracle_id"]!!.jsonPrimitive.content)
+            val id = it.id
+            val oracleId = it.oracleId!!
 
-            val card = it.jsonObject
-            val image = if ("image_uris" !in card) {
-                card["card_faces"]!!
-                    .jsonArray[0]
-                    .jsonObject["image_uris"]!!
-                    .jsonObject["normal"]!!
-                    .jsonPrimitive.content
+            val card = it
+            val image = if (card.imageUris == null) {
+                card.cardFaces!![0].imageUris!!.normal
             } else {
-                card["image_uris"]!!
-                    .jsonObject["normal"]!!
-                    .jsonPrimitive.content
+                card.imageUris.normal
             }
 
-            val thumbnailImage = if ("image_uris" !in card) {
-                card["card_faces"]!!
-                    .jsonArray[0]
-                    .jsonObject["image_uris"]!!
-                    .jsonObject["art_crop"]!!
-                    .jsonPrimitive.content
+            val thumbnailImage = if (card.imageUris == null) {
+                card.cardFaces!![0].imageUris!!.artCrop
             } else {
-                card["image_uris"]!!
-                    .jsonObject["art_crop"]!!
-                    .jsonPrimitive.content
+                card.imageUris.artCrop
             }
 
-            val backImage = if ("image_uris" !in card) {
-                card["card_faces"]!!
-                    .jsonArray[1]
-                    .jsonObject["image_uris"]!!
-                    .jsonObject["normal"]!!
-                    .jsonPrimitive.content
+            val backImage = if (card.imageUris == null) {
+                card.cardFaces!![1].imageUris!!.normal
             } else {
                 null
             }
