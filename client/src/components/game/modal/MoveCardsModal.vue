@@ -7,6 +7,7 @@ import { computed, onMounted, onUnmounted, reactive, ref, type ComputedRef } fro
 import { getMoveZoneActions, type ContextMenuDefinition, type ContextMenuOption } from '@/context-menu';
 import { useBoardStore, UserType, type OracleId } from '@/stores/board';
 import type { OracleCard } from '@/api/message';
+import { useNotificationsCache } from '@/cache/notifications';
 
 const props = defineProps<{ cards: { [id: string]: OracleId }, title: string, userType: UserType, order?: string[], persist?: boolean, virtual?: boolean }>();
 
@@ -171,6 +172,23 @@ function doMenuAction(action: string, ...args: any[]) {
   }
 }
 
+function hoverCard(id: string) {
+  if (props.virtual || props.userType !== UserType.PLAYER) {
+    return;
+  }
+  const card = Number(id);
+  const notifications = useNotificationsCache();
+  notifications.hoverCardEnter(card);
+}
+
+function unhoverCard() {
+  if (props.virtual || props.userType !== UserType.PLAYER) {
+    return;
+  }
+  const notifications = useNotificationsCache();
+  notifications.hoverCardLeave();
+}
+
 const isShiftPressed = ref(false);
 function keyPressed(e: KeyboardEvent) {
   if (e.key === 'Shift') {
@@ -209,9 +227,9 @@ onUnmounted(() => {
     </div>
     <div class="cards">
       <card-thumbnail v-for="card in filteredCards" :class="getClassString(card, true)" :card="card"
-        @click="selectCard($event, card.uid)" />
+        @click="selectCard($event, card.uid)" @mouseleave="unhoverCard" @mouseover="hoverCard(card.uid)" />
       <card-thumbnail v-for="card in nonFilteredCards" :class="getClassString(card, false)" :card="card"
-        @click="selectCard($event, card.uid)" />
+        @click="selectCard($event, card.uid)" @mouseleave="unhoverCard" @mouseover="hoverCard(card.uid)" />
     </div>
   </Modal>
 </template>

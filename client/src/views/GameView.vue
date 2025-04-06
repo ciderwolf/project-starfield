@@ -26,6 +26,8 @@ import { useRouter, useRoute } from 'vue-router';
 import GameOptionButtons from '@/components/game/GameOptionButtons.vue';
 import GameLog from '@/components/game/GameLog.vue';
 import { useZoneStore } from '@/stores/zone';
+import { handleHotkey, mountHotkeys } from '@/hotkeys';
+import CommandPalette from '@/components/game/CommandPalette.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -43,42 +45,6 @@ const isSpectator = computed(() => {
   return game?.players.find(p => p.id === data.userId) === undefined;
 });
 
-
-function checkHotkey(e: KeyboardEvent) {
-  if ((e.target as HTMLElement).nodeName === "INPUT") {
-    return;
-  }
-  if (e.key === 'r') {
-    if (confirm('Are you sure you want to scoop your deck?')) {
-      client.scoop();
-    }
-  }
-  else if (e.key === 'c') {
-    client.drawCards(1);
-  }
-  else if (e.key === 'q') {
-    endGameClicked();
-  }
-  else if (e.key === 'f') {
-    notificationsCache.findCards();
-  }
-  else if (e.key === 'm') {
-    if (confirm('Are you sure you want to scoop your deck and mulligan?')) {
-      client.mulligan();
-    }
-  }
-  else if (e.key === 'v') {
-    client.shuffle();
-  } else if (e.key === 'w') {
-    createToken();
-  } else if (e.key === 'n') {
-    createCard();
-  } else if (e.key === 'x') {
-    untapAll();
-  } else if (e.key === 'e') {
-    client.endTurn();
-  }
-}
 
 function endGameClicked() {
   endGameModal.value?.open();
@@ -114,11 +80,18 @@ const createCardModal = ref<ComponentExposed<typeof CreateCardModal>>();
 const rollDieModal = ref<ComponentExposed<typeof RollDieModal>>();
 const cardPreview = ref<ComponentExposed<typeof CardPreview>>();
 const tipsAndShortcutsModal = ref<ComponentExposed<typeof TipsAndShortcutsModal>>();
+const commandPalette = ref<ComponentExposed<typeof CommandPalette>>();
 const notificationsCache = useNotificationsCache();
 
 
 onMounted(() => {
-  window.addEventListener('keypress', checkHotkey);
+  window.addEventListener('keypress', (e) => {
+    if (e.key === 'P') {
+      toggleCommandPalette();
+    }
+  });
+
+  mountHotkeys();
   notificationsCache.findCards = () => {
     getVirtualIds().then((message) => {
       board.processOracleInfo({}, message.oracleInfo, []);
@@ -145,6 +118,22 @@ onMounted(() => {
 
   notificationsCache.sideboard = () => {
     sideboardModal.value?.open();
+  }
+
+  notificationsCache.endGame = () => {
+    endGameModal.value?.open();
+  }
+
+  notificationsCache.createToken = () => {
+    createTokenModal.value?.open();
+  }
+
+  notificationsCache.createCard = () => {
+    createCardModal.value?.open();
+  }
+
+  notificationsCache.rollDie = () => {
+    rollDieModal.value?.open();
   }
 
   board.logs.splice(0, board.logs.length);
@@ -177,13 +166,19 @@ function handleSpectatorLeave() {
 
 onUnmounted(() => {
   handleSpectatorLeave();
-  window.removeEventListener('keypress', checkHotkey);
+  window.removeEventListener('keypress', handleHotkey);
 });
+
+const toggleCommandPalette = () => {
+  commandPalette.value?.open();
+};
+
 
 </script>
 
 <template>
   <div id="game">
+    <command-palette ref="commandPalette" />
     <find-cards-modal ref="findCardsModal" />
     <scry-modal ref="scryModal" />
     <view-zone-modal ref="viewZoneModal" />

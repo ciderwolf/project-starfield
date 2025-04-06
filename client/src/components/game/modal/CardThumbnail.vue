@@ -15,8 +15,10 @@ const previewUrl = computed(() => {
   return props.card.image;
 });
 
-defineEmits<{
+const emit = defineEmits<{
   (event: 'click', e: MouseEvent): void
+  (event: 'mouseover', e: MouseEvent): void
+  (event: 'mouseleave', e: MouseEvent): void
 }>()
 
 const left = ref(0);
@@ -47,14 +49,17 @@ function normalizePreviewX(e: MouseEvent) {
   }
   return newX;
 }
-function mouseLeave() {
+function mouseLeave(e: MouseEvent) {
   display.value = 'none';
+  emit('mouseleave', e);
 }
+
 function mouseOver(e: MouseEvent) {
   display.value = 'inline';
   // get the x coordiate of the mouse
   left.value = normalizePreviewX(e);
   top.value = normalizePreviewY(e);
+  emit('mouseover', e);
 }
 function mouseMove(e: MouseEvent) {
   left.value = normalizePreviewX(e);
@@ -69,7 +74,7 @@ function mouseMove(e: MouseEvent) {
   </Teleport>
 
   <img :src="imageUrl" class="card-thumbnail" @mouseleave="mouseLeave" @mouseover="mouseOver" @mousemove="mouseMove"
-    :class="class" @click="$emit('click', $event)" />
+    :class="$props.class" @click="$emit('click', $event)" />
 </template>
 
 <style scoped>

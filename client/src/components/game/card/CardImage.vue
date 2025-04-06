@@ -128,6 +128,7 @@ function clampToBounds(x: number, y: number, rect: DOMRect, parentRect: DOMRect)
 let showPreviewTimerHandle: number | undefined;
 function mouseEnter() {
   const id = board.cardToOracleId[props.card.id];
+  notifications.hoverCardEnter(props.card.id);
   if (id && showPreviewTimerHandle === undefined) {
     showPreviewTimerHandle = window.setTimeout(() => {
       notifications.showCardPreview(id, props.card.transformed);
@@ -136,6 +137,7 @@ function mouseEnter() {
 }
 
 function mouseLeave() {
+  notifications.hoverCardLeave();
   if (showPreviewTimerHandle) {
     window.clearTimeout(showPreviewTimerHandle);
     showPreviewTimerHandle = undefined;
