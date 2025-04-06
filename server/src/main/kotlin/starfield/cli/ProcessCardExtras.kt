@@ -75,12 +75,7 @@ fun parseCardExtras(card: Card, id: Id, tokenIds: Map<Id, CardDao.Printing>): Ca
         }
     }
 
-    val text = if (card.oracleText != null) {
-        card.oracleText
-    } else {
-        val faces = card.cardFaces!!
-        faces[0].oracleText + " // " + faces[1].oracleText
-    }
+    val text = card.text()
 
     // get starting counters
     val startingCounters: Int? = card.loyalty?.toIntOrNull()
@@ -151,28 +146,12 @@ suspend fun downloadTokenIdMap(): Map<UUID, CardDao.Printing> {
                     && (it.imageUris != null || it.cardFaces != null)
                     && it.imageStatus != "missing"
         }
-        .associate {
-            val id = it.id
-            val oracleId = it.oracleId!!
-
-            val card = it
-            val image = if (card.imageUris == null) {
-                card.cardFaces!![0].imageUris!!.normal
-            } else {
-                card.imageUris.normal
-            }
-
-            val thumbnailImage = if (card.imageUris == null) {
-                card.cardFaces!![0].imageUris!!.artCrop
-            } else {
-                card.imageUris.artCrop
-            }
-
-            val backImage = if (card.imageUris == null) {
-                card.cardFaces!![1].imageUris!!.normal
-            } else {
-                null
-            }
+        .associate { card ->
+            val id = card.id
+            val oracleId = card.oracleId!!
+            val image = card.image { it.normal }
+            val thumbnailImage = card.image { it.artCrop }
+            val backImage = card.backImage { it.normal }
 
             val printing = CardDao.Printing(
                 id = id,

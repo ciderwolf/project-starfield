@@ -4,7 +4,6 @@ import com.github.ajalt.clikt.core.CliktCommand
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
 import org.jetbrains.exposed.sql.batchUpsert
 import starfield.cli.scryfall.Card
@@ -43,7 +42,6 @@ object ImportFromScryfall : CliktCommand(help = "Import latest cards from Scryfa
         }
         val data = Json.decodeFromString<Map<String, JsonElement>>(response.body())
         val bulkDataUrl = data["download_uri"]!!.jsonPrimitive.content
-//        val bulkDataUrl = "https://api.scryfall.com/bulk-data/oracle-cards?format=file"
         val bulkResponse = withContext(Dispatchers.IO) {
             client.send(
                 HttpRequest.newBuilder(URI(bulkDataUrl)).build(),
@@ -145,27 +143,13 @@ object ImportFromScryfall : CliktCommand(help = "Import latest cards from Scryfa
         } else {
             null
         }
-        var text = if (card.oracleText != null) {
-            card.oracleText
-        } else {
-            val faces = card.cardFaces!!
-            faces[0].oracleText + " // " + faces[1].oracleText
-        }
+        var text = card.text()
         if (text.length > 1000) {
             text = text.substring(0, 1000)
         }
 
-        val image = if (card.imageUris == null) {
-            card.cardFaces!![0].imageUris!!.normal
-        } else {
-            card.imageUris.normal
-        }
-
-        val backImage = if (card.imageUris == null) {
-            card.cardFaces!![1].imageUris!!.normal
-        } else {
-            null
-        }
+        val image = card.image { it.normal }
+        val backImage = card.backImage { it.normal }
 
         val colors = card.colorIdentity?.let {
                 if (it.isEmpty()) {

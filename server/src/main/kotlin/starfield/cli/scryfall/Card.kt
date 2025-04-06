@@ -22,7 +22,33 @@ data class Card(
     @SerialName("color_identity") val colorIdentity: List<String>? = null,
     @SerialName("mana_cost") val manaCost: String? = null,
     @SerialName("all_parts") val parts: List<CardPart>? = null
-)
+) {
+    fun text(): String {
+        return if (oracleText != null) {
+            oracleText
+        } else if (cardFaces != null) {
+            cardFaces[0].oracleText + " // " + cardFaces[1].oracleText
+        } else {
+            ""
+        }
+    }
+
+    fun image(func: (images: ImageUris) -> String): String {
+        if (imageUris != null) {
+            return func(imageUris)
+        } else if (!cardFaces.isNullOrEmpty() && cardFaces[0].imageUris != null) {
+            return func(cardFaces[0].imageUris!!)
+        }
+        return ""
+    }
+
+    fun backImage(func: (images: ImageUris) -> String): String? {
+        if (!cardFaces.isNullOrEmpty() && cardFaces[1].imageUris != null) {
+            return func(cardFaces[1].imageUris!!)
+        }
+        return null
+    }
+}
 
 @Serializable
 data class CardFace(
