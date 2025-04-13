@@ -63,7 +63,6 @@ function pickCard(card: DraftCard) {
       </p>
     </div>
     <DraftPool />
-
   </div>
 
 </template>

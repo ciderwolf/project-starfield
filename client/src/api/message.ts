@@ -449,5 +449,6 @@ export type DraftCard = Card & {
   foil: boolean;
   id: string;
   type: string;
-  manaValue: number
+  manaValue: number;
+  manaCost: string;
 };

@@ -49,6 +49,16 @@ data class Card(
         }
         return null
     }
+
+    fun manaCost(): String {
+        return if (manaCost != null) {
+            manaCost
+        } else if (!cardFaces.isNullOrEmpty() && cardFaces[0].manaCost != null) {
+            cardFaces[0].manaCost!!
+        } else {
+            ""
+        }
+    }
 }
 
 @Serializable

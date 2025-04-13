@@ -38,7 +38,7 @@ class SetInfo(
             val cardIds = boosterInfo.sheets.values.flatMap { it.cards.keys }.distinct()
             val cardDao = CardDao()
             val cardData = cardDao.getCardPrintings(cardIds)
-            val cards = cardData.map { DraftCard(it.name, it.id, it.oracleId, false, it.type, it.manaValue, it.image, it.backImage) }
+            val cards = cardData.map { DraftCard(it.name, it.id, it.oracleId, false, it.type, it.manaValue, it.manaCost, it.image, it.backImage) }
             return SetInfo(code, cards.associateBy { it.id }, boosterInfo, strategy)
         }
     }

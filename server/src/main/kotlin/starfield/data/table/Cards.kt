@@ -11,6 +11,7 @@ object Cards : Table("Card") {
     val fuzzyName = varchar("fuzzy_name", 200).index(isUnique = false)
     val type = varchar("type", 50)
     val manaValue = integer("mana_value")
+    val manaCost = varchar("mana_cost", 50)
     val preferredPrintingId = uuid("preferred_printing_id").references(Printings.id).nullable()
 
     override val primaryKey = PrimaryKey(id)

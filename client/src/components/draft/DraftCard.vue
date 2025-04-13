@@ -19,14 +19,14 @@ const image = computed(() => {
   return props.card.image;
 });
 
-function keyPressed(event: KeyboardEvent) {
-  if (event.key === 'Shift' && props.card.backImage !== null) {
+function keyPressed(e: KeyboardEvent) {
+  if (e.key === 'Shift' && props.card.backImage !== null) {
     showBackImage.value = true;
   }
 }
 
-function keyReleased(event: KeyboardEvent) {
-  if (event.key === 'Shift') {
+function keyReleased(e: KeyboardEvent) {
+  if (e.key === 'Shift') {
     showBackImage.value = false;
   }
 }

@@ -26,6 +26,7 @@ class CardDao {
             fuzzyName = row[Cards.fuzzyName],
             type = row[Cards.type],
             manaValue = row[Cards.manaValue],
+            manaCost = row[Cards.manaCost],
             id = row[Cards.id],
             preferredPrinting = row[Cards.preferredPrintingId],
             image = row[Printings.image],
@@ -80,6 +81,7 @@ class CardDao {
                     oracleId = row[Cards.id],
                     type = row[Cards.type],
                     manaValue = row[Cards.manaValue],
+                    manaCost = row[Cards.manaCost],
                     image = row[Printings.image],
                     backImage = row[Printings.backImage]
                 )
@@ -196,6 +198,7 @@ class CardDao {
         val fuzzyName: String,
         val type: String,
         val manaValue: Int,
+        val manaCost: String,
         override val id: Id,
         val preferredPrinting: Id?,
         val image: String,
@@ -222,6 +225,7 @@ class CardDao {
         val oracleId: UUID,
         val type: String,
         val manaValue: Int,
+        val manaCost: String,
         val image: String,
         val backImage: String?)
 

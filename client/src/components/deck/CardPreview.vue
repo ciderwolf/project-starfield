@@ -9,7 +9,7 @@ interface Card {
   id: string;
 }
 
-const props = defineProps<{ card: Card }>();
+const props = defineProps<{ card: Card, cursor?: string }>();
 
 const display = ref("none");
 const left = ref(0);
@@ -68,14 +68,15 @@ function mouseOverDfc(e: MouseEvent) {
     <Teleport to="body">
       <img :style="style" class="card-preview" :src="backFace ? card.backImage! : card.image" ref="cardImage" />
     </Teleport>
-    <span class="card-line" @mouseleave="mouseLeave" @mouseover="mouseOver" @mousemove="mouseMove">
+    <span class="card-line" :style="{ cursor }" @mouseleave="mouseLeave" @mouseover="mouseOver" @mousemove="mouseMove">
       {{ card.count }} {{ frontName }}</span>
-    <span v-if="dfc" class="card-line" @mouseleave="mouseLeave" @mouseover="mouseOverDfc" @mousemove="mouseMove">
+    <span v-if="dfc" class="card-line" :style="{ cursor }" @mouseleave="mouseLeave" @mouseover="mouseOverDfc"
+      @mousemove="mouseMove">
       // {{ backName }}</span>
   </div>
 </template>
 
-  
+
 <style scoped>
 .card-preview {
   display: none;
@@ -95,4 +96,3 @@ function mouseOverDfc(e: MouseEvent) {
   text-decoration: none;
 }
 </style>
-  
