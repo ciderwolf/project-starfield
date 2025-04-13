@@ -11,6 +11,7 @@ data class Card(
     @SerialName("set_type") val setType: String,
     @SerialName("type_line") val typeLine: String? = null,
     @SerialName("oracle_id") val oracleId: Id? = null,
+    @SerialName("cmc")  val cmc: Double? = null,
     @SerialName("power") val power: String? = null,
     @SerialName("toughness") val toughness: String? = null,
     @SerialName("loyalty") val loyalty: String? = null,

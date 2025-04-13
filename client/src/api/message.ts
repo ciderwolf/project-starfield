@@ -445,4 +445,9 @@ type MoveCardVirtualMessage = {
   type: "move_virtual";
 }
 
-export type DraftCard = Card & { foil: boolean; id: string };
+export type DraftCard = Card & {
+  foil: boolean;
+  id: string;
+  type: string;
+  manaValue: number
+};

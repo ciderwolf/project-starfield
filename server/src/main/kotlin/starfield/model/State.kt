@@ -24,7 +24,7 @@ data class DraftState(
     val packNumber: Int) : ActiveCollectionState()
 
 @Serializable
-data class DraftCard(val name: String, val id: Id, val oracleId: Id, val foil: Boolean, val image: String, val backImage: String?)
+data class DraftCard(val name: String, val id: Id, val oracleId: Id, val foil: Boolean, val type: String, val manaValue: Int, val image: String, val backImage: String?)
 
 @Serializable
 data class PoolCard(val card: DraftCard, var count: Int, val sideboard: Boolean)

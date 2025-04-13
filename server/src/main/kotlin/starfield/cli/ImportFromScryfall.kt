@@ -70,6 +70,7 @@ object ImportFromScryfall : CliktCommand(help = "Import latest cards from Scryfa
                 this[Cards.name] = it.name
                 this[Cards.fuzzyName] = CardDao.normalizeName(it.name)
                 this[Cards.type] = it.type
+                this[Cards.manaValue] = it.manaValue
                 this[Cards.preferredPrintingId] = it.preferredPrinting
             }
         }
@@ -175,10 +176,7 @@ object ImportFromScryfall : CliktCommand(help = "Import latest cards from Scryfa
 
     private fun parseCard(card: Card): CardDao.Card {
         val name = card.name
-
         val type = card.typeLine!!.split(" — ")[0].split(" ").last().trim()
-
-
         val id = card.oracleId
         val preferredPrintingId = card.id
 
@@ -186,6 +184,7 @@ object ImportFromScryfall : CliktCommand(help = "Import latest cards from Scryfa
             name,
             CardDao.normalizeName(name),
             type,
+            card.cmc?.toInt() ?: 0,
             id!!,
             preferredPrintingId,
             "",
