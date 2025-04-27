@@ -185,7 +185,7 @@ onUnmounted(() => {
         </div>
         <div v-else>
           <div v-for="group in maindeck" :key="group.label" class="grouped-cards">
-            <h4>{{ group.label }}</h4>
+            <h4>{{ group.label }} ({{ cardCount(group) }})</h4>
             <div style="margin-top: 15px;">
               <div class="card-line-container" :class="cardFrameColor(card)" v-for="card in group.cards"
                 :key="card.name">
