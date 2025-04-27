@@ -156,6 +156,8 @@ suspend fun downloadTokenIdMap(): Map<UUID, CardDao.Printing> {
             val printing = CardDao.Printing(
                 id = id,
                 cardId = oracleId,
+                setCode = card.set,
+                collectorNumber = card.collectorNumber,
                 image = image,
                 backImage = backImage,
                 thumbnailImage = thumbnailImage,

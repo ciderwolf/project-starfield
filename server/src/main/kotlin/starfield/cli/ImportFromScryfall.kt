@@ -80,6 +80,8 @@ object ImportFromScryfall : CliktCommand(help = "Import latest cards from Scryfa
             Printings.batchUpsert(printings.values.filter { it.cardId in cardIds }) {
                 this[Printings.id] = it.id
                 this[Printings.cardId] = it.cardId
+                this[Printings.setCode] = it.setCode
+                this[Printings.collectorNumber] = it.collectorNumber
                 this[Printings.image] = it.image
                 this[Printings.backImage] = it.backImage
                 this[Printings.thumbnailImage] = it.thumbnailImage

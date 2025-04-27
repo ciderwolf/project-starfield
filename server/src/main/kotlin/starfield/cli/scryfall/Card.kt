@@ -8,7 +8,9 @@ import starfield.plugins.Id
 data class Card(
     val name: String,
     val id: Id,
+    @SerialName("set") val set: String,
     @SerialName("set_type") val setType: String,
+    @SerialName("collector_number") val collectorNumber: String,
     @SerialName("type_line") val typeLine: String? = null,
     @SerialName("oracle_id") val oracleId: Id? = null,
     @SerialName("cmc")  val cmc: Double? = null,

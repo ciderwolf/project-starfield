@@ -213,6 +213,8 @@ class CardDao {
     data class Printing(
         val id: Id,
         val cardId: Id,
+        val setCode: String,
+        val collectorNumber: String,
         val image: String,
         val backImage: String?,
         val thumbnailImage: String,
