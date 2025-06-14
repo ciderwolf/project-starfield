@@ -111,6 +111,7 @@ class DeckDao {
             .leftJoin(Printings, { Cards.preferredPrintingId }, { id })
             .selectAll()
             .where { Decks.ownerId eq userId }
+            .orderBy(Decks.modifiedAt, SortOrder.DESC)
             .toList()
         val deckIds = decks.map {it[Decks.id].value }
         val cards = DeckCards

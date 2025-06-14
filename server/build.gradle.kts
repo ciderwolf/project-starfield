@@ -39,6 +39,7 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-core:$exposed_version")
     implementation("org.jetbrains.exposed:exposed-dao:$exposed_version")
     implementation("org.jetbrains.exposed:exposed-jdbc:$exposed_version")
+    implementation("org.jetbrains.exposed:exposed-java-time:$exposed_version")
     implementation("org.postgresql:postgresql:$postgresql_version")
     implementation("com.zaxxer:HikariCP:6.0.0")
     implementation("at.favre.lib:bcrypt:$bcrypt_version")
