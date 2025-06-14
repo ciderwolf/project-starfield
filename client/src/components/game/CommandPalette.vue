@@ -71,7 +71,7 @@ const commands: Command[] = [
   },
   {
     name: 'End Game',
-    description: 'End the current game',
+    description: 'End the current game and leave',
     action: () => {
       const gameId = route.params.id as string;
       endGame(gameId);
@@ -132,6 +132,18 @@ const commands: Command[] = [
         count = parseInt(ctx[0], 10);
       }
       client.drawCards(count);
+    },
+  },
+  {
+    name: 'Mill Cards',
+    pattern: /^mill (\d+)$/,
+    description: 'Mill cards from the top your library',
+    action: (ctx) => {
+      let count = 1;
+      if (ctx && ctx.length > 0) {
+        count = parseInt(ctx[0], 10);
+      }
+      client.drawCards(count, 'GRAVEYARD');
     },
   },
   {

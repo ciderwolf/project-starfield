@@ -1,8 +1,16 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import Modal from '@/components/Modal.vue';
-import StyleButton from '@/components/StyleButton.vue';
-import { rollDie } from '@/api/game';
+import { HotkeyAttribute, hotkeys } from '@/hotkeys';
+
+const hotkeyDescriptions = hotkeys.map(h => {
+  return {
+    key: h.key.toUpperCase(),
+    description: h.description,
+    isCard: h.attributes?.includes(HotkeyAttribute.CardSpecific),
+    isOverrideable: h.attributes?.includes(HotkeyAttribute.ShiftToOverride)
+  }
+})
 
 defineExpose({ open });
 
@@ -28,20 +36,13 @@ function open() {
       <section>
         <h3>Keyboard Shortcuts</h3>
         <ul>
-          <!-- board -->
-          <li><strong>X</strong>: Untap all of your cards in play</li>
-          <li><strong>C</strong>: Draw a card</li>
-          <!-- deck -->
-          <li><strong>R</strong>: Scoop your deck</li>
-          <li><strong>M</strong>: Mulligan (Scoop your deck and draw seven cards)</li>
-          <li><strong>V</strong>: Shuffle your deck</li>
-          <li><strong>F</strong>: Search your library for a card</li>
-          <!-- create -->
-          <li><strong>W</strong>: Create a token</li>
-          <li><strong>N</strong>: Create a card from outside the game</li>
-          <!-- end -->
-          <li><strong>E</strong>: End your turn</li>
-          <li><strong>Q</strong>: End the game / start a new game</li>
+          <li v-for="hotkey in hotkeyDescriptions">
+            <strong>{{ hotkey.key }}</strong>: {{ hotkey.description }}
+            <span v-if="hotkey.isOverrideable" class="hint">⇧</span>
+            <span v-if="hotkey.isCard" class="hint">
+              (Hover)
+            </span>
+          </li>
         </ul>
       </section>
       <section>
@@ -69,14 +70,8 @@ function open() {
   gap: 30px;
 }
 
-.dice-count-input {
-  width: 50px;
-  height: 36px;
-  margin: 0 10px;
-  padding: 5px;
-  font-size: 1.25rem;
-  text-align: center;
-  border: 1px solid #0005;
-  border-radius: 5px;
+.hint {
+  color: gray;
+  font-size: 0.8em
 }
 </style>

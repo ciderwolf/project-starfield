@@ -9,9 +9,15 @@ enum HotkeyModifier {
   Shift = 'Shift'
 }
 
+export enum HotkeyAttribute {
+  CardSpecific,
+  ShiftToOverride
+}
+
 type HotkeyDefinition = {
   key: string;
   description: string;
+  attributes?: HotkeyAttribute[];
   action: (context: HotkeyContext) => void;
 };
 
@@ -21,7 +27,7 @@ type HotkeyContext = {
   card: CardId | null;
 }
 
-const hotkeys: HotkeyDefinition[] = [
+export const hotkeys: HotkeyDefinition[] = [
   {
     key: 'x',
     description: 'Untap all',
@@ -55,6 +61,7 @@ const hotkeys: HotkeyDefinition[] = [
   {
     key: 'm',
     description: 'Mulligan',
+    attributes: [HotkeyAttribute.ShiftToOverride],
     action: (ctx) => {
       if (ctx.modifiers.includes(HotkeyModifier.Shift) || confirm('Are you sure you want to scoop your deck and mulligan?')) {
         client.mulligan();
@@ -103,6 +110,7 @@ const hotkeys: HotkeyDefinition[] = [
   {
     key: 'd',
     description: 'Destroy a card',
+    attributes: [HotkeyAttribute.CardSpecific],
     action: (ctx) => {
       moveCardToZone(ctx.card, ZONES.graveyard.id);
     }
@@ -110,6 +118,7 @@ const hotkeys: HotkeyDefinition[] = [
   {
     key: 's',
     description: 'Move a card to exile',
+    attributes: [HotkeyAttribute.CardSpecific],
     action: (ctx) => {
       moveCardToZone(ctx.card, ZONES.exile.id);
     }
