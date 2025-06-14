@@ -35,6 +35,10 @@ function showOptions(e: MouseEvent) {
   menuPos.y = e.clientY;
 }
 
+function viewCards() {
+  doMenuAction('view-all-cards');
+}
+
 function doMenuAction(action: string, ...args: any[]) {
   const notifications = useNotificationsCache();
   showMenu.value = false;
@@ -161,7 +165,7 @@ onUnmounted(() => {
     <div class="zone-bounds" ref="zoneBounds" :style="zone.pos" @mousedown="startDrag">
       <span class="zone-bubble zone-count" v-if="zone.layout === 'stack' && hasCards">
         {{ board.cards[zone.id].length }}</span>
-      <span class="zone-bubble zone-options" v-if="zone.layout === 'stack' && hasCards" @click="showOptions">≡</span>
+      <span class="zone-bubble zone-options" v-if="zone.layout === 'stack' && hasCards" @click="showOptions" @dblclick="viewCards">≡</span>
     </div>
     <context-menu v-if="showMenu" v-click-outside="() => showMenu = false" :real-pos="menuPos" :menu="menuDefinition" />
   </div>
