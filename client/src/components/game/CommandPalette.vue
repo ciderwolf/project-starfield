@@ -181,7 +181,7 @@ const filteredCommands = computed(() => {
 });
 
 watch(filteredCommands, (filtered, previous) => {
-  let selectedId = undefined;
+  let selectedId: string | undefined = undefined;
   if (previous && selectedIndex.value >= 0) {
     selectedId = previous[selectedIndex.value].name;
   }
