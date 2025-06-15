@@ -199,6 +199,9 @@ watch(filteredCommands, (filtered, previous) => {
 });
 
 const closePalette = () => {
+  if (visible.value === false) {
+    return;
+  }
   emit('close');
   console.log('Command palette closed');
   visible.value = false;

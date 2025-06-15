@@ -36,10 +36,11 @@ export const hotkeys: HotkeyDefinition[] = [
     },
   },
   {
-    key: 'r',
+    key: 'z',
     description: 'Scoop',
-    action: () => {
-      if (confirm('Are you sure you want to scoop your deck?')) {
+    attributes: [HotkeyAttribute.ShiftToOverride],
+    action: (ctx) => {
+      if (ctx.modifiers.includes(HotkeyModifier.Shift) || confirm('Are you sure you want to scoop your deck?')) {
         client.scoop();
       }
     }
@@ -123,6 +124,48 @@ export const hotkeys: HotkeyDefinition[] = [
       moveCardToZone(ctx.card, ZONES.exile.id);
     }
   },
+  {
+    key: 'p',
+    description: 'Move a card to face down',
+    attributes: [HotkeyAttribute.CardSpecific],
+    action: (ctx) => {
+      moveCardToZone(ctx.card, ZONES.faceDown.id);
+    }
+  },
+  {
+    key: 'r',
+    description: 'Move a card to your hand',
+    attributes: [HotkeyAttribute.CardSpecific],
+    action: (ctx) => {
+      moveCardToZone(ctx.card, ZONES.hand.id);
+    }
+  },
+  {
+    key: 't',
+    description: 'Move a card to the top of your library',
+    attributes: [HotkeyAttribute.CardSpecific],
+    action: (ctx) => {
+      moveCardToZone(ctx.card, ZONES.library.id);
+    }
+  },
+  {
+    key: 'y',
+    description: 'Move a card to the bottom of your library',
+    attributes: [HotkeyAttribute.CardSpecific],
+    action: (ctx) => {
+      moveCardToZone(ctx.card, ZONES.library.id, 0);
+    }
+  },
+  {
+    key: 'k',
+    description: 'Clone a card',
+    attributes: [HotkeyAttribute.CardSpecific],
+    action: (ctx) => {
+      if (ctx.card) {
+        client.cloneCard(ctx.card);
+      }
+    }
+  }
 ];
 
 let currentDigit: number | null = null;
@@ -184,13 +227,11 @@ export function mountHotkeys() {
   }
 };
 
-function moveCardToZone(cardId: CardId | null, zoneId: number) {
+function moveCardToZone(cardId: CardId | null, zoneId: number, index: number = -1) {
   if (cardId) {
-    if (cardId) {
-      client.moveCardToZone(cardId, zoneId, 0, 0);
-      const notification = useNotificationsCache();
-      notification.hideCardPreview();
-      notification.hoverCardLeave();
-    }
+    client.moveCardToZoneWithIndex(cardId, zoneId, index);
+    const notification = useNotificationsCache();
+    notification.hideCardPreview();
+    notification.hoverCardLeave();
   }
 }

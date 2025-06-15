@@ -176,17 +176,17 @@ function hoverCard(id: string) {
   if (props.virtual || props.userType !== UserType.PLAYER) {
     return;
   }
-  const card = Number(id);
-  const notifications = useNotificationsCache();
-  notifications.hoverCardEnter(card);
+  // const card = Number(id);
+  // const notifications = useNotificationsCache();
+  // notifications.hoverCardEnter(card);
 }
 
 function unhoverCard() {
   if (props.virtual || props.userType !== UserType.PLAYER) {
     return;
   }
-  const notifications = useNotificationsCache();
-  notifications.hoverCardLeave();
+  // const notifications = useNotificationsCache();
+  // notifications.hoverCardLeave();
 }
 
 const isShiftPressed = ref(false);
