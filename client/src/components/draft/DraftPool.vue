@@ -91,11 +91,25 @@ function cardFrameColor(card: DraftCard): string {
   }
 }
 
-function cardSymbols(card: DraftCard): string[] {
+function cardSymbolGroups(card: DraftCard): string[][] {
   const cost = card.manaCost;
   if (!cost) return [];
-  const matches = cost.matchAll(/\{([^\}]+)\}/g);
-  return Array.from(matches).map(match => match[1].toLowerCase());
+
+  const parts = cost.split(' // ');
+  const result: string[][] = [];
+  for (const part of parts) {
+    const matches = part.matchAll(/\{([^\}]+)\}/g);
+    const partSymbols = Array.from(matches).map(match => match[1].replace('/', '').toLowerCase());
+    if (partSymbols.length > 0) {
+      result.push(partSymbols);
+    }
+  }
+  console.log('Card symbols for', card.name, ':', result);
+  return result;
+}
+
+function cardSymbols(card: DraftCard): string[] {
+  return cardSymbolGroups(card).flatMap(symbol => symbol);
 }
 
 function cardColors(card: DraftCard): string {
@@ -178,8 +192,9 @@ onUnmounted(() => {
             <CardPreview :card="card.cards[0]" @click="moveToSideboard(card.cards[0].id)" />
             <span>
               <abbr :class="`card-symbol card-symbol-${symbol.toUpperCase()}`"
-                v-for="symbol in cardSymbols(card.cards[0])">{{ symbol
-                }}</abbr>
+                v-for="symbol in cardSymbols(card.cards[0])">
+                {{ symbol }}
+              </abbr>
             </span>
           </div>
         </div>
@@ -190,10 +205,12 @@ onUnmounted(() => {
               <div class="card-line-container" :class="cardFrameColor(card)" v-for="card in group.cards"
                 :key="card.name">
                 <CardPreview :card="card" cursor="pointer" @click="moveToSideboard(card.id)" />
-                <span>
-                  <abbr :class="`card-symbol card-symbol-${symbol.toUpperCase()}`"
-                    v-for="symbol in cardSymbols(card)">{{ symbol
-                    }}</abbr>
+                <span style="display: flex;">
+                  <span class="card-symbol-group" v-for="group in cardSymbolGroups(card)" :key="group.join('-')">
+                    <abbr :class="`card-symbol card-symbol-${symbol.toUpperCase()}`" v-for="symbol in group">
+                      {{ symbol }}
+                    </abbr>
+                  </span>
                 </span>
               </div>
 
@@ -339,5 +356,16 @@ onUnmounted(() => {
 .card-line-container.colorless {
   background-color: rgb(212, 215, 215);
   border-color: #788581;
+}
+
+.card-symbol-group {
+  display: flex;
+}
+
+.card-symbol-group:not(:last-child)::after {
+  content: " // ";
+  margin-right: 5px;
+  padding: 0;
+  color: #888;
 }
 </style>
