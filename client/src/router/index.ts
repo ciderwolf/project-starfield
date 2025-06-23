@@ -42,6 +42,11 @@ const router = createRouter({
       component: () => import('../views/DecklistView.vue')
     },
     {
+      path: '/cube/:id',
+      name: 'cube',
+      component: () => import('../views/CubeView.vue')
+    },
+    {
       path: '/draft/:id',
       name: 'draft',
       component: () => import('../views/DraftView.vue')

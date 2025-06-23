@@ -165,6 +165,17 @@ export type DeckListing = {
   thumbnailImage: string;
 }
 
+export type Cube = {
+  id: string;
+  name: string;
+  thumbnailImage: string;
+  cards: DeckCard[];
+}
+export type CubeListing = {
+  id: string;
+  name: string;
+}
+
 export type ConflictResolutionStrategy = 'NoConflict' | 'Best' | 'Default' | 'Pinned';
 export type DeckCard = {
   name: string;

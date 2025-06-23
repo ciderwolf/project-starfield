@@ -96,6 +96,9 @@ async function submitDeckAndCloseClicked() {
 <template>
   <div id="decklist" v-if="deck">
     <div class="title" v-if="deck !== null">
+      <router-link :to="{ name: 'home' }">
+        <span class="material-symbols-rounded" id="home-button">home</span>
+      </router-link>
       <h1>Decklist &mdash;</h1>
       <input type=text v-model="deck.name" id="deck-name-input">
       <loading-button :on-click="submitDeckAndCloseClicked">Save deck and close</loading-button>
@@ -119,6 +122,17 @@ async function submitDeckAndCloseClicked() {
 <style scoped>
 #decklist {
   margin-left: 10px;
+}
+
+#home-button {
+  color: black;
+  cursor: pointer;
+  font-size: 2em;
+  padding: 10px;
+}
+
+#home-button:hover {
+  background-color: rgba(0, 0, 0, 0.1);
 }
 
 .loading-title {

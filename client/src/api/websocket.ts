@@ -5,6 +5,7 @@ import { useBoardStore } from "@/stores/board";
 import { useAlertsStore } from "@/stores/alerts";
 import { useDecksStore } from "@/stores/decks";
 import { useDraftStore } from "@/stores/draft";
+import { useCubesStore } from "@/stores/cubes";
 
 function websocketUrl() {
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -33,7 +34,10 @@ export class WebSocketConnection {
       case 'identity':
         console.log('identity', message.username, message.id);
         const decks = useDecksStore();
+        const cubes = useCubesStore();
         decks.reloadDecks();
+        cubes.reloadCubes();
+
         login.login(message.username, message.id);
         break;
       case 'listing':

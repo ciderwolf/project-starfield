@@ -85,6 +85,19 @@ export async function deleteJsonRaw(path: string): Promise<JsonResponse<any>> {
 
 }
 
+export async function putJson(path: string): Promise<any> {
+  return handleApiError(await putJsonRaw(path));
+}
+
+export async function putJsonRaw(path: string): Promise<JsonResponse<any>> {
+  const response = await fetch('/api/' + path,
+    {
+      method: 'PUT',
+    });
+  return response.json();
+
+}
+
 function handleApiError<T>(response: JsonResponse<T>): T {
   if (!response.success) {
     const alerts = useAlertsStore();

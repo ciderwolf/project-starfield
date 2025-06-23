@@ -99,7 +99,6 @@ function deckThumbnailUrl(deck: DeckListing) {
   width: fit-content;
   margin: 0 auto;
   padding: 1em 5em;
-  margin-bottom: 200px;
 }
 
 .deck-card {

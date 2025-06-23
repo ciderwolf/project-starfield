@@ -1,10 +1,18 @@
-
 <script setup lang="ts">
 import CardPreview from './CardPreview.vue';
 import type { DeckCard as Card, Deck as DeckData, DeckCard } from '@/api/message';
 import { computed, ref, watchEffect } from 'vue';
 
-const props = defineProps<{ deckData: DeckData }>();
+const props = defineProps({
+  deckData: {
+    type: Object as () => DeckData,
+    required: true,
+  },
+  includeSideboard: {
+    type: Boolean,
+    default: true,
+  },
+});
 
 const deck = computed(() => groupDeckByType(props.deckData));
 
@@ -25,7 +33,6 @@ function groupDeckByType(deck: DeckData): Deck {
     }
     return acc;
   }, { Unknown: [] } as Deck);
-
 
   result.Sideboard = deck.sideboard;
   return result;
@@ -110,7 +117,7 @@ watchEffect(() => {
         <card-preview v-for="card of section.cards" :key="card.name" :card="card" />
       </div>
     </div>
-    <div class="row">
+    <div class="row" v-if="includeSideboard !== false">
       <div class="type">
         <h3>{{ sideboard.title }} ({{ sideboard.count }})</h3>
         <card-preview v-for="card of sideboard.cards" :key="card.name" :card="card" />
@@ -123,11 +130,13 @@ watchEffect(() => {
   </div>
 </template>
 
-  
+
 <style>
 .deck-preview {
   display: flex;
   flex-grow: 1;
+  flex-direction: row;
+  justify-content: space-around;
 }
 
 .row {
@@ -143,4 +152,3 @@ watchEffect(() => {
   margin-bottom: 0;
 }
 </style>
-  

@@ -7,11 +7,17 @@ import kotlinx.serialization.json.Json
 import starfield.Config
 import starfield.draft.StrategyInfo
 import starfield.plugins.Id
+import starfield.routing.DeckCard
 import java.io.File
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
+
+@Serializable
+enum class PackAlgorithm {
+    SHEET_SAMPLING, CUBE
+}
 
 @Serializable
 private data class SetResponse(
@@ -42,6 +48,7 @@ data class BoosterConfig(
     val boostersTotalWeight: Int,
     val name: String?,
     val sheets: Map<String, BoosterSheet>,
+    val packType: PackAlgorithm = PackAlgorithm.SHEET_SAMPLING
 )
 
 @Serializable
@@ -85,6 +92,29 @@ class MtgJsonDao {
             setFile.writeText(json.encodeToString(BoosterConfig.serializer(), boosterInfo))
             return boosterInfo
         }
+    }
+
+    fun cardListToBoosterInfo(name: String, cards: List<DeckCard>): BoosterConfig {
+        val boosterInfo = BoosterConfig(
+            boosters = listOf(
+                BoosterPack(
+                    weight = 1,
+                    contents = mapOf("cube" to 15)
+                )
+            ),
+            boostersTotalWeight = 1,
+            name = "Cube Booster",
+            sheets = mapOf("cube" to BoosterSheet(
+                foil = false,
+                totalWeight = 1,
+                cards = cards.associate { it.id to it.count }
+            )),
+            packType = PackAlgorithm.CUBE
+        )
+        val setPath = Config.storagePath("sets/$name.json")
+        val setFile = File(setPath)
+        setFile.writeText(json.encodeToString(BoosterConfig.serializer(), boosterInfo))
+        return boosterInfo
     }
 
     private suspend fun downloadBoosterInfo(code: String): BoosterConfig {

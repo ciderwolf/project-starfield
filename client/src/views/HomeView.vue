@@ -10,6 +10,7 @@ import DecksView from './DecksView.vue';
 import { useDataStore } from '@/stores/data';
 import { Tabs, Tab } from 'vue3-tabs-component';
 import { CLIENT_VERSION } from '@/version';
+import CubesView from './CubesView.vue';
 
 const showCreateGameModal = ref(false);
 const gameName = ref('');
@@ -89,7 +90,7 @@ function tabChanged(tab: any) {
         <p>Click on '+ Create game' to create one.</p>
       </div>
       <DecksView />
-
+      <CubesView />
 
     </main>
     <p class="version-info" v-if="CLIENT_VERSION">Client version {{ CLIENT_VERSION }}</p>

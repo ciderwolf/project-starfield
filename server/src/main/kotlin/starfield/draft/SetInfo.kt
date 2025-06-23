@@ -3,32 +3,19 @@ package starfield.draft
 import starfield.data.dao.BoosterConfig
 import starfield.data.dao.CardDao
 import starfield.data.dao.MtgJsonDao
+import starfield.data.dao.PackAlgorithm
 import starfield.model.DraftCard
 import java.util.*
 
-class SetInfo(
+abstract class SetInfo(
     val code: String,
-    private val cards: Map<UUID, DraftCard>,
-    private val boosterInfo: BoosterConfig,
+    protected val boosterInfo: BoosterConfig,
     val strategyInfo: StrategyInfo?) {
 
     val cardsPerPack: Int
         get() = boosterInfo.boosters.first().contents.values.sum()
 
-    fun createPack(): List<DraftCard> {
-        val packCards = mutableListOf<DraftCard>()
-        val pack = WeightedRandom(boosterInfo.boosters.map { Pair(it.weight, it) }).pick()
-        pack.contents.map { it }.sortedBy { -it.value }.map { (sheetName, count) ->
-            val sheet = boosterInfo.sheets[sheetName]!!
-            val random = WeightedRandom(sheet.cards.map { Pair(it.value, it.key) }, withReplacement = sheet.allowDuplicates ?: false)
-            repeat(count) {
-                val card = cards[random.pick()]!!
-                packCards.add(card.copy(foil = sheet.foil))
-            }
-        }
-
-        return packCards
-    }
+    abstract fun createPack(): List<DraftCard>
 
     companion object {
         suspend fun create(code: String): SetInfo {
@@ -39,7 +26,55 @@ class SetInfo(
             val cardDao = CardDao()
             val cardData = cardDao.getCardPrintings(cardIds)
             val cards = cardData.map { DraftCard(it.name, it.id, it.oracleId, false, it.type, it.manaValue, it.manaCost, it.image, it.backImage) }
-            return SetInfo(code, cards.associateBy { it.id }, boosterInfo, strategy)
+
+            return when (boosterInfo.packType) {
+                PackAlgorithm.CUBE -> CubeSetInfo(cards.associateBy { it.id }, code, boosterInfo, strategy)
+                PackAlgorithm.SHEET_SAMPLING -> SheetsSetInfo(cards.associateBy { it.id }, code, boosterInfo, strategy)
+            }
         }
     }
+}
+
+class SheetsSetInfo(
+    private val cards: Map<UUID, DraftCard>,
+    code: String,
+    boosterInfo: BoosterConfig,
+    strategyInfo: StrategyInfo?
+) : SetInfo(code, boosterInfo, strategyInfo) {
+    override fun createPack(): List<DraftCard> {
+        val packCards = mutableListOf<DraftCard>()
+        val pack = WeightedRandom(boosterInfo.boosters.map { Pair(it.weight, it) }).pick()
+        pack.contents.entries.sortedBy { -it.value }.map { (sheetName, count) ->
+            val sheet = boosterInfo.sheets[sheetName]!!
+            val random = WeightedRandom(sheet.cards.map { Pair(it.value, it.key) }, withReplacement = sheet.allowDuplicates ?: false)
+            repeat(count) {
+                val card = cards[random.pick()]!!
+                packCards.add(card.copy(foil = sheet.foil))
+            }
+        }
+
+        return packCards
+    }
+}
+
+class CubeSetInfo(
+    private val cards: Map<UUID, DraftCard>,
+    code: String,
+    boosterInfo: BoosterConfig,
+    strategyInfo: StrategyInfo?
+) : SetInfo(code, boosterInfo, strategyInfo) {
+
+    private val cardsToSample = boosterInfo.sheets.values.first().cards
+        .flatMap { (cardId, count) -> (0..count).map { cardId } }
+    private val sampler = WeightedRandom(cardsToSample.map { Pair(1, it) }, withReplacement = false)
+
+    override fun createPack(): List<DraftCard> {
+        val packCards = mutableListOf<DraftCard>()
+        repeat(cardsPerPack) {
+            val selection = sampler.pick()
+            packCards.add(cards[selection]!!)
+        }
+        return packCards
+    }
+
 }
