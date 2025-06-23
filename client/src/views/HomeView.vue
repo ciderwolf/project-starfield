@@ -2,15 +2,16 @@
 import { createGame, createDraft } from '@/api';
 import Modal from '@/components/Modal.vue';
 import StyleButton from '@/components/StyleButton.vue';
-import GameListingRow from '@/components/GameListingRow.vue';
+import GameListingRow from '@/components/home/GameListingRow.vue';
 import { useGameStore } from '@/stores/games';
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import DecksView from './DecksView.vue';
+import DecksView from '../components/home/DecksView.vue';
 import { useDataStore } from '@/stores/data';
 import { Tabs, Tab } from 'vue3-tabs-component';
 import { CLIENT_VERSION } from '@/version';
-import CubesView from './CubesView.vue';
+import CubesView from '../components/home/CubesView.vue';
+import SetSelector from '@/components/home/SetSelector.vue';
 
 const showCreateGameModal = ref(false);
 const gameName = ref('');
@@ -74,6 +75,7 @@ function tabChanged(tab: any) {
               <label>Players: <input type="number" min="2" max="8" v-model.number="gamePlayers"></label>
               <label>Bot Players: <input type="number" min="0" max="8" v-model.number="botPlayers"></label>
               <label>Set: <input type="text" v-model="draftSet"></label>
+              <SetSelector></SetSelector>
               <style-button @click="submitDraft">Create Draft</style-button>
             </div>
           </Tab>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import StyleButton from './StyleButton.vue';
+import StyleButton from '@/components/StyleButton.vue';
 import { joinGame } from '@/api';
 import type { GameListing } from '@/api/message';
 import { useDataStore } from '@/stores/data';
