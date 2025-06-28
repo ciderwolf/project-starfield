@@ -5,6 +5,7 @@ import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
 import starfield.data.dao.CubeCobraDao
 import starfield.data.dao.CubeDao
+import starfield.data.dao.DraftSetDao
 import starfield.data.dao.MtgJsonDao
 import starfield.plugins.UserSession
 import starfield.plugins.respondError
@@ -47,6 +48,8 @@ fun Route.cubeRouting() {
 
         val cubeDao = CubeDao()
         if (cubeDao.deleteCube(session.id, uuid)) {
+            val draftSetDao = DraftSetDao()
+            draftSetDao.deleteDraftSet(uuid)
             call.respondSuccess("Cube deleted successfully")
         } else {
             call.respondError("Cube not found", status = HttpStatusCode.NotFound)
@@ -115,7 +118,9 @@ fun Route.cubeRouting() {
     }
 }
 
-fun setBoosterInfo(cube: CubeDao.Cube) {
+suspend fun setBoosterInfo(cube: CubeDao.Cube) {
     val setInfoDao = MtgJsonDao()
-    setInfoDao.cardListToBoosterInfo(cube.id.toString(), cube.cards)
+    val boosterInfo = setInfoDao.cardListToBoosterInfo(cube.id.toString(), cube.cards)
+    val draftSetDao = DraftSetDao()
+    draftSetDao.upsertDraftSetFromCube(cube.id, cube.name, boosterInfo)
 }

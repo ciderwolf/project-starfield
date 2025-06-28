@@ -77,6 +77,10 @@ fun Application.configureRouting() {
             route("/cube") {
                 cubeRouting()
             }
+
+            route("/draft") {
+                draftRouting()
+            }
         }
 
         singlePageApplication {

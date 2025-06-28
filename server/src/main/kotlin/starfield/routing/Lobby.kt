@@ -20,7 +20,7 @@ data class DeckSelection(val deckId: Id)
 data class CreateGameMessage(val name: String, val players: Int)
 
 @Serializable
-data class CreateDraftMessage(val name: String, val players: Int, val bots: Int, val set: String)
+data class CreateDraftMessage(val name: String, val players: Int, val bots: Int, val set: Id)
 
 fun Route.gameRouting() {
 

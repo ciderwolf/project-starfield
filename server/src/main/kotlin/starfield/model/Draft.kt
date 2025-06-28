@@ -140,7 +140,7 @@ class Draft(override val id: Id, override val name: String, val set: SetInfo, va
         return DraftState(
             id,
             name,
-            set.code,
+            set.name,
             players.map { UserListing(it.id, it.name) },
             getPackQueue(),
             pools[index].mainCards + pools[index].sideboardCards,
@@ -153,7 +153,7 @@ class Draft(override val id: Id, override val name: String, val set: SetInfo, va
     private suspend fun endDraft() {
         val deckDao = DeckDao()
         val todayString = DateFormat.getDateInstance().format(Date())
-        val deckName = "${set.code} draft on $todayString"
+        val deckName = "${set.name} draft on $todayString"
 
         for (player in players) {
             val agent = agents.first { it.id == player.id }

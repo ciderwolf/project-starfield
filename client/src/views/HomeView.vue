@@ -12,6 +12,7 @@ import { Tabs, Tab } from 'vue3-tabs-component';
 import { CLIENT_VERSION } from '@/version';
 import CubesView from '../components/home/CubesView.vue';
 import SetSelector from '@/components/home/SetSelector.vue';
+import type { DraftSet } from '@/api/draft';
 
 const showCreateGameModal = ref(false);
 const gameName = ref('');
@@ -45,9 +46,11 @@ function tabChanged(tab: any) {
   else {
     gamePlayers.value = 2;
   }
-
 }
 
+function setSelected(set: DraftSet) {
+  draftSet.value = set.id;
+}
 </script>
 
 <template>
@@ -72,10 +75,15 @@ function tabChanged(tab: any) {
             <div class="create-game-form">
               <h2>Create Draft</h2>
               <label>Name: <input type="text" v-model="gameName"></label>
-              <label>Players: <input type="number" min="2" max="8" v-model.number="gamePlayers"></label>
-              <label>Bot Players: <input type="number" min="0" max="8" v-model.number="botPlayers"></label>
-              <label>Set: <input type="text" v-model="draftSet"></label>
-              <SetSelector></SetSelector>
+              <div>
+                <label>Players: <input type="number" min="2" max="8" v-model.number="gamePlayers"></label>
+                &nbsp;
+                <label>Bots: <input type="number" min="0" max="8" v-model.number="botPlayers"></label>
+              </div>
+              <label style="display: flex; align-items: center;">
+                Set:
+                <SetSelector @set-selected="setSelected" />
+              </label>
               <style-button @click="submitDraft">Create Draft</style-button>
             </div>
           </Tab>

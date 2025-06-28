@@ -1,14 +1,11 @@
 package starfield.draft
 
-import starfield.data.dao.BoosterConfig
-import starfield.data.dao.CardDao
-import starfield.data.dao.MtgJsonDao
-import starfield.data.dao.PackAlgorithm
+import starfield.data.dao.*
 import starfield.model.DraftCard
 import java.util.*
 
 abstract class SetInfo(
-    val code: String,
+    val name: String,
     protected val boosterInfo: BoosterConfig,
     val strategyInfo: StrategyInfo?) {
 
@@ -18,18 +15,19 @@ abstract class SetInfo(
     abstract fun createPack(): List<DraftCard>
 
     companion object {
-        suspend fun create(code: String): SetInfo {
-            val setInfoDao = MtgJsonDao()
-            val boosterInfo = setInfoDao.getBoosterInfo(code)
-            val strategy = setInfoDao.getDraftStrategy(code)
-            val cardIds = boosterInfo.sheets.values.flatMap { it.cards.keys }.distinct()
+        suspend fun create(code: UUID): SetInfo {
+            val draftSetDao = DraftSetDao()
+            val draftSet = draftSetDao.getDraftSet(code)
+                ?: throw IllegalArgumentException("Draft set with code $code not found")
+
+            val cardIds = draftSet.boosterInfo.sheets.values.flatMap { it.cards.keys }.distinct()
             val cardDao = CardDao()
             val cardData = cardDao.getCardPrintings(cardIds)
             val cards = cardData.map { DraftCard(it.name, it.id, it.oracleId, false, it.type, it.manaValue, it.manaCost, it.image, it.backImage) }
 
-            return when (boosterInfo.packType) {
-                PackAlgorithm.CUBE -> CubeSetInfo(cards.associateBy { it.id }, code, boosterInfo, strategy)
-                PackAlgorithm.SHEET_SAMPLING -> SheetsSetInfo(cards.associateBy { it.id }, code, boosterInfo, strategy)
+            return when (draftSet.boosterInfo.packType) {
+                PackAlgorithm.CUBE -> CubeSetInfo(cards.associateBy { it.id }, draftSet.name, draftSet.boosterInfo, draftSet.strategy)
+                PackAlgorithm.SHEET_SAMPLING -> SheetsSetInfo(cards.associateBy { it.id }, draftSet.name, draftSet.boosterInfo, draftSet.strategy)
             }
         }
     }

@@ -56,6 +56,10 @@ class CubeDao {
         }.map(::mapDbCubeListing)
     }
 
+    suspend fun getCubeListings() = DatabaseSingleton.dbQuery {
+        Cubes.selectAll().map(::mapDbCubeListing)
+    }
+
     suspend fun getCubeListing(userId: UUID, cubeId: UUID) = DatabaseSingleton.dbQuery {
         Cubes.selectAll().where {
             (Cubes.id eq cubeId) and (Cubes.ownerId eq userId)

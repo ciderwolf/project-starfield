@@ -137,7 +137,7 @@ class DraftLobby(override val id: UUID, override val owner: User, override val n
 
     override fun currentState(playerId: UUID): LobbyState {
         return DraftLobbyState(
-            id, name, userListings(), bots, set.code
+            id, name, userListings(), bots
         )
     }
 }

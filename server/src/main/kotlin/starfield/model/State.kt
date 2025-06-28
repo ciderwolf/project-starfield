@@ -68,5 +68,4 @@ data class DraftLobbyState(
     val name: String,
     val users: List<UserListing>,
     val bots: Int,
-    val set: String,
 ) : LobbyState()

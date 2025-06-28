@@ -70,30 +70,6 @@ class MtgJsonDao {
     private val setUrl = "https://mtgjson.com/api/v5/%s.json"
     private val json = Json { ignoreUnknownKeys = true }
 
-    fun getDraftStrategy(code: String): StrategyInfo? {
-        val setPath = Config.storagePath("sets/$code-strategy.json")
-        val setFile = File(setPath)
-        if (setFile.exists()) {
-            return json.decodeFromString<StrategyInfo>(setFile.readText())
-        }
-        println("Failed to load strategy for $code")
-        return null
-    }
-
-    suspend fun getBoosterInfo(code: String): BoosterConfig {
-        // check file system
-        val setPath = Config.storagePath("sets/$code.json")
-        val setFile = File(setPath)
-        if (setFile.exists()) {
-            val setResponse = json.decodeFromString<BoosterConfig>(File(setPath).readText())
-            return setResponse
-        } else {
-            val boosterInfo = downloadBoosterInfo(code)
-            setFile.writeText(json.encodeToString(BoosterConfig.serializer(), boosterInfo))
-            return boosterInfo
-        }
-    }
-
     fun cardListToBoosterInfo(name: String, cards: List<DeckCard>): BoosterConfig {
         val boosterInfo = BoosterConfig(
             boosters = listOf(
@@ -111,14 +87,11 @@ class MtgJsonDao {
             )),
             packType = PackAlgorithm.CUBE
         )
-        val setPath = Config.storagePath("sets/$name.json")
-        val setFile = File(setPath)
-        setFile.writeText(json.encodeToString(BoosterConfig.serializer(), boosterInfo))
         return boosterInfo
     }
 
-    private suspend fun downloadBoosterInfo(code: String): BoosterConfig {
-        val url = setUrl.format(code)
+    suspend fun downloadBoosterInfo(code: String): BoosterConfig {
+        val url = setUrl.format(code.uppercase())
         val client = HttpClient.newHttpClient()
         val request = HttpRequest.newBuilder()
             .uri(URI.create(url))
