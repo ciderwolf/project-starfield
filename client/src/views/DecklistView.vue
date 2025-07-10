@@ -96,10 +96,12 @@ async function submitDeckAndCloseClicked() {
 <template>
   <div id="decklist" v-if="deck">
     <div class="title" v-if="deck !== null">
-      <router-link :to="{ name: 'home' }">
-        <span class="material-symbols-rounded" id="home-button">home</span>
-      </router-link>
-      <h1>Decklist &mdash;</h1>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <router-link :to="{ name: 'home' }">
+          <span class="material-symbols-rounded" id="home-button">home</span>
+        </router-link>
+        <h1>Decklist <span id="decklist-title-separator">&mdash;</span></h1>
+      </div>
       <input type=text v-model="deck.name" id="deck-name-input">
       <loading-button :on-click="submitDeckAndCloseClicked">Save deck and close</loading-button>
     </div>
@@ -122,6 +124,7 @@ async function submitDeckAndCloseClicked() {
 <style scoped>
 #decklist {
   margin-left: 10px;
+  margin-right: 10px;
 }
 
 #home-button {
@@ -170,6 +173,7 @@ async function submitDeckAndCloseClicked() {
   min-width: 300px;
   min-height: 400px;
   margin: 5px 0;
+  box-sizing: border-box;
 }
 
 #decklist #sideboard-input {
@@ -186,5 +190,35 @@ async function submitDeckAndCloseClicked() {
 .submit-controls button {
   margin: 5px;
   width: 100%;
+}
+
+/* mobile styles */
+@media (max-width: 850px) {
+
+  .title {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  #decklist-title-separator {
+    display: none;
+  }
+
+  #deck-name-input {
+    width: 90%;
+  }
+
+  #decklist-deckbuilder {
+    flex-direction: column;
+  }
+
+  #deck-inputs {
+    max-width: 100%;
+  }
+
+  #decklist textarea {
+    min-width: 100%;
+  }
 }
 </style>

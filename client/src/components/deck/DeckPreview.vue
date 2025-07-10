@@ -151,4 +151,19 @@ watchEffect(() => {
   margin-top: 0;
   margin-bottom: 0;
 }
+
+@media screen and (max-width: 525px) {
+  .deck-preview {
+    flex-direction: column;
+  }
+
+  .row {
+    min-width: 100%;
+  }
+
+  .type {
+    padding: 10px;
+  }
+
+}
 </style>

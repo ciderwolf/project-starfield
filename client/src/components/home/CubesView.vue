@@ -114,7 +114,8 @@ function closeModal() {
   max-width: 80%;
   width: fit-content;
   margin: 0 auto;
-  padding: 1em 5em;
+  padding: 1em 10%;
+  min-width: 250px;
   margin-bottom: 200px;
 }
 
