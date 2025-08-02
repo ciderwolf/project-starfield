@@ -23,7 +23,7 @@ abstract class SetInfo(
             val cardIds = draftSet.boosterInfo.sheets.values.flatMap { it.cards.keys }.distinct()
             val cardDao = CardDao()
             val cardData = cardDao.getCardPrintings(cardIds)
-            val cards = cardData.map { DraftCard(it.name, it.id, it.oracleId, false, it.type, it.manaValue, it.manaCost, it.image, it.backImage) }
+            val cards = cardData.map { DraftCard(it.name, it.id, it.oracleId, false, it.type, it.manaValue, it.manaCost, it.types, it.superTypes, it.subTypes, it.image, it.backImage) }
 
             return when (draftSet.boosterInfo.packType) {
                 PackAlgorithm.CUBE -> CubeSetInfo(cards.associateBy { it.id }, draftSet.name, draftSet.boosterInfo, draftSet.strategy)

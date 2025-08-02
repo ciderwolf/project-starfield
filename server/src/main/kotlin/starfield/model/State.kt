@@ -32,6 +32,9 @@ data class DraftCard(
     val type: String,
     val manaValue: Int,
     val manaCost: String,
+    val types: List<String>,
+    val superTypes: List<String>,
+    val subTypes: List<String>,
     val image: String,
     val backImage: String?)
 

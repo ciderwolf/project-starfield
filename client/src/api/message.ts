@@ -467,4 +467,7 @@ export type DraftCard = Card & {
   type: string;
   manaValue: number;
   manaCost: string;
+  types: string[];
+  superTypes: string[];
+  subTypes: string[];
 };

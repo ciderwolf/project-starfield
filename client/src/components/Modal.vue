@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
 
-const props = defineProps<{ visible: boolean, title?: string }>()
+const props = defineProps<{ visible: boolean, title?: string, modalContentStyles?: string }>()
 const minimized = ref(false);
 
 const emit = defineEmits(['close']);
@@ -37,7 +37,7 @@ onUnmounted(() => {
       <span class="modal-control" @click="maximize">&plus;</span>
     </div>
     <div class="modal-background" v-if="!minimized"></div>
-    <div class="modal-content" v-if="!minimized">
+    <div class="modal-content" v-if="!minimized" :style="modalContentStyles">
       <div class="modal-controls">
         <span class="modal-control" @click="minimize">&ndash;</span>
         <span class="modal-control" @click="emit('close')">&times;</span>
@@ -114,7 +114,7 @@ onUnmounted(() => {
   max-height: 80%;
   overflow-y: scroll;
   width: max-content;
-  max-width: 80%;
+  max-width: 100%;
   min-width: 50%;
 }
 </style>

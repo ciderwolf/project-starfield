@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { useDraftStore } from '@/stores/draft';
 import CardPreview from '../deck/CardPreview.vue';
-import { computed, ref, onMounted, onUnmounted } from 'vue';
+import { computed, ref, onMounted, onUnmounted, type ComputedRef } from 'vue';
 import StyleButton from '../StyleButton.vue';
 import { endGame } from '@/api/lobby';
 import { useRouter } from 'vue-router';
 import { draftClient } from '@/ws';
-import type { DraftCard } from '@/api/message';
+import type { DeckCard, DraftCard } from '@/api/message';
+import Modal from '../Modal.vue';
+import DeckStatsViz from '../deck/DeckStatsViz.vue';
 
 type DraftDisplayCard = DraftCard & {
   count: number;
@@ -22,6 +24,7 @@ type SortingMode = 'name' | 'mv' | 'type' | 'color';
 const draft = useDraftStore();
 const router = useRouter();
 const sortBy = ref<SortingMode>('mv');
+const showPoolDetails = ref(false);
 
 const maindeck = computed(() => {
   const grouped = draft.pool
@@ -104,7 +107,6 @@ function cardSymbolGroups(card: DraftCard): string[][] {
       result.push(partSymbols);
     }
   }
-  console.log('Card symbols for', card.name, ':', result);
   return result;
 }
 
@@ -138,8 +140,21 @@ function goHome() {
 }
 
 function leaveDraft() {
-  endGame(draft.draftId!);
+  if (confirm('Are you sure you want to end the draft for everyone?')) {
+    endGame(draft.draftId!);
+  }
 }
+
+const deckCards = computed(() =>
+  draft.pool
+    .filter(card => !card.sideboard)
+    .map(card => ({
+      ...card.card,
+      count: card.count,
+      source: '',
+      conflictResolutionStrategy: 'Best',
+    })) as DeckCard[]
+)
 
 const leftPanelWidth = ref(300);
 let isResizing = false;
@@ -174,9 +189,22 @@ onUnmounted(() => {
 
 <template>
   <div class="draft-pool-container">
+    <Modal title="Pool Details" :visible="showPoolDetails" @close="showPoolDetails = false"
+      modal-content-styles="width: 90%; height: 90%;">
+      <DeckStatsViz :cards="deckCards" :width="600" :height="450" />
+    </Modal>
     <div class="draft-pool" :style="{ width: leftPanelWidth + 'px' }">
       <div class="resize-handle" @mousedown="startResizing"></div>
       <div class="draft-pool-content">
+        <div class="leave-draft-control">
+          <style-button class="pool-details-button" @click="showPoolDetails = true" small title="Show pool details">
+            <span class="material-symbols-rounded">bar_chart</span>
+          </style-button>
+          <style-button @click="goHome" small title="Go home"><span
+              class="material-symbols-rounded">home</span></style-button>
+          <style-button v-if="!draft.isEnded" @click="leaveDraft" small type="danger" title="End draft and leave"><span
+              class="material-symbols-rounded">cancel</span></style-button>
+        </div>
         <div class="draft-pool-header">
           <h3>Picks ({{ maindeckCount }})</h3>
           <select v-model="sortBy">
@@ -221,10 +249,6 @@ onUnmounted(() => {
         <div class="grouped-cards" v-if="sideboard.length > 0">
           <CardPreview :card="card" cursor="pointer" v-for="card in sideboard" :key="card.name"
             @click="moveToMaindeck(card.id)" />
-        </div>
-        <div class="leave-draft-control">
-          <style-button v-if="!draft.isEnded" @click="leaveDraft" small type="danger">End Draft</style-button>
-          <style-button @click="goHome" small>Go Home</style-button>
         </div>
       </div>
     </div>
@@ -280,7 +304,7 @@ onUnmounted(() => {
 .leave-draft-control {
   display: flex;
   gap: 5px;
-  margin: 20px 0;
+  justify-content: right;
 }
 
 .grouped-cards {

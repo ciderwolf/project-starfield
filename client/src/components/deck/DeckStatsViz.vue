@@ -79,19 +79,20 @@ function buildSummedBarChart(svg: d3.Selection<SVGSVGElement, unknown, HTMLEleme
         .attr("fill", intenseColor); // Change color on hover
       const tooltip = d3.select("body").append("div")
         .attr("class", "tooltip")
-        .style("position", "absolute")
+        .style("position", "fixed")
         .style("background-color", "white")
         .style("border", "1px solid black")
         .style("pointer-events", "none")
         .style("padding", "5px")
+        .style("z-index", "10001")
         .html(`${d[0]}: ${d[1]} cards`);
-      tooltip.style("left", (event.pageX + 5) + "px")
-        .style("top", (event.pageY - 28) + "px");
+      tooltip.style("left", (event.clientX + 5) + "px")
+        .style("top", (event.clientY - 28) + "px");
     })
     .on("mousemove", function (event) {
       d3.select(".tooltip")
-        .style("left", (event.pageX + 5) + "px")
-        .style("top", (event.pageY - 28) + "px");
+        .style("left", (event.clientX + 5) + "px")
+        .style("top", (event.clientY - 28) + "px");
     })
     .on("mouseout", function () {
       d3.select(this)
@@ -170,19 +171,20 @@ function buildSummedPieChart(svg: d3.Selection<SVGSVGElement, unknown, HTMLEleme
         .attr("fill", intenseColor); // Change color on hover
       const tooltip = d3.select("body").append("div")
         .attr("class", "tooltip")
-        .style("position", "absolute")
+        .style("position", "fixed")
         .style("background-color", "white")
         .style("border", "1px solid black")
         .style("pointer-events", "none")
         .style("padding", "5px")
-        .html(`${d.data[0]}: ${d.data[1]}`);
-      tooltip.style("left", (event.pageX + 5) + "px")
-        .style("top", (event.pageY - 28) + "px");
+        .style("z-index", "10001")
+        .html(`${d.data[0]}: ${d.data[1]} cards`);
+      tooltip.style("left", (event.clientX + 5) + "px")
+        .style("top", (event.clientY - 28) + "px");
     })
     .on("mousemove", function (event) {
       d3.select(".tooltip")
-        .style("left", (event.pageX + 5) + "px")
-        .style("top", (event.pageY - 28) + "px");
+        .style("left", (event.clientX + 5) + "px")
+        .style("top", (event.clientY - 28) + "px");
     })
     .on("mouseout", function () {
       d3.select(this)
@@ -312,9 +314,10 @@ const cardSuperTypeDetails = computed(() => getCardTypeDetails('superTypes'));
         </div>
       </div>
     </div>
-    <div class="viz-container">
+    <div class="viz-container"
+      v-if="Object.keys(cardSubTypeDetails).length > 0 || Object.keys(cardSuperTypeDetails).length > 0">
       <h2>Card Type Details</h2>
-      <div class="card-type-details-container">
+      <div class="card-type-details-container" v-if="Object.keys(cardSubTypeDetails).length > 0">
         <div class="card-type-details">
           <h3>Subtypes</h3>
           <div>
@@ -328,7 +331,7 @@ const cardSuperTypeDetails = computed(() => getCardTypeDetails('superTypes'));
             </div>
           </div>
         </div>
-        <div class="card-type-details">
+        <div class="card-type-details" v-if="Object.keys(cardSuperTypeDetails).length > 0">
           <h3>Supertypes</h3>
           <div>
             <div class="card-type-details-section" v-for="(subtypes, type) in cardSuperTypeDetails" :key="type">

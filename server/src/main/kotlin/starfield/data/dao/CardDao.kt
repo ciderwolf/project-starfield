@@ -83,6 +83,9 @@ class CardDao {
                     id = row[Printings.id],
                     oracleId = row[Cards.id],
                     type = row[Cards.type],
+                    types = Json.decodeFromString(row[Cards.types]),
+                    superTypes = Json.decodeFromString(row[Cards.superTypes]),
+                    subTypes = Json.decodeFromString(row[Cards.subTypes]),
                     manaValue = row[Cards.manaValue],
                     manaCost = row[Cards.manaCost],
                     image = row[Printings.image],
@@ -234,6 +237,9 @@ class CardDao {
         val type: String,
         val manaValue: Int,
         val manaCost: String,
+        val types: List<String>,
+        val superTypes: List<String>,
+        val subTypes: List<String>,
         val image: String,
         val backImage: String?)
 
