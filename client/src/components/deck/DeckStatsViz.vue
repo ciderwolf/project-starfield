@@ -35,7 +35,6 @@ function buildChart(containerId: string, key: GroupKeys, xAxisLabel: string) {
     .attr("height", props.height)
     .attr("class", "d3-chart")
   // .attr("viewBox", "0 0 800 600")
-  // .style("background-color", "pink");
   buildSummedBarChart(svg, props.width, props.height, 50, 50, groupedData, xAxisLabel, key);
 }
 
@@ -78,26 +77,20 @@ function buildSummedBarChart(svg: d3.Selection<SVGSVGElement, unknown, HTMLEleme
       d3.select(this)
         .attr("fill", intenseColor); // Change color on hover
       const tooltip = d3.select("body").append("div")
-        .attr("class", "tooltip")
-        .style("position", "fixed")
-        .style("background-color", "white")
-        .style("border", "1px solid black")
-        .style("pointer-events", "none")
-        .style("padding", "5px")
-        .style("z-index", "10001")
-        .html(`${d[0]}: ${d[1]} cards`);
+        .attr("class", "d3-chart-tooltip")
+        .html(getTooltipText(d[0], d[1]));
       tooltip.style("left", (event.clientX + 5) + "px")
         .style("top", (event.clientY - 28) + "px");
     })
     .on("mousemove", function (event) {
-      d3.select(".tooltip")
+      d3.select(".d3-chart-tooltip")
         .style("left", (event.clientX + 5) + "px")
         .style("top", (event.clientY - 28) + "px");
     })
     .on("mouseout", function () {
       d3.select(this)
         .attr("fill", "rgb(78, 128, 220)"); // Reset color on mouse out
-      d3.select(".tooltip").remove();
+      d3.select(".d3-chart-tooltip").remove();
     })
     .on("click", function (event, d) {
       // Handle click event if needed
@@ -110,11 +103,6 @@ function buildSummedBarChart(svg: d3.Selection<SVGSVGElement, unknown, HTMLEleme
     .attr("class", "x-axis")
     .attr("transform", `translate(0, ${graphHeight})`)
     .call(d3.axisBottom(xScale));
-  // xAxisGroup.selectAll("text")
-  //     .style("text-anchor", "middle") // Align text to the end for rotation
-  //     .attr("dx", "-.8em") // Adjust horizontal position
-  //     .attr("dy", ".15em") // Adjust vertical position
-  //     .attr("transform", "rotate(-45)"); // Rotate by -45 degrees
   svg.append("g")
     .attr("class", "y-axis")
     .attr("transform", `translate(${width - graphWidth}, 0)`)
@@ -170,31 +158,33 @@ function buildSummedPieChart(svg: d3.Selection<SVGSVGElement, unknown, HTMLEleme
       d3.select(this)
         .attr("fill", intenseColor); // Change color on hover
       const tooltip = d3.select("body").append("div")
-        .attr("class", "tooltip")
-        .style("position", "fixed")
-        .style("background-color", "white")
-        .style("border", "1px solid black")
-        .style("pointer-events", "none")
-        .style("padding", "5px")
-        .style("z-index", "10001")
-        .html(`${d.data[0]}: ${d.data[1]} cards`);
+        .attr("class", "d3-chart-tooltip")
+        .html(getTooltipText(d.data[0], d.data[1]));
       tooltip.style("left", (event.clientX + 5) + "px")
         .style("top", (event.clientY - 28) + "px");
     })
     .on("mousemove", function (event) {
-      d3.select(".tooltip")
+      d3.select(".d3-chart-tooltip")
         .style("left", (event.clientX + 5) + "px")
         .style("top", (event.clientY - 28) + "px");
     })
     .on("mouseout", function () {
       d3.select(this)
         .attr("fill", (d: any) => color(d.data[0])); // Reset color on mouse out
-      d3.select(".tooltip").remove();
+      d3.select(".d3-chart-tooltip").remove();
     })
     .on("click", function (event, d: d3.PieArcDatum<[string, number]>) {
       // Handle click event if needed
       console.log(`Clicked on ${d.data[0]}: ${d.data[1]}`);
     });
+}
+
+function getTooltipText(key: string, value: number) {
+  if (value == 1) {
+    return `${key}: ${value} card`;
+  } else {
+    return `${key}: ${value} cards`;
+  }
 }
 
 function groupByKey(data: DeckCard[], key: GroupKeys) {
@@ -448,5 +438,15 @@ svg.d3-chart {
   border-radius: 5px;
   border: 1px solid #ddd;
   padding: 5px;
+}
+
+.d3-chart-tooltip {
+  position: fixed;
+  background-color: white;
+  border: 1px solid #555;
+  border-radius: 2px;
+  pointer-events: none;
+  padding: 5px;
+  z-index: 10001;
 }
 </style>
