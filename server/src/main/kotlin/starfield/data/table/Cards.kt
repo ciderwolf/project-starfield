@@ -12,6 +12,9 @@ object Cards : Table("Card") {
     val type = varchar("type", 50)
     val manaValue = integer("mana_value")
     val manaCost = varchar("mana_cost", 50)
+    val types = text("types")
+    val superTypes = text("super_types")
+    val subTypes = text("sub_types")
     val preferredPrintingId = uuid("preferred_printing_id").references(Printings.id).nullable()
 
     override val primaryKey = PrimaryKey(id)

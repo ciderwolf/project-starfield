@@ -23,6 +23,9 @@ import java.util.stream.Collectors
 
 
 object ImportFromScryfall : CliktCommand(help = "Import latest cards from Scryfall", name="scryfall-import") {
+
+    private val AllSuperTypes = setOf("Basic", "Legendary", "World", "Snow", "Ongoing")
+
     override fun run() {
         DatabaseSingleton.init()
         echo("Loading cards from scryfall...")
@@ -72,6 +75,9 @@ object ImportFromScryfall : CliktCommand(help = "Import latest cards from Scryfa
                 this[Cards.type] = it.type
                 this[Cards.manaValue] = it.manaValue
                 this[Cards.manaCost] = it.manaCost
+                this[Cards.types] = Json.encodeToString(it.types)
+                this[Cards.superTypes] = Json.encodeToString(it.superTypes)
+                this[Cards.subTypes] = Json.encodeToString(it.subTypes)
                 this[Cards.preferredPrintingId] = it.preferredPrinting
             }
         }
@@ -183,7 +189,15 @@ object ImportFromScryfall : CliktCommand(help = "Import latest cards from Scryfa
         if (type.contains(" // ")) {
             type = type.split(" // ")[0]
         }
-        type = type.split(" — ")[0].split(" ").last().trim()
+        val typeSides = type.split(" — ").map { it.trim().split(" ").map { t -> t.trim() } }
+        val superTypes = typeSides[0].filter { AllSuperTypes.contains(it) }
+        val types = typeSides[0].filter { !AllSuperTypes.contains(it) }
+        val subTypes = if (typeSides.size > 1) {
+            typeSides[1]
+        } else {
+            emptyList()
+        }
+        type = types.last()
         val id = card.oracleId
         val preferredPrintingId = card.id
 
@@ -193,6 +207,9 @@ object ImportFromScryfall : CliktCommand(help = "Import latest cards from Scryfa
             type,
             card.cmc?.toInt() ?: 0,
             card.manaCost(),
+            types,
+            superTypes,
+            subTypes,
             id!!,
             preferredPrintingId,
             "",

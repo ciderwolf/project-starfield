@@ -1,5 +1,6 @@
 package starfield.data.dao
 
+import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import starfield.data.table.*
@@ -41,6 +42,11 @@ class DeckDao {
         return DeckCard(
             card[Cards.name],
             card[Cards.type],
+            card[Cards.manaCost],
+            card[Cards.manaValue],
+            Json.decodeFromString(card[Cards.types]),
+            Json.decodeFromString(card[Cards.superTypes]),
+            Json.decodeFromString(card[Cards.subTypes]),
             card[Printings.image],
             card[Cards.id],
             card[Printings.backImage],

@@ -180,6 +180,11 @@ export type ConflictResolutionStrategy = 'NoConflict' | 'Best' | 'Default' | 'Pi
 export type DeckCard = {
   name: string;
   type: string;
+  manaValue: number;
+  manaCost: string;
+  types: string[];
+  superTypes: string[];
+  subTypes: string[];
   count: number;
   id: string;
   image: string;

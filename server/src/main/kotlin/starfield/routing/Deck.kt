@@ -28,6 +28,11 @@ data class ParseDeckCardResult(
 data class DeckCard(
     val name: String,
     val type: String,
+    val manaCost: String,
+    val manaValue: Int,
+    val types: List<String>,
+    val superTypes: List<String>,
+    val subTypes: List<String>,
     val image: String,
     val id: Id,
     val backImage: String?,
@@ -36,10 +41,10 @@ data class DeckCard(
     val conflictResolutionStrategy: ConflictResolutionStrategy
 ) {
     private constructor(count: Int, card: CardDao.Card, source: String, conflictResolutionStrategy: ConflictResolutionStrategy)
-            : this(card.name, card.type, card.image, card.id, card.backImage, count, source, conflictResolutionStrategy)
+            : this(card.name, card.type, card.manaCost, card.manaValue, card.types, card.superTypes, card.subTypes, card.image, card.id, card.backImage, count, source, conflictResolutionStrategy)
     
     private constructor(count: Int, name: String, source: String, conflictResolutionStrategy: ConflictResolutionStrategy)
-            : this(name, "", "", UUID.randomUUID(), null, count, source, conflictResolutionStrategy)
+            : this(name, "", "", 0, listOf(), listOf(), listOf(), "", UUID.randomUUID(), null, count, source, conflictResolutionStrategy)
 
     companion object {
         fun new(result: ParseDeckCardResult): DeckCard {

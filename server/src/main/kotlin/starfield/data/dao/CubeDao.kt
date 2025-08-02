@@ -1,6 +1,7 @@
 package starfield.data.dao
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import starfield.data.table.Cards
@@ -79,6 +80,11 @@ class CubeDao {
                     DeckCard(
                         name = cardRow[Cards.name],
                         type = cardRow[Cards.type],
+                        manaCost = cardRow[Cards.manaCost],
+                        manaValue = cardRow[Cards.manaValue],
+                        types = Json.decodeFromString(cardRow[Cards.types]),
+                        superTypes = Json.decodeFromString(cardRow[Cards.superTypes]),
+                        subTypes = Json.decodeFromString(cardRow[Cards.subTypes]),
                         image = cardRow[Printings.image],
                         id = cardRow[Printings.id],
                         backImage = cardRow[Printings.backImage],

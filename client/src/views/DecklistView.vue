@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import DeckPreview from '@/components/deck/DeckPreview.vue';
+import DeckStatsViz from '@/components/deck/DeckStatsViz.vue';
 import LoadingButton from '@/components/LoadingButton.vue';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -8,6 +9,7 @@ import { useDecksCache } from '@/cache/decks';
 import type { Deck, DeckCard } from '@/api/message';
 import { useDecksStore } from '@/stores/decks';
 import { useAlertsStore } from '@/stores/alerts';
+
 
 const maindeck = ref('');
 const sideboard = ref('');
@@ -19,6 +21,14 @@ const deckId = route.params.id as string;
 const decks = useDecksCache();
 const router = useRouter();
 const alertsStore = useAlertsStore();
+
+const mainCount = computed(() => {
+  return deck.value?.maindeck.reduce((sum, card) => sum + card.count, 0) || 0;
+});
+
+const sideCount = computed(() => {
+  return deck.value?.sideboard.reduce((sum, card) => sum + card.count, 0) || 0;
+});
 
 function createCardLine(card: DeckCard) {
   const line = `${card.count} ${card.name}`;
@@ -100,7 +110,7 @@ async function submitDeckAndCloseClicked() {
         <router-link :to="{ name: 'home' }">
           <span class="material-symbols-rounded" id="home-button">home</span>
         </router-link>
-        <h1>Decklist <span id="decklist-title-separator">&mdash;</span></h1>
+        <h1>Decklist ({{ mainCount }}/{{ sideCount }}) <span id="decklist-title-separator">&mdash;</span></h1>
       </div>
       <input type=text v-model="deck.name" id="deck-name-input">
       <loading-button :on-click="submitDeckAndCloseClicked">Save deck and close</loading-button>
@@ -115,6 +125,8 @@ async function submitDeckAndCloseClicked() {
       </div>
       <deck-preview :deckData="deck" />
     </div>
+    <hr>
+    <DeckStatsViz :cards="deck.maindeck" :width="800" :height="600" />
   </div>
   <div v-else>
     <h1 class="loading-title"><loading-spinner></loading-spinner> Loading...</h1>
