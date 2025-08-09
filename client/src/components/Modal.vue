@@ -114,7 +114,8 @@ onUnmounted(() => {
   max-height: 80%;
   overflow-y: scroll;
   width: max-content;
-  max-width: 100%;
+  max-width: 90%;
   min-width: 50%;
+  box-sizing: border-box;
 }
 </style>
