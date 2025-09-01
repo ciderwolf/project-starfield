@@ -58,6 +58,7 @@ fun Route.gameRouting() {
             val setInfo = try {
                 SetInfo.create(definition.set)
             } catch (e: Exception) {
+                e.printStackTrace()
                 return@post call.respondValidationError("Invalid set")
             }
             DraftLobby(UUID.randomUUID(), session.user(), definition.name, definition.players, setInfo, definition.bots)

@@ -38,6 +38,8 @@ class DraftSetDao {
         val image: String?,
     )
 
+    private val json = Json { ignoreUnknownKeys = true }
+
     suspend fun getDraftSet(id: UUID) = DatabaseSingleton.dbQuery {
         DraftSets.selectAll()
             .where { DraftSets.id eq id }
@@ -48,7 +50,7 @@ class DraftSetDao {
                     image = row[DraftSets.image],
                     setType = row[DraftSets.setType].toEnum<DraftSetType>()!!,
                     boosterInfo = row[DraftSets.boosterInfo].let { Json.decodeFromString<BoosterConfig>(it) },
-                    strategy = row[DraftSets.strategy]?.let { Json.decodeFromString<StrategyInfo>(it) }
+                    strategy = row[DraftSets.strategy]?.let { json.decodeFromString<StrategyInfo>(it) }
                 )
             }.firstOrNull()
     }
