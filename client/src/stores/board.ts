@@ -1,7 +1,7 @@
 import { computed, reactive, ref } from 'vue'
 import { defineStore } from 'pinia'
 import { ScreenPosition, ZONES, getZoneIdFromScreenPositionAndPlayerIndex, getZones, isAnyOpponentZone, zoneNameToId } from '@/zones';
-import { type BoardDiffEvent, type BoardCard, type ChangeAttributeEvent, type ChangeIndexEvent, type ChangePlayerAttribute, type ChangePositionEvent, type ChangeZoneEvent, type PlayerState, type ScoopDeck, type ShuffleDeck, type Zone, type OracleCard, type CreateCard, type DestroyCard, type LogInfoMessage, type RevealCard, type HideCard, Highlight, type SpectatorJoin, type SpectatorLeave, type UserState } from '@/api/message';
+import { type BoardDiffEvent, type BoardCard, type ChangeAttributeEvent, type ChangeIndexEvent, type ChangePlayerAttribute, type ChangePositionEvent, type ChangeZoneEvent, type PlayerState, type ScoopDeck, type ShuffleDeck, type Zone, type OracleCard, type CreateCard, type DestroyCard, type LogInfoMessage, type RevealCard, type HideCard, Highlight, type SpectatorJoin, type SpectatorLeave, type UserState, Pivot } from '@/api/message';
 import { useZoneStore } from './zone';
 import { useDataStore } from './data';
 import { getLogMessage, getEventMessage, type EventMessage } from '@/logs';
@@ -11,13 +11,6 @@ export enum UserType {
   PLAYER,
   OPPONENT,
   SPECTATOR,
-}
-
-export enum Pivot {
-  UNTAPPED,
-  TAPPED,
-  LEFT_TAPPED,
-  UPSIDE_DOWN,
 }
 
 export function nonRotatedRect(rect: DOMRect, pivot: Pivot) {
@@ -42,9 +35,6 @@ export function pivotToAngle(pivot: Pivot) {
       const _exhaustiveCheck: never = pivot;
       console.error(_exhaustiveCheck);
   }
-}
-function indexToPivot(index: number): Pivot {
-  return index as Pivot;
 }
 
 export type CardId = number;
@@ -131,7 +121,7 @@ export const useBoardStore = defineStore('board', () => {
         zones.secondaryPlayer = players[state.id];
       }
       for (const [zoneName, cardList] of Object.entries(state.board)) {
-        const zoneId = zoneNameToId(zoneName as unknown as Zone, pos, index)
+        const zoneId = zoneNameToId(zoneName as Zone, pos, index)
         // reserialize Zone name as id number
         if (cardList.length > 0) {
           cardList.forEach(card => card.zone = zoneId)
@@ -267,18 +257,18 @@ export const useBoardStore = defineStore('board', () => {
     const zoneId = extractZone(event.card);
     const cardIndex = findCardIndex(event.card);
     const card = cards[zoneId][cardIndex];
-    switch (event.attribute) {
-      case 'PIVOT':
-        card.pivot = indexToPivot(event.newValue);
+    switch (event.attribute.type) {
+      case 'pivot':
+        card.pivot = event.attribute.pivot;
         break;
-      case 'COUNTER':
-        card.counter = event.newValue;
+      case 'counter':
+        card.counter = event.attribute.counter;
         break;
-      case 'TRANSFORMED':
-        card.transformed = event.newValue === 1;
+      case 'transformed':
+        card.transformed = event.attribute.transformed;
         break;
-      case 'FLIPPED':
-        card.flipped = event.newValue === 1;
+      case 'flipped':
+        card.flipped = event.attribute.flipped;
         break;
       default:
         const _exhaustiveCheck: never = event.attribute;

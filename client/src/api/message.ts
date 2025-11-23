@@ -128,10 +128,10 @@ export type PlayerState = {
 }
 
 export enum Pivot {
-  UNTAPPED,
-  TAPPED,
-  LEFT_TAPPED,
-  UPSIDE_DOWN,
+  UNTAPPED = 'UNTAPPED',
+  TAPPED = 'TAPPED',
+  LEFT_TAPPED = 'LEFT_TAPPED',
+  UPSIDE_DOWN = 'UPSIDE_DOWN',
 }
 export enum Highlight {
   NONE, LOG, SELECTED
@@ -208,12 +208,30 @@ export type OracleCard = {
   tokens: string[] | null;
 }
 
-export type CardAttributeMap = Partial<Record<CardAttribute, number>>;
-
 export type SpecialAction = 'MULLIGAN' | 'SCOOP' | 'SHUFFLE' | 'UNTAP_ALL' | 'END_TURN';
-export type CardAttribute = 'PIVOT' | 'COUNTER' | 'TRANSFORMED' | 'FLIPPED';
 export type PlayerAttribute = 'LIFE' | 'POISON' | 'ACTIVE_PLAYER';
 
+export type CardAttribute = PivotCardAttribute | CounterCardAttribute | TransformedCardAttribute | FlippedCardAttribute;
+
+export type PivotCardAttribute = {
+  type: 'pivot';
+  pivot: Pivot;
+}
+
+export type CounterCardAttribute = {
+  type: 'counter';
+  counter: number;
+}
+
+export type TransformedCardAttribute = {
+  type: 'transformed';
+  transformed: boolean;
+}
+
+export type FlippedCardAttribute = {
+  type: 'flipped';
+  flipped: boolean;
+}
 
 export type BoardUpdateMessage = {
   type: 'board_update';
@@ -282,7 +300,6 @@ export type ChangeAttributeEvent = {
   type: 'change_attribute';
   card: CardId;
   attribute: CardAttribute;
-  newValue: number;
 }
 
 export type ChangePlayerAttribute = {
@@ -354,13 +371,12 @@ export type ClientMessage = ChangeCardAttributeMessage
   | CloneCardMessage
   | SideboardMessage
   | EndTurnMessage
-  | { type: 'pick', card: string }
-  | { type: 'move_zone', card: string, sideboard: boolean };
+  | PickDraftCardMessage
+  | ChangeDraftZoneMessage;
 
 type ChangeCardAttributeMessage = {
   attribute: CardAttribute;
   card: number;
-  newValue: number;
   type: "change_card_attribute";
 }
 
@@ -408,7 +424,7 @@ type PlayCardMessage = {
   card: number;
   x: number;
   y: number;
-  attributes: CardAttributeMap;
+  attributes: CardAttribute[];
   type: "play_card";
 }
 
@@ -441,7 +457,7 @@ type CreateCardMessage = {
 
 type CreateCloneMessage = {
   id: CardId;
-  attributes: CardAttributeMap;
+  attributes: CardAttribute[];
   type: "create_clone";
 }
 
@@ -465,6 +481,17 @@ type MoveCardVirtualMessage = {
   zone: Zone;
   index: number;
   type: "move_virtual";
+}
+
+type PickDraftCardMessage = {
+  type: 'pick',
+  card: string
+};
+
+type ChangeDraftZoneMessage = {
+  type: 'move_zone',
+  card: string,
+  sideboard: boolean
 }
 
 export type DraftCard = Card & {

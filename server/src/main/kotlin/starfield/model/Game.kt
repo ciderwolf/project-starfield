@@ -82,7 +82,7 @@ class Game(override val name: String, override val id: UUID, players: Map<User, 
         lastActionTime = System.currentTimeMillis()
         println("Received message: $message")
         val messages = when(message) {
-            is ChangeCardAttributeMessage -> player.changeAttribute(message.card, message.attribute, message.newValue)
+            is ChangeCardAttributeMessage -> player.changeAttribute(message.card, message.attribute)
             is ChangeCardPositionMessage -> player.moveCard(message.card, message.x, message.y)
             is PlayCardMessage -> player.playCard(message.card, message.x, message.y, message.attributes)
             is ChangeCardIndexMessage -> player.moveCard(message.card, message.index)
@@ -93,7 +93,7 @@ class Game(override val name: String, override val id: UUID, players: Map<User, 
             is RevealCardMessage -> player.revealCard(message.card, message.revealTo, message.reveal)
             is ScryMessage -> player.scry(message.count)
             is CreateTokenMessage -> player.createToken(message.id)
-            is CreateCardMessage -> player.createCard(message.id, mapOf())
+            is CreateCardMessage -> player.createCard(message.id, listOf())
             is CreateCloneMessage -> {
                 val owner = findCardOwner(message.id)
                 val oracleId = owner.getOracleId(message.id)

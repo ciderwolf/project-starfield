@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import type { BoardCard as BoardCardData } from '@/api/message';
+import { Pivot, type BoardCard as BoardCardData } from '@/api/message';
 import BoardCard from './BoardCard.vue';
 import ContextMenu from '@/components/ContextMenu.vue';
 import { reactive, ref, watch } from 'vue';
 import { createBattlefieldContextMenu, type ContextMenuDefinition } from '@/context-menu';
 import { ZONES } from '@/zones';
-import { Pivot, useBoardStore, type CardId } from '@/stores/board';
+import { useBoardStore, type CardId } from '@/stores/board';
 import { client } from '@/ws';
 
 const props = defineProps<{ zoneBounds?: DOMRect, card: BoardCardData }>()
@@ -29,9 +29,9 @@ function tap() {
   const action = (cardId: CardId) => {
     const currentPivot = board.cards[zone].find(c => c.id === cardId)!.pivot;
     if (currentPivot === Pivot.UNTAPPED) {
-      client.changeCardAttribute(cardId, 'PIVOT', Pivot.TAPPED);
+      client.changeCardAttribute(cardId, { type: 'pivot', pivot: Pivot.TAPPED });
     } else {
-      client.changeCardAttribute(cardId, 'PIVOT', Pivot.UNTAPPED);
+      client.changeCardAttribute(cardId, { type: 'pivot', pivot: Pivot.UNTAPPED });
     }
   }
 
@@ -41,7 +41,7 @@ function tap() {
 function transform() {
   const action = (cardId: CardId) => {
     const card = board.cards[zone].find(c => c.id === cardId)!;
-    client.changeCardAttribute(cardId, 'TRANSFORMED', card.transformed ? 0 : 1);
+    client.changeCardAttribute(cardId, { type: 'transformed', transformed: !card.transformed });
   }
   applyAction(action);
 }
@@ -49,14 +49,14 @@ function transform() {
 function flip() {
   const action = (cardId: CardId) => {
     const card = board.cards[zone].find(c => c.id === cardId)!;
-    client.changeCardAttribute(cardId, 'FLIPPED', card.flipped ? 0 : 1);
+    client.changeCardAttribute(cardId, { type: 'flipped', flipped: !card.flipped });
   }
   applyAction(action);
 }
 
 function addCounter(counter: number) {
   const action = (cardId: CardId) => {
-    client.changeCardAttribute(cardId, 'COUNTER', counter);
+    client.changeCardAttribute(cardId, { type: 'counter', counter });
   }
   applyAction(action);
 }

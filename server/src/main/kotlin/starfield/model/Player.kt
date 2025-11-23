@@ -57,9 +57,10 @@ class Player(val user: User, val userIndex: Int, deck: Deck, val game: Game) {
         return board.drawCards(count, to, fromBottom)
     }
 
-    fun playCard(card: CardId, x: Double, y: Double, attributes: Map<CardAttribute, Int>): List<BoardDiffEvent> {
-        val playFaceDown = attributes.containsKey(CardAttribute.FLIPPED)
-                && attributes[CardAttribute.FLIPPED]!! == 1
+    fun playCard(card: CardId, x: Double, y: Double, attributes: List<CardAttribute>): List<BoardDiffEvent> {
+        val playFaceDown = attributes
+            .filterIsInstance<CardAttribute.Flipped>()
+            .any { it.flipped }
         val changeZoneResult = board.changeZone(card, Zone.BATTLEFIELD, playFaceDown)
 
         return if (changeZoneResult.cardWasMoved) {
@@ -67,7 +68,7 @@ class Player(val user: User, val userIndex: Int, deck: Deck, val game: Game) {
 
             changeZoneResult.events +
                     board.moveCard(updatedCardId, x, y) +
-                    attributes.flatMap { board.setAttribute(updatedCardId, it.key, it.value) }
+                    attributes.flatMap { board.setAttribute(updatedCardId, it) }
         } else {
             changeZoneResult.events
         }
@@ -121,8 +122,8 @@ class Player(val user: User, val userIndex: Int, deck: Deck, val game: Game) {
         return card.clone(CardOrigin.TOKEN, toBeControlledByPlayerIndex)
     }
 
-    fun changeAttribute(card: CardId, attribute: CardAttribute, newValue: Int): List<BoardDiffEvent> {
-        return board.setAttribute(card, attribute, newValue)
+    fun changeAttribute(card: CardId, attribute: CardAttribute): List<BoardDiffEvent> {
+        return board.setAttribute(card, attribute)
     }
 
     fun revealCard(card: CardId, revealTo: Id?, reveal: Boolean): List<BoardDiffEvent> {
@@ -150,11 +151,14 @@ class Player(val user: User, val userIndex: Int, deck: Deck, val game: Game) {
         return board.createCard(card)
     }
 
-    suspend fun createCard(id: OracleId, attributes: Map<CardAttribute, Int>): List<BoardDiffEvent> {
+    suspend fun createCard(id: OracleId, attributes: List<CardAttribute>): List<BoardDiffEvent> {
+        val createFaceDown = attributes
+            .filterIsInstance<CardAttribute.Flipped>()
+            .any { it.flipped }
         val card = game.cardInfoProvider.tryRegisterCard(id)
-        val events = board.createCard(card, attributes[CardAttribute.FLIPPED] == 1)
+        val events = board.createCard(card, createFaceDown)
         val newCardId = events.filterIsInstance<BoardDiffEvent.CreateCard>().first().state.id
-        return events + attributes.flatMap { board.setAttribute(newCardId, it.key, it.value) }
+        return events + attributes.flatMap { board.setAttribute(newCardId, it) }
     }
 
     fun createCard(card: BoardCard): List<BoardDiffEvent> {

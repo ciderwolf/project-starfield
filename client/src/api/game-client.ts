@@ -1,7 +1,7 @@
 import { ZONES, zoneFromIndex } from "@/zones";
 import type { WebSocketConnection } from "./websocket";
 import { type CardId, type OracleId } from "@/stores/board";
-import type { PlayerAttribute, SpecialAction, CardAttribute, CardAttributeMap, Zone } from "./message";
+import type { PlayerAttribute, SpecialAction, CardAttribute, Zone } from "./message";
 import { getJson } from ".";
 
 export abstract class GameClient {
@@ -30,7 +30,7 @@ export abstract class GameClient {
   abstract moveCardsToZone(cardId: CardId[], newZoneId: number, index: number): void;
   abstract moveCardsVirtual(ids: string[], zoneId: number, index: number): void;
   abstract moveCardToZoneWithIndex(cardId: CardId, newZoneId: number, index: number): void;
-  abstract playWithAttributes(cardId: CardId, x: number, y: number, attributes: Record<CardAttribute, number>): void;
+  abstract playWithAttributes(cardId: CardId, x: number, y: number, attributes: CardAttribute[]): void;
   abstract moveCard(zoneId: number, cardId: CardId, x: number, y: number): void;
   abstract revealCard(cardId: CardId, playerId?: string): void;
   abstract scry(count: number): void;
@@ -68,12 +68,11 @@ export class WebSocketGameClient extends GameClient {
     });
   }
 
-  changeCardAttribute(cardId: CardId, attribute: CardAttribute, newValue: number): void {
+  changeCardAttribute(cardId: CardId, attribute: CardAttribute): void {
     this.ws.send({
       type: 'change_card_attribute',
       card: cardId,
-      attribute,
-      newValue
+      attribute
     });
   }
 
@@ -84,7 +83,7 @@ export class WebSocketGameClient extends GameClient {
         card: cardId,
         x,
         y,
-        attributes: {}
+        attributes: []
       });
     }
     else {
@@ -115,7 +114,7 @@ export class WebSocketGameClient extends GameClient {
     });
   }
 
-  playWithAttributes(cardId: number, x: number, y: number, attributes: CardAttributeMap): void {
+  playWithAttributes(cardId: number, x: number, y: number, attributes: CardAttribute[]): void {
     this.ws.send({
       type: 'play_card',
       card: cardId,
@@ -191,7 +190,7 @@ export class WebSocketGameClient extends GameClient {
     });
   }
 
-  createCardWithAttributes(id: CardId, attributes: CardAttributeMap): void {
+  createCardWithAttributes(id: CardId, attributes: CardAttribute[]): void {
     console.log('createCardWithAttributes', id, attributes);
     this.ws.send({
       type: 'create_clone',

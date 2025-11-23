@@ -99,8 +99,7 @@ enum class SpecialAction {
 @SerialName("change_card_attribute")
 data class ChangeCardAttributeMessage(
     val card: CardId,
-    val attribute: CardAttribute,
-    val newValue: Int) : GameMessage()
+    val attribute: CardAttribute) : GameMessage()
 
 @Serializable
 @SerialName("change_player_attribute")
@@ -114,7 +113,7 @@ data class PlayCardMessage(
     val card: CardId,
     val x: Double,
     val y: Double,
-    val attributes: Map<CardAttribute, Int>) : GameMessage()
+    val attributes: List<CardAttribute>) : GameMessage()
 
 @Serializable
 @SerialName("change_position")
@@ -167,7 +166,7 @@ data class CreateCardMessage(
 @SerialName("create_clone")
 data class CreateCloneMessage(
     val id: CardId,
-    val attributes: Map<CardAttribute, Int>
+    val attributes: List<CardAttribute>
 ) : GameMessage()
 
 @Serializable

@@ -3,7 +3,6 @@ package starfield.engine
 import starfield.plugins.Id
 import starfield.data.dao.CardDao
 import starfield.model.*
-import starfield.plugins.toEnum
 import starfield.routing.Deck
 import java.util.*
 import kotlin.math.min
@@ -65,17 +64,17 @@ class BoardManager(private val owner: UUID, private val ownerIndex: Int, private
         return listOf()
     }
 
-    fun setAttribute(card: CardId, attribute: CardAttribute, value: Int): List<BoardDiffEvent> {
+    fun setAttribute(card: CardId, attribute: CardAttribute): List<BoardDiffEvent> {
         val targetCard = findCard(card) ?: return listOf()
 
         when(attribute) {
-            CardAttribute.PIVOT -> targetCard.pivot = value.toEnum<Pivot>()!!
-            CardAttribute.COUNTER -> targetCard.counter = value
-            CardAttribute.TRANSFORMED -> targetCard.transformed = value != 0
-            CardAttribute.FLIPPED -> targetCard.flipped = value != 0
+            is CardAttribute.CardPivot -> targetCard.pivot = attribute.pivot
+            is CardAttribute.Counter -> targetCard.counter = attribute.counter
+            is CardAttribute.Transformed -> targetCard.transformed = attribute.transformed
+            is CardAttribute.Flipped -> targetCard.flipped = attribute.flipped
         }
-        val events = mutableListOf<BoardDiffEvent>(BoardDiffEvent.ChangeAttribute(card, attribute, value))
-        if (attribute == CardAttribute.FLIPPED && value == 0 && targetCard.zone.isPublic) {
+        val events = mutableListOf<BoardDiffEvent>(BoardDiffEvent.ChangeAttribute(card, attribute))
+        if (attribute is CardAttribute.Flipped && !attribute.flipped && targetCard.zone.isPublic) {
             events.addAll(revealToAll(targetCard))
         }
 
@@ -199,11 +198,11 @@ class BoardManager(private val owner: UUID, private val ownerIndex: Int, private
                 if (extras != null) {
                     if (extras.counters > 0) {
                         card.counter = extras.counters
-                        events.add(BoardDiffEvent.ChangeAttribute(card.id, CardAttribute.COUNTER, extras.counters))
+                        events.add(BoardDiffEvent.ChangeAttribute(card.id, CardAttribute.Counter(extras.counters)))
                     }
                     if (extras.entersTapped) {
                         card.pivot = Pivot.TAPPED
-                        events.add(BoardDiffEvent.ChangeAttribute(card.id, CardAttribute.PIVOT, Pivot.TAPPED.ordinal))
+                        events.add(BoardDiffEvent.ChangeAttribute(card.id, CardAttribute.CardPivot(Pivot.TAPPED)))
                     }
                 }
             }
@@ -363,7 +362,7 @@ class BoardManager(private val owner: UUID, private val ownerIndex: Int, private
     fun untapAll(): List<BoardDiffEvent> {
         return cards[Zone.BATTLEFIELD]!!
             .filter { it.pivot != Pivot.UNTAPPED }
-            .flatMap { setAttribute(it.id, CardAttribute.PIVOT,  Pivot.UNTAPPED.ordinal) }
+            .flatMap { setAttribute(it.id, CardAttribute.CardPivot(Pivot.UNTAPPED)) }
     }
 
     fun sideboard(main: List<Id>, side: List<Id>): List<BoardDiffEvent> {
