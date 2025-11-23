@@ -39,7 +39,7 @@ object ImportFromScryfall : CliktCommand(help = "Import latest cards from Scryfa
         val request = HttpRequest.newBuilder(URI("https://api.scryfall.com/bulk-data/oracle-cards")).build()
         val client = HttpClient.newBuilder()
             .build()
-//
+
         val response = withContext(Dispatchers.IO) {
             client.send(request, HttpResponse.BodyHandlers.ofString())
         }
@@ -57,7 +57,7 @@ object ImportFromScryfall : CliktCommand(help = "Import latest cards from Scryfa
             .filter { it != "[" && it != "]" }
             .map { json.decodeFromString<Card>(it.trim(',')) }
             .filter {
-                it.setType !in listOf("funny", "memorabilia")
+                it.setType !in listOf("memorabilia")
             }
             .map { parseScryfallEntity(it, printings) }
             .collect(Collectors.toList())
