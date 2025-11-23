@@ -350,6 +350,7 @@ export type ClientMessage = ChangeCardAttributeMessage
   | ScryMessage
   | CreateTokenMessage
   | CreateCardMessage
+  | CreateCloneMessage
   | CloneCardMessage
   | SideboardMessage
   | EndTurnMessage
@@ -438,9 +439,14 @@ type CreateCardMessage = {
   type: "create_card";
 }
 
-type CloneCardMessage = {
+type CreateCloneMessage = {
   id: CardId;
   attributes: CardAttributeMap;
+  type: "create_clone";
+}
+
+type CloneCardMessage = {
+  id: CardId;
   type: "clone_card";
 }
 

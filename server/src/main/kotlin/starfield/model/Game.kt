@@ -94,12 +94,18 @@ class Game(override val name: String, override val id: UUID, players: Map<User, 
             is ScryMessage -> player.scry(message.count)
             is CreateTokenMessage -> player.createToken(message.id)
             is CreateCardMessage -> player.createCard(message.id, mapOf())
+            is CreateCloneMessage -> {
+                val owner = findCardOwner(message.id)
+                val oracleId = owner.getOracleId(message.id)
+                player.createCard(oracleId, message.attributes)
+            }
             is CloneCardMessage -> {
                 val owner = findCardOwner(message.id)
                 if (owner.user.id == player.user.id) {
-                    player.cloneCard(message.id, message.attributes)
+                    player.cloneCard(message.id)
                 } else {
-                    player.createCard(owner.getOracleCard(message.id), message.attributes)
+                    val card = owner.getClonedCard(message.id, player.userIndex)
+                    player.createCard(card)
                 }
             }
             is SideboardMessage -> player.sideboard(message.main, message.side)
@@ -122,7 +128,7 @@ class Game(override val name: String, override val id: UUID, players: Map<User, 
         val hiddenCardIds = messages.filterIsInstance<BoardDiffEvent.HideCard>()
 
         val revealedCardIds = messages.filterIsInstance<BoardDiffEvent.RevealCard>()
-            .associate { Pair(it.card, player.getOracleCard(it.card)) }
+            .associate { Pair(it.card, player.getOracleId(it.card)) }
         val revealedCards = revealedCardIds.values
             .associateWith { cardInfoProvider[it]!!.toOracleCard() }
 

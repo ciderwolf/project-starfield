@@ -191,19 +191,19 @@ export class WebSocketGameClient extends GameClient {
     });
   }
 
-  cloneCard(id: CardId): void {
+  createCardWithAttributes(id: CardId, attributes: CardAttributeMap): void {
+    console.log('createCardWithAttributes', id, attributes);
     this.ws.send({
-      type: 'clone_card',
+      type: 'create_clone',
       id,
-      attributes: {},
+      attributes,
     });
   }
 
-  cloneCardWithAttributes(id: CardId, attributes: CardAttributeMap): void {
+  cloneCard(id: CardId): void {
     this.ws.send({
       type: 'clone_card',
-      id,
-      attributes,
+      id
     });
   }
 

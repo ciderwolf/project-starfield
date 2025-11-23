@@ -15,13 +15,29 @@ class BoardManager(private val owner: UUID, private val ownerIndex: Int, private
             Zone.LIBRARY -> {
                 deck.maindeck.flatMap { card ->
                     val oracleCard = game.cardInfoProvider[card.id]!!
-                    (0..<card.count).map { BoardCard(oracleCard, game.cardIdProvider, ownerIndex, CardOrigin.DECK) }
+                    (0..<card.count).map {
+                        BoardCard(
+                            oracleCard,
+                            game.cardIdProvider,
+                            ownerIndex,
+                            ownerIndex,
+                            CardOrigin.DECK
+                        )
+                    }
                 }.shuffled().toMutableList()
             }
             Zone.SIDEBOARD -> {
                 val cards = deck.sideboard.flatMap { card ->
                     val oracleCard = game.cardInfoProvider[card.id]!!
-                    (0..<card.count).map { BoardCard(oracleCard, game.cardIdProvider, ownerIndex, CardOrigin.SIDEBOARD) }
+                    (0..<card.count).map {
+                        BoardCard(
+                            oracleCard,
+                            game.cardIdProvider,
+                            ownerIndex,
+                            ownerIndex,
+                            CardOrigin.SIDEBOARD
+                        )
+                    }
                 }.toMutableList()
                 cards.forEach { card ->
                     card.zone = Zone.SIDEBOARD
@@ -304,7 +320,13 @@ class BoardManager(private val owner: UUID, private val ownerIndex: Int, private
     }
 
     fun createCard(oracleCard: CardDao.CardEntity, faceDown: Boolean = false): List<BoardDiffEvent> {
-        val boardCard = BoardCard(oracleCard, game.cardIdProvider, ownerIndex, CardOrigin.TOKEN)
+        val boardCard = BoardCard(
+            oracleCard,
+            game.cardIdProvider,
+            ownerIndex,
+            ownerIndex,
+            CardOrigin.TOKEN
+        )
         boardCard.zone = Zone.BATTLEFIELD
         cards[Zone.BATTLEFIELD]!!.add(boardCard)
         val events: MutableList<BoardDiffEvent> = mutableListOf(BoardDiffEvent.CreateCard(boardCard.getState(cards[Zone.BATTLEFIELD]!!.size - 1)))
@@ -316,9 +338,18 @@ class BoardManager(private val owner: UUID, private val ownerIndex: Int, private
         return events
     }
 
+    fun addCard(card: BoardCard): List<BoardDiffEvent> {
+        cards[card.zone]!!.add(card)
+        val cardState = card.getState(cards[card.zone]!!.size - 1)
+        return listOf(
+            BoardDiffEvent.CreateCard(cardState),
+            BoardDiffEvent.RevealCard(card.id, card.visibility.toList())
+        )
+    }
+
     fun cloneCard(id: CardId): List<BoardDiffEvent> {
         val card = findCard(id) ?: return listOf()
-        val newCard = card.clone(CardOrigin.TOKEN)
+        val newCard = card.clone(CardOrigin.TOKEN, ownerIndex)
         newCard.x += 0.02
         newCard.y += 0.02
         val index = cards[card.zone]!!.indexOfFirst { it.id == id }

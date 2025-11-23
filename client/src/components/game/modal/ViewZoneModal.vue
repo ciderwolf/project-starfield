@@ -46,7 +46,7 @@ function select(ids: string[], zoneId: number, index: number) {
 }
 
 function copyFaceDown(id: string) {
-  client.cloneCardWithAttributes(Number(id), {
+  client.createCardWithAttributes(Number(id), {
     FLIPPED: 1,
   })
 }

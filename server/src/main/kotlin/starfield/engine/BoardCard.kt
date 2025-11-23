@@ -22,6 +22,7 @@ data class CardState(
 class BoardCard(val card: CardDao.CardEntity,
                 private val idProvider: CardIdProvider,
                 private val playerIndex: Int,
+                private val ownerPlayerIndex: Int,
                 var origin: CardOrigin) {
     var virtualId: UUID? = null
     val visibility = mutableSetOf<Id>()
@@ -57,8 +58,8 @@ class BoardCard(val card: CardDao.CardEntity,
         return CardState(id, x, y, index, pivot, counter, transformed, flipped, zone, visibility)
     }
 
-    fun clone(origin: CardOrigin): BoardCard {
-        val card = BoardCard(this.card, idProvider, playerIndex, origin)
+    fun clone(origin: CardOrigin, playerIndex: Int): BoardCard {
+        val card = BoardCard(this.card, idProvider, playerIndex, ownerPlayerIndex, origin)
         card.visibility.addAll(visibility)
         card.x = x
         card.y = y

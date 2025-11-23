@@ -5,10 +5,8 @@ import kotlinx.serialization.Serializable
 import starfield.data.dao.CardDao
 import starfield.draft.DraftEvent
 import starfield.engine.*
-import starfield.model.*
 import starfield.plugins.Id
 import starfield.plugins.Location
-import java.util.*
 
 @Serializable
 data class UserListing(val id: Id, val name: String)
@@ -166,10 +164,16 @@ data class CreateCardMessage(
 ) : GameMessage()
 
 @Serializable
-@SerialName("clone_card")
-data class CloneCardMessage(
+@SerialName("create_clone")
+data class CreateCloneMessage(
     val id: CardId,
     val attributes: Map<CardAttribute, Int>
+) : GameMessage()
+
+@Serializable
+@SerialName("clone_card")
+data class CloneCardMessage(
+    val id: CardId
 ) : GameMessage()
 
 @Serializable

@@ -1,9 +1,7 @@
 package starfield.model
 
 import kotlinx.serialization.Serializable
-import starfield.RevealCardMessage
 import starfield.plugins.Id
-import starfield.data.dao.CardDao
 import starfield.engine.*
 import starfield.routing.Deck
 import java.util.*
@@ -19,7 +17,7 @@ data class PlayerState(
     val poison: Int
 )
 
-class Player(val user: User, userIndex: Int, deck: Deck, val game: Game) {
+class Player(val user: User, val userIndex: Int, deck: Deck, val game: Game) {
 
     private val board = BoardManager(user.id, userIndex, game, deck)
     private var life = 20
@@ -114,8 +112,13 @@ class Player(val user: User, userIndex: Int, deck: Deck, val game: Game) {
         return listOf(BoardDiffEvent.ChangePlayerAttribute(user.id, PlayerAttribute.POISON, newValue))
     }
 
-    fun getOracleCard(card: CardId): OracleId {
+    fun getOracleId(card: CardId): OracleId {
         return board.getOracleId(card)
+    }
+
+    fun getClonedCard(card: CardId, toBeControlledByPlayerIndex: Int): BoardCard {
+        val card = board.findCard(card)!!
+        return card.clone(CardOrigin.TOKEN, toBeControlledByPlayerIndex)
     }
 
     fun changeAttribute(card: CardId, attribute: CardAttribute, newValue: Int): List<BoardDiffEvent> {
@@ -154,10 +157,12 @@ class Player(val user: User, userIndex: Int, deck: Deck, val game: Game) {
         return events + attributes.flatMap { board.setAttribute(newCardId, it.key, it.value) }
     }
 
-    fun cloneCard(card: CardId, attributes: Map<CardAttribute, Int>): List<BoardDiffEvent> {
-        val events = board.cloneCard(card)
-        val newCard = events.filterIsInstance<BoardDiffEvent.CreateCard>().first().state.id
-        return events + attributes.flatMap { board.setAttribute(newCard, it.key, it.value) }
+    fun createCard(card: BoardCard): List<BoardDiffEvent> {
+        return board.addCard(card)
+    }
+
+    fun cloneCard(card: CardId): List<BoardDiffEvent> {
+        return board.cloneCard(card)
     }
 
     fun untapAll(): List<BoardDiffEvent> {

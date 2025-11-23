@@ -7,7 +7,6 @@ import { computed, onMounted, onUnmounted, reactive, ref, type ComputedRef } fro
 import { getMoveZoneActions, type ContextMenuDefinition, type ContextMenuOption } from '@/context-menu';
 import { useBoardStore, UserType, type OracleId } from '@/stores/board';
 import type { OracleCard } from '@/api/message';
-import { useNotificationsCache } from '@/cache/notifications';
 
 const props = defineProps<{ cards: { [id: string]: OracleId }, title: string, userType: UserType, order?: string[], persist?: boolean, virtual?: boolean }>();
 
@@ -122,7 +121,7 @@ const menuOptionValues: ComputedRef<ContextMenuOption[]> = computed(() => {
   else {
     return [
       {
-        title: 'Copy Face Down',
+        title: 'Create a face down copy',
         effect: () => doMenuAction('copy-face-down'),
         type: 'text',
       }
