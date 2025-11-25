@@ -56,7 +56,7 @@ function doMenuAction(name: string, ...args: any[]) {
       client.unrevealCard(props.card.id, args[0]);
       break;
     case 'play-face-down':
-      client.playWithAttributes(props.card.id, 0, 0, { FLIPPED: 1 });
+      client.playWithAttributes(props.card.id, 0, 0, [{ type: 'flipped', flipped: true }]);
       break;
     case 'scoop':
       client.scoop();

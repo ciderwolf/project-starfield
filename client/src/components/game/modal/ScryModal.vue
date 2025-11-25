@@ -51,9 +51,10 @@ function select(ids: string[], zoneId: number, index: number) {
 }
 
 function playFaceDown(id: string) {
-  client.playWithAttributes(Number(id), 0, 0, {
-    FLIPPED: 1,
-  });
+  client.playWithAttributes(Number(id), 0, 0, [{
+    type: 'flipped',
+    flipped: true,
+  }]);
   count.value -= 1;
   if (count.value === 0) {
     modal.value?.close();

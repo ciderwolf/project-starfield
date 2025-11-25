@@ -46,15 +46,17 @@ function select(ids: string[], zoneId: number, index: number) {
 }
 
 function copyFaceDown(id: string) {
-  client.createCardWithAttributes(Number(id), {
-    FLIPPED: 1,
-  })
+  client.createCardWithAttributes(Number(id), [{
+    type: 'flipped',
+    flipped: true,
+  }]);
 }
 
 function playFaceDown(id: string) {
-  client.playWithAttributes(Number(id), 0, 0, {
-    FLIPPED: 1,
-  })
+  client.playWithAttributes(Number(id), 0, 0, [{
+    type: 'flipped',
+    flipped: true,
+  }]);
 }
 
 </script>
