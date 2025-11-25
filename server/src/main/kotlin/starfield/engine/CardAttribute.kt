@@ -20,4 +20,8 @@ sealed class CardAttribute {
     @Serializable
     @SerialName("flipped")
     data class Flipped(val flipped: Boolean) : CardAttribute()
+
+    @Serializable
+    @SerialName("note")
+    data class Note(val note: String) : CardAttribute()
 }

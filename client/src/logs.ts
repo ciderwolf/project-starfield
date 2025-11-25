@@ -91,6 +91,10 @@ export function getEventMessage(event: BoardDiffEvent): EventMessage | null {
                 message: `${name} shuffled their deck`,
                 owner
             };
+        default:
+            const _exhaustiveCheck: never = event;
+            console.error(_exhaustiveCheck);
+            return null;
     }
 }
 

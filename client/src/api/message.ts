@@ -144,6 +144,7 @@ export type BoardCard = Card & {
   transformed: boolean;
   index: number;
   flipped: boolean;
+  note: string;
   zone: number;
   id: CardId;
   visibility: string[];
@@ -211,7 +212,7 @@ export type OracleCard = {
 export type SpecialAction = 'MULLIGAN' | 'SCOOP' | 'SHUFFLE' | 'UNTAP_ALL' | 'END_TURN';
 export type PlayerAttribute = 'LIFE' | 'POISON' | 'ACTIVE_PLAYER';
 
-export type CardAttribute = PivotCardAttribute | CounterCardAttribute | TransformedCardAttribute | FlippedCardAttribute;
+export type CardAttribute = PivotCardAttribute | CounterCardAttribute | TransformedCardAttribute | FlippedCardAttribute | NoteCardAttribute;
 
 export type PivotCardAttribute = {
   type: 'pivot';
@@ -232,6 +233,12 @@ export type FlippedCardAttribute = {
   type: 'flipped';
   flipped: boolean;
 }
+
+export type NoteCardAttribute = {
+  type: 'note';
+  note: string;
+}
+
 
 export type BoardUpdateMessage = {
   type: 'board_update';

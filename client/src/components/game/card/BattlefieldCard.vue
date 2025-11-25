@@ -60,7 +60,14 @@ function addCounter(counter: number) {
   }
   applyAction(action);
 }
+function addNote() {
+  const note = prompt("Enter a note for this card:", props.card.note);
+  if (note === null) {
+    return;
+  }
 
+  client.changeCardAttribute(props.card.id, { type: 'note', note });
+}
 
 function moveCard(x: number, y: number) {
   const deltaX = x - props.card.x;
@@ -121,6 +128,9 @@ function doMenuAction(name: string, ...args: any[]) {
       break;
     case 'add-counter':
       addCounter(args[0]);
+      break;
+    case 'add-note':
+      addNote();
       break;
     case 'reveal-to':
       applyAction(cardId => client.revealCard(cardId, args[0]));

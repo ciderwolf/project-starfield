@@ -72,6 +72,7 @@ class BoardManager(private val owner: UUID, private val ownerIndex: Int, private
             is CardAttribute.Counter -> targetCard.counter = attribute.counter
             is CardAttribute.Transformed -> targetCard.transformed = attribute.transformed
             is CardAttribute.Flipped -> targetCard.flipped = attribute.flipped
+            is CardAttribute.Note -> targetCard.note = attribute.note
         }
         val events = mutableListOf<BoardDiffEvent>(BoardDiffEvent.ChangeAttribute(card, attribute))
         if (attribute is CardAttribute.Flipped && !attribute.flipped && targetCard.zone.isPublic) {

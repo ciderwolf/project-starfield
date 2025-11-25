@@ -167,7 +167,9 @@ watch([() => props.zoneRect, () => props.card.x, () => props.card.y], () => {
     @mousedown="$emit('mousedown', $event)" @mouseup="$emit('mouseup', $event)" @mouseenter="mouseEnter"
     @mouseleave="mouseLeave" ref="image">
     <span v-if="card.counter > 0" class="board-card-counter">{{ card.counter }}</span>
-    <span v-if="shouldShowRevealedIndicator" class="board-card-revealed material-symbols-rounded">visibility</span>
+    <span v-if="shouldShowRevealedIndicator" class="board-card-status-icon material-symbols-rounded">visibility</span>
+    <span v-if="card.note" class="board-card-status-icon material-symbols-rounded"
+      :title="card.note">sticky_note_2</span>
   </figure>
   <img v-if="showGhost" class="board-card board-card-ghost" :style="ghostPositionInfo" draggable="false"
     :src="imageUrl">
@@ -207,7 +209,7 @@ watch([() => props.zoneRect, () => props.card.x, () => props.card.y], () => {
   padding: 0;
 }
 
-.board-card-revealed {
+.board-card-status-icon {
   position: absolute;
   top: 25%;
   left: 50%;

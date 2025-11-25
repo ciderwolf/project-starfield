@@ -113,6 +113,13 @@ export function createBattlefieldContextMenu(card: BoardCard, emit: ActionEmit):
         count = isNaN(count) ? 1 : count;
         emit('add-counter', count);
       }
+    },
+    {
+      type: 'text',
+      title: card.note ? 'Edit note' : 'Add a note',
+      effect: () => {
+        emit('add-note');
+      }
     }
   );
 

@@ -270,6 +270,9 @@ export const useBoardStore = defineStore('board', () => {
       case 'flipped':
         card.flipped = event.attribute.flipped;
         break;
+      case 'note':
+        card.note = event.attribute.note;
+        break;
       default:
         const _exhaustiveCheck: never = event.attribute;
         console.error(_exhaustiveCheck);
@@ -401,6 +404,7 @@ export const useBoardStore = defineStore('board', () => {
     card.counter = 0;
     card.transformed = false;
     card.flipped = false;
+    card.note = "";
 
     card.highlight = Highlight.NONE;
   }
