@@ -26,7 +26,7 @@ WORKDIR /app/server/build/libs
 RUN cp starfield.starfield-all.jar /app/build/server.jar
 
 # Run step
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:17-jdk
 WORKDIR /app
 COPY --from=build /app/build /app
 
