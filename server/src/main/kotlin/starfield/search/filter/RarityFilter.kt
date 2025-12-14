@@ -8,7 +8,7 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.less
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.lessEq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.neq
 import starfield.data.table.CardParts
-import starfield.search.InvalidFilterValueException
+import starfield.search.InvalidFilterValueSetException
 import starfield.search.SearchOperator
 
 object RarityFilter : AbstractFilter(listOf("r", "rarity")) {
@@ -26,10 +26,10 @@ object RarityFilter : AbstractFilter(listOf("r", "rarity")) {
     override fun buildQuery(operator: SearchOperator, value: String): Op<Boolean> {
         val lowercaseValue = value.lowercase()
         if (!rarityValueMap.containsKey(lowercaseValue)) {
-            throw InvalidFilterValueException(
+            throw InvalidFilterValueSetException(
                 "rarity",
                 value,
-                "Invalid rarity. Valid values: ${rarityValueMap.keys.joinToString(", ")}"
+                rarityValueMap.keys.toList()
             )
         }
         val intValue = rarityValueMap[lowercaseValue]!!

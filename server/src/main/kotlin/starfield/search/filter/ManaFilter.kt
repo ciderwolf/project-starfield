@@ -38,21 +38,21 @@ object ManaFilter : AbstractFilter(aliases = listOf("m", "mana")) {
         } 
     }
 
+    // Convert shorthand like "2WW" to "{2}{W}{W}"
     private fun normalizeManaString(value: String): String {
         if (value.isEmpty()) {
-            throw InvalidFilterValueException("mana", value, "Mana cost cannot be empty")
+            throw InvalidFilterValueException("mana", value, "Mana cost cannot be empty.")
         }
-        
-        // Convert shorthand like "2WW" to "{2}{W}{W}"
+
         if (value.contains("{")) {
             // Validate brace format
             if (value.count { it == '{' } != value.count { it == '}' }) {
-                throw InvalidFilterValueException("mana", value, "Mismatched braces in mana cost")
+                throw InvalidFilterValueException("mana", value, "Mismatched braces in mana cost.")
             }
             return value.uppercase()
         }
         
-        val result = StringBuilder()
+        val result = mutableListOf<String>()
         var i = 0
         while (i < value.length) {
             val char = value[i].uppercaseChar()
@@ -62,24 +62,31 @@ object ManaFilter : AbstractFilter(aliases = listOf("m", "mana")) {
                 while (i < value.length && value[i].isDigit()) {
                     i++
                 }
-                result.append("{${value.substring(numStart, i)}}")
+                result.add("{${value.substring(numStart, i)}}")
             } else if (char.isLetter()) {
-                // Validate it's a valid mana symbol
-                if (char !in listOf('W', 'U', 'B', 'R', 'G', 'C', 'X', 'Y', 'Z', 'S')) {
-                    throw InvalidFilterValueException("mana", value, "Invalid mana symbol '$char'. Valid symbols: W, U, B, R, G, C, X, Y, Z, S")
-                }
-                result.append("{$char}")
+                result.add("{$char}")
                 i++
-            } else {
+            } else if (char == '/') {
+                // Handle hybrid mana symbols like "W/U"
+                // combine the next character as well with the previous element in result
+                if (result.isEmpty()) {
+                    throw InvalidFilterValueException("mana", value, "Invalid hybrid mana symbol.")
+                }
+                val lastSymbol = result.removeAt(result.size - 1)
+                i++
+                if (i >= value.length || !value[i].isLetter()) {
+                    throw InvalidFilterValueException("mana", value, "Invalid hybrid mana symbol.")
+                }
+                val hybridChar = value[i].uppercaseChar()
+                result.add("{${lastSymbol.trim('{', '}')}/$hybridChar}")
+                i++
+            }
+            else {
                 throw InvalidFilterValueException("mana", value, "Invalid character '$char' in mana cost")
             }
         }
         
-        if (result.isEmpty()) {
-            throw InvalidFilterValueException("mana", value, "No valid mana symbols found")
-        }
-        
-        return result.toString()
+        return result.joinToString("")
     }
 
     private fun parseManaComponents(manaString: String): Pair<Int, String> {

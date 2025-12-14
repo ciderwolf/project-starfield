@@ -29,11 +29,11 @@ fun Application.module() {
 
     // allow https headers to be set on https
     // (this is a hack)
-    intercept(ApplicationCallPipeline.Plugins) {
-        @Suppress( "DEPRECATION")
-        val endpoint = call.attributes.computeIfAbsent(MutableOriginConnectionPointKey) {
-            MutableOriginConnectionPoint(call.request.origin)
-        }
-        endpoint.scheme = "https"
-    }
+//    intercept(ApplicationCallPipeline.Plugins) {
+//        @Suppress( "DEPRECATION")
+//        val endpoint = call.attributes.computeIfAbsent(MutableOriginConnectionPointKey) {
+//            MutableOriginConnectionPoint(call.request.origin)
+//        }
+//        endpoint.scheme = "https"
+//    }
 }

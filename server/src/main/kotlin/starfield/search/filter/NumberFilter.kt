@@ -12,6 +12,7 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.neq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.regexp
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.castTo
+import starfield.search.SearchException
 import starfield.search.SearchOperator
 import starfield.search.UnsupportedOperatorException
 
@@ -48,11 +49,8 @@ class NumberFilter(aliases: List<String>, val column: Column<String?>) : Abstrac
             SearchOperator.Equals -> column eq value
             SearchOperator.NotEquals -> column neq value
             SearchOperator.Contains -> column eq value
-            else -> throw UnsupportedOperatorException(
-                aliases.first(),
-                operator,
-                listOf(SearchOperator.Equals, SearchOperator.NotEquals, SearchOperator.Contains)
-            )
+            else -> throw SearchException("Operator $operator is not supported for non-number values in filter '${aliases.first()}'")
+
         }
     }
 }

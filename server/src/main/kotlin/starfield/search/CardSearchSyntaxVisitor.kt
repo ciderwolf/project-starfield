@@ -18,12 +18,20 @@ class CardSearchSyntaxVisitor : SearchSyntaxBaseVisitor<SearchSyntaxTree>() {
         } else if (ctx.WORD() != null) {
             val value = ctx.WORD().text
             return SearchSyntaxTree.ValueNode(value, SearchMode.Text)
-        } else if (ctx.REGEX() != null) {
-            val rawValue = ctx.REGEX().text
-            val value = rawValue.substring(1, rawValue.length - 1) // Remove slashes
-            return SearchSyntaxTree.ValueNode(value, SearchMode.Regex)
+        }
+//        else if (ctx.REGEX() != null) {
+//            val rawValue = ctx.REGEX().text
+//            val value = rawValue.substring(1, rawValue.length - 1) // Remove slashes
+//            return SearchSyntaxTree.ValueNode(value, SearchMode.Regex)
+//        }
+        else if (ctx.AND() != null) {
+            val rawValue = ctx.AND().text
+            return SearchSyntaxTree.ValueNode(rawValue, SearchMode.Text)
+        } else if (ctx.OR() != null) {
+            val rawValue = ctx.OR().text
+            return SearchSyntaxTree.ValueNode(rawValue, SearchMode.Text)
         } else {
-            throw IllegalArgumentException("Invalid search subject")
+            throw IllegalArgumentException("Invalid search subject. Expected a single word, or a multi-word search term in quotes.")
         }
     }
 
@@ -39,7 +47,7 @@ class CardSearchSyntaxVisitor : SearchSyntaxBaseVisitor<SearchSyntaxTree>() {
         return SearchSyntaxTree.ConditionNode(
             field = "name",
             operator = SearchOperator.Contains,
-            value = SearchSyntaxTree.ValueNode(ctx.WORD().text, SearchMode.Text)
+            value = visitSearchSubject(ctx.searchSubject())
         )
 
     }

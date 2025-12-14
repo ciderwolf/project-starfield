@@ -15,7 +15,7 @@ import org.jetbrains.exposed.sql.charLength
 import org.jetbrains.exposed.sql.not
 import org.jetbrains.exposed.sql.or
 import starfield.data.table.CardParts
-import starfield.search.InvalidFilterValueException
+import starfield.search.InvalidFilterValueSetException
 import starfield.search.SearchOperator
 
 object ColorFilter : AbstractFilter(aliases = listOf("c", "color", "colors")) {
@@ -30,8 +30,8 @@ object ColorFilter : AbstractFilter(aliases = listOf("c", "color", "colors")) {
             // Validate color characters
             val invalidChars = value.uppercase().filter { it !in allColors }
             if (invalidChars.isNotEmpty()) {
-                throw InvalidFilterValueException(
-                    "color", value, "Invalid color characters: ${invalidChars.toSet().joinToString(", ")}. Valid colors: W, U, B, R, G, C"
+                throw InvalidFilterValueSetException(
+                    "color", value, allColors.map { it.toString() }
                 )
             }
             val targetedColors = getTargetedColors(value)

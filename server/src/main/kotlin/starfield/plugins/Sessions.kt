@@ -42,7 +42,7 @@ fun Application.configureSessions() {
     install(Sessions) {
         cookie<UserSession>("user_session", directorySessionStorage(File(Config.storagePath("sessions")))) {
             cookie.extensions["SameSite"] = "lax"
-            cookie.secure = true
+            cookie.secure = false
         }
     }
 }

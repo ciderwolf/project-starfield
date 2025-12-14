@@ -99,7 +99,6 @@ class CardSearchDao {
         return if (condition != null) {
             query.where { condition and (CardParts.sourceId eq cardSourceId) }
         } else {
-            warnings.add("No valid search conditions found, returning all cards")
             query
         }
     }
@@ -138,9 +137,11 @@ class CardSearchDao {
                 }
             }
         } catch (e: SearchException) {
-            warnings.add(e.message ?: "Unknown search error")
+            e.printStackTrace()
+            warnings.add(e.message!!)
             null
         } catch (e: Exception) {
+            e.printStackTrace()
             warnings.add("Error processing part of query: ${e.message}")
             null
         }
@@ -156,12 +157,12 @@ class CardSearchDao {
             NumberFilter(listOf("toughness", "tou"), CardParts.toughness),
             NumberFilter(listOf("loyalty", "loy"), CardParts.loyalty),
             NumberFilter(listOf("defense", "def"), CardParts.defense),
-            IntFilter(listOf("cmc", "mv"), CardParts.manaValue),
+            IntFilter(listOf("manavalue", "cmc", "mv"), CardParts.manaValue),
             TextFilter(listOf("name"), CardParts.fuzzyName),
-            TextFilter(listOf("t", "type", "types"), CardParts.typeLine),
-            TextFilter(listOf("o", "oracle"), CardParts.oracleText),
-            TextFilter(listOf("ft", "flavor"), CardParts.flavorText),
-            TextFilter(listOf("artist"), CardParts.artist)
+            TextFilter(listOf("type", "types", "t"), CardParts.typeLine),
+            TextFilter(listOf("oracle", "o"), CardParts.oracleText),
+            TextFilter(listOf("flavor", "ft"), CardParts.flavorText),
+            TextFilter(listOf("artist", "a"), CardParts.artist)
         )
 
         val filter = filters.firstOrNull { it.matches(node.field) }

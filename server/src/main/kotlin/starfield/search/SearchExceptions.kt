@@ -1,9 +1,11 @@
 package starfield.search
 
+import kotlinx.serialization.Serializable
+
 /**
  * Base exception for all search-related errors
  */
-sealed class SearchException(message: String, cause: Throwable? = null) : Exception(message, cause)
+open class SearchException(message: String, cause: Throwable? = null) : Exception(message, cause)
 
 /**
  * Thrown when the search query has invalid syntax (e.g., mismatched quotes, invalid operators)
@@ -27,6 +29,13 @@ class InvalidFilterValueException(
     val reason: String
 ) : SearchException("Invalid value '$value' for filter '$filterName': $reason")
 
+class InvalidFilterValueSetException(
+    val filterName: String,
+    val value: String,
+    val validValues: List<String>
+) : SearchException("Invalid value '$value' for filter '$filterName'. Valid values: ${validValues.joinToString(", ")}")
+
+
 /**
  * Thrown when an operator is not supported for a given filter
  */
@@ -42,6 +51,7 @@ class UnsupportedOperatorException(
 /**
  * Container for a search result with potential warnings
  */
+@Serializable
 data class SearchResult<T>(
     val results: T,
     val warnings: List<String> = emptyList()

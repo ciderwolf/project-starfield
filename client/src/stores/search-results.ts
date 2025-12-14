@@ -25,6 +25,9 @@ export const useSearchResultsStore = defineStore('searchResults', () => {
         }
         else {
             const results = await searchCards(setCode, query);
+            if (results === null) {
+                return [];
+            }
             queryCache.value.set(query, results.map(cd => cd.oracleCard.id));
             results.forEach(cd => {
                 cardCache.value.set(cd.oracleCard.id, cd);

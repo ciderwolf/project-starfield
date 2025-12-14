@@ -4,6 +4,7 @@ import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import starfield.data.table.CardParts
 import starfield.search.InvalidFilterValueException
+import starfield.search.InvalidFilterValueSetException
 import starfield.search.SearchOperator
 
 object IsFilter : AbstractFilter(listOf("is")) {
@@ -13,10 +14,10 @@ object IsFilter : AbstractFilter(listOf("is")) {
         val column = when (value.lowercase()) {
             "transform" -> CardParts.dfc
             "aftermath" -> CardParts.aftermath
-            else -> throw InvalidFilterValueException(
-                "is", 
-                value, 
-                "Unsupported value. Valid values: ${supportedValues.joinToString(", ")}"
+            else -> throw InvalidFilterValueSetException(
+                "is",
+                value,
+                supportedValues
             )
         }
 

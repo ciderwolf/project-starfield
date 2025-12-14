@@ -12,6 +12,7 @@ import starfield.plugins.respondSuccess
 import starfield.plugins.tryParseUuid
 import starfield.search.SearchException
 import starfield.search.SearchParseException
+import starfield.search.SearchResult
 import java.io.File
 
 @Serializable
@@ -69,14 +70,11 @@ fun Route.cardRouting() {
             // order cards by search result order
             val cardMap = cards.associateBy { it.id }
             val orderedCards = cardPartsByCardId.mapNotNull { CardDetailsInfo(cardMap[it.key]!!, it.value) }
-            call.respondSuccess(orderedCards)
+            call.respondSuccess(SearchResult(orderedCards, searchResult.warnings))
         } catch (e: SearchParseException) {
             call.respondError("Search syntax error: ${e.message}", HttpStatusCode.UnprocessableEntity)
         } catch (e: SearchException) {
             call.respondError("Search error: ${e.message}", HttpStatusCode.UnprocessableEntity)
-        } catch (e: Exception) {
-            call.respondError("Internal error: ${e.message}", HttpStatusCode.InternalServerError)
-            e.printStackTrace()
         }
     }
 }
