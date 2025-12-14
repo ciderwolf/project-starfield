@@ -62,6 +62,7 @@ object DataIngest {
             "DeckCard" -> DeckCards
             "CardExtra" -> CardExtras
             "Printing" -> Printings
+            "CardPart" -> CardParts
             else -> throw IllegalArgumentException("Unhandled table type $name")
         }
     }

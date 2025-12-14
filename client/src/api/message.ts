@@ -511,3 +511,20 @@ export type DraftCard = Card & {
   superTypes: string[];
   subTypes: string[];
 };
+
+export type CardDetails = {
+  id: string;
+  name: string;
+  typeLine: string;
+  manaCost: string;
+  manaValue: number;
+  oracleText: string;
+  html: string;
+  flavorText: string;
+  power: string | null;
+  toughness: string | null;
+  loyalty: string | null;
+  defense: string | null;
+  rarity: string;
+  colors: string[];
+}

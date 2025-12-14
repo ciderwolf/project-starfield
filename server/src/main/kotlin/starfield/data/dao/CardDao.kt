@@ -178,6 +178,12 @@ class CardDao {
         CardSources.selectAll().where { CardSources.id inList keys }.map(::mapDbCardSource)
     }
 
+    suspend fun getSourceByCode(code: String) = DatabaseSingleton.dbQuery {
+        CardSources.selectAll().where { CardSources.code eq code.uppercase() }
+            .singleOrNull()
+            ?.let(::mapDbCardSource)
+    }
+
     abstract class CardEntity {
         abstract val id: OracleId
 
@@ -199,6 +205,7 @@ class CardDao {
         override fun toOracleCard() = OracleCard(name, id, image, backImage, null)
     }
 
+    @Serializable
     data class Card(
         val name: String,
         val fuzzyName: String,

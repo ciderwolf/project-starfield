@@ -64,3 +64,30 @@ object CardExtras : Table("CardExtra") {
 
     override val primaryKey = PrimaryKey(cardId)
 }
+
+object CardParts : Table("CardPart") {
+    val sourceId = integer("source_id").references(CardSources.id)
+    val cardId = uuid("card_id").references(Cards.id)
+    val partId = integer("part_id")
+    val number = integer("number")
+    val name = text("name")
+    val fuzzyName = text("fuzzy_name")
+    val typeLine = text("type_line")
+    val colors = varchar("colors", 10)
+    val oracleText = text("oracle_text")
+    val html = text("html")
+    val flavorText = text("flavor_text")
+    val power = varchar("power", 10).nullable()
+    val toughness = varchar("toughness", 10).nullable()
+    val loyalty = varchar("loyalty", 10).nullable()
+    val defense = varchar("defense", 10).nullable()
+    val rarity = integer("rarity")
+    val manaValue = integer("mana_value")
+    val manaCost = varchar("mana_cost", 50)
+    val artist = varchar("artist", 100)
+
+    val aftermath = bool("aftermath")
+    val dfc = bool("dfc")
+
+    override val primaryKey = PrimaryKey(sourceId,cardId, partId)
+}

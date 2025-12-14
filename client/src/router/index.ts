@@ -50,6 +50,16 @@ const router = createRouter({
       path: '/draft/:id',
       name: 'draft',
       component: () => import('../views/DraftView.vue')
+    },
+    {
+      path: '/cards/:set',
+      name: 'card-search',
+      component: () => import('../views/CardSearchView.vue')
+    },
+    {
+      path: '/cards/:set/:id',
+      name: 'card-details',
+      component: () => import('../views/CardDetailView.vue')
     }
   ]
 })

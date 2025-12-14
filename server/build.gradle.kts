@@ -6,11 +6,13 @@ val exposed_version: String by project
 val postgresql_version: String by project
 val bcrypt_version: String by project
 val opencsv_version: String by project
+val antlr_version: String by project
 
 plugins {
     kotlin("jvm") version "2.1.0"
     id("io.ktor.plugin") version "3.1.1"
     id("org.jetbrains.kotlin.plugin.serialization") version "2.1.0"
+    antlr
 }
 
 group = "starfield"
@@ -45,6 +47,7 @@ dependencies {
     implementation("at.favre.lib:bcrypt:$bcrypt_version")
     implementation("com.opencsv:opencsv:$opencsv_version")
     implementation("com.github.ajalt.clikt:clikt:4.2.2")
+    antlr("org.antlr:antlr4:$antlr_version")
 
 //    testImplementation("io.ktor:ktor-server-tests-jvm")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
@@ -55,7 +58,19 @@ java {
         languageVersion.set(JavaLanguageVersion.of(17))
     }
 }
-
 kotlin {
     jvmToolchain(17)
+}
+
+tasks.generateGrammarSource {
+    maxHeapSize = "64m"
+    arguments = arguments + listOf("-visitor", "-long-messages")
+}
+
+tasks.named("compileKotlin") {
+    dependsOn(tasks.generateGrammarSource)
+}
+
+tasks.named("compileJava") {
+    dependsOn(tasks.generateGrammarSource)
 }
