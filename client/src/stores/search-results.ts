@@ -11,6 +11,7 @@ export type CardDetailInfo = {
 export const useSearchResultsStore = defineStore('searchResults', () => {
     const queryCache = ref<Map<string, string[]>>(new Map());
     const cardCache = ref<Map<string, CardDetailInfo>>(new Map());
+    const selectedDeckId = ref<string | null>(null);
 
     async function searchForCards(setCode: string, query: string): Promise<OracleCard[]> {
         if (queryCache.value.has(query)) {
@@ -47,5 +48,5 @@ export const useSearchResultsStore = defineStore('searchResults', () => {
         return result;
     }
 
-    return { searchForCards, getCardDetails };
+    return { searchForCards, getCardDetails, selectedDeckId };
 })

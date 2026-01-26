@@ -57,6 +57,11 @@ const router = createRouter({
       component: () => import('../views/CardSearchView.vue')
     },
     {
+      path: '/cards/:set/advanced-search',
+      name: 'advanced-search',
+      component: () => import('../views/AdvancedSearchView.vue')
+    },
+    {
       path: '/cards/:set/:id',
       name: 'card-details',
       component: () => import('../views/CardDetailView.vue')

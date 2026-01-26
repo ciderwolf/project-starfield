@@ -14,8 +14,12 @@ export async function fetchDeck(id: string): Promise<Deck> {
   return getJson(`deck/${id}`);
 }
 
-export async function newDeck(): Promise<Deck> {
-  return postJson('deck/new', {});
+export async function newDeck(name?: string): Promise<Deck> {
+  let path = 'deck/new';
+  if (name) {
+    path += `?name=${encodeURIComponent(name)}`;
+  }
+  return postJson(path, {});
 }
 
 export async function submitDeck(id: string, name: string, maindeck: string[], sideboard: string[]): Promise<Deck> {
@@ -24,4 +28,8 @@ export async function submitDeck(id: string, name: string, maindeck: string[], s
 
 export async function deleteDeck(id: string): Promise<boolean> {
   return deleteJson(`deck/${id}`);
+}
+
+export async function addCardsToDeck(deckId: string, cardsToAddToMain: string[], cardsToAddToSide: string[]): Promise<Deck> {
+  return postJson(`deck/${deckId}/add-cards`, { maindeck: cardsToAddToMain, sideboard: cardsToAddToSide });
 }

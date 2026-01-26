@@ -56,15 +56,16 @@ class DeckDao {
         )
     }
 
-    suspend fun createDeck(userId: UUID) = DatabaseSingleton.dbQuery {
+    suspend fun createDeck(userId: UUID, deckName: String? = null) = DatabaseSingleton.dbQuery {
+        val deckName = deckName ?: "New Deck"
         val id = Decks.insertAndGetId {
             it[id] = UUID.randomUUID()
             it[ownerId] = userId
-            it[name] = "New Deck"
+            it[name] = deckName
             it[thumbnailId] = null
         }
 
-        Deck(id.value, userId, "New Deck", null, listOf(), listOf())
+        Deck(id.value, userId, deckName, null, listOf(), listOf())
     }
 
     suspend fun createDeck(userId: UUID, deckName: String, maindeck: List<Pair<Int, UUID>>, sideboard: List<Pair<Int, UUID>>) = DatabaseSingleton.dbQuery {

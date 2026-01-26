@@ -98,7 +98,15 @@ const submitDeckClicked = async () => {
 
 async function submitDeckAndCloseClicked() {
   await submitDeckClicked();
-  router.push('/');
+  exitPage();
+}
+
+function exitPage() {
+  if (window.history.state?.back) {
+    router.back();
+  } else {
+    router.push({ name: 'home' });
+  }
 }
 
 </script>
@@ -107,9 +115,9 @@ async function submitDeckAndCloseClicked() {
   <div id="decklist" v-if="deck">
     <div class="title" v-if="deck !== null">
       <div style="display: flex; align-items: center; gap: 10px;">
-        <router-link :to="{ name: 'home' }">
-          <span class="material-symbols-rounded" id="home-button">home</span>
-        </router-link>
+        <span @click="exitPage">
+          <span class="material-symbols-rounded" id="home-button">arrow_back</span>
+        </span>
         <h1>Decklist ({{ mainCount }}/{{ sideCount }}) <span id="decklist-title-separator">&mdash;</span></h1>
       </div>
       <input type=text v-model="deck.name" id="deck-name-input">

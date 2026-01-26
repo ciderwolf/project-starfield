@@ -1,7 +1,6 @@
 package starfield.routing
 
 import io.ktor.http.*
-import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
@@ -40,7 +39,7 @@ data class DeckCard(
     val source: String,
     val conflictResolutionStrategy: ConflictResolutionStrategy
 ) {
-    private constructor(count: Int, card: CardDao.Card, source: String, conflictResolutionStrategy: ConflictResolutionStrategy)
+    constructor(count: Int, card: CardDao.Card, source: String, conflictResolutionStrategy: ConflictResolutionStrategy)
             : this(card.name, card.type, card.manaCost, card.manaValue, card.types, card.superTypes, card.subTypes, card.image, card.id, card.backImage, count, source, conflictResolutionStrategy)
     
     private constructor(count: Int, name: String, source: String, conflictResolutionStrategy: ConflictResolutionStrategy)
@@ -72,6 +71,12 @@ data class DeckUpload(
     val name: String,
     val sideboard: List<String>,
     val maindeck: List<String>
+)
+
+@Serializable
+data class DeckAddCards(
+    val maindeck: List<Id>,
+    val sideboard: List<Id>
 )
 
 @Serializable
@@ -118,8 +123,9 @@ fun Route.deckRouting() {
             "You must be logged to create a deck",
             status = HttpStatusCode.Unauthorized
         )
+        val name = call.parameters["name"]
         val deckDao = DeckDao()
-        val deck = deckDao.createDeck(session.id)
+        val deck = deckDao.createDeck(session.id, name)
         call.respondSuccess(deck)
     }
 
@@ -160,6 +166,30 @@ fun Route.deckRouting() {
         ))
     }
 
+    post("/{id}/add-cards") {
+        val session = call.sessions.get<UserSession>() ?: return@post call.respondError(
+            "You must be logged to edit decks",
+            status = HttpStatusCode.Unauthorized
+        )
+        val deckId = tryParseUuid(call.parameters["id"]) ?: return@post call.respondError("Invalid deck")
+
+        val deckDao = DeckDao()
+        val deck = deckDao.getDeck(deckId) ?: return@post call.respondError("Deck not found")
+
+        if (deck.owner != session.id) {
+            return@post call.respondError("This deck does not belong to you",
+                status = HttpStatusCode.Forbidden)
+        }
+
+        val upload = call.receive<DeckAddCards>()
+        val updatedDeckParts = mergeAddedCardsIntoDeck(deck, upload.maindeck, upload.sideboard)
+        val updatedThumbnailId = updatedDeckParts.first
+            .filter { it.backImage == null && it.image != "" }
+            .maxByOrNull { it.name.length }
+        deckDao.updateDeck(deckId, deck.name, updatedThumbnailId?.id, updatedDeckParts.first, updatedDeckParts.second)
+        return@post call.respondSuccess(deckDao.getDeck(deckId))
+    }
+
     delete("/{id}") {
         val uuid = tryParseUuid(call.parameters["id"]) ?: return@delete call.respondError("Invalid id")
         val session = call.sessions.get<UserSession>() ?: return@delete call.respondError(
@@ -172,6 +202,39 @@ fun Route.deckRouting() {
 
         call.respondSuccess(deleteCount == 1)
     }
+}
+
+private suspend fun mergeAddedCardsIntoDeck(deck: Deck, maindeck: List<Id>, sideboard: List<Id>): Pair<List<DeckCard>, List<DeckCard>> {
+    val cardDao = CardDao()
+    val cards = cardDao.getCards(maindeck + sideboard).associateBy { it.id }
+
+    val newMain = mergeIdsIntoDeckCardList(deck.maindeck, maindeck, cards)
+    val newSide = mergeIdsIntoDeckCardList(deck.sideboard, sideboard, cards)
+    return Pair(newMain, newSide)
+}
+
+private fun mergeIdsIntoDeckCardList(
+    preexistingCards: List<DeckCard>,
+    ids: List<Id>,
+    cardLookup: Map<Id, CardDao.Card>
+): List<DeckCard> {
+    val cards = preexistingCards.toMutableList()
+    for (id in ids) {
+        val preexistingIndex = cards.indexOfFirst { it.id == id }
+        if (preexistingIndex != -1) {
+            val preexisting = cards[preexistingIndex]
+            cards[preexistingIndex] = preexisting.copy(count = preexisting.count + 1)
+        } else {
+            val deckCard = DeckCard(
+                1,
+                cardLookup[id]!!,
+                "",
+                ConflictResolutionStrategy.NoConflict
+            )
+            cards.add(deckCard)
+        }
+    }
+    return cards
 }
 
 suspend fun validateDeck(main: List<String>, side: List<String>): Pair<List<ParseDeckCardResult>, List<ParseDeckCardResult>> {
