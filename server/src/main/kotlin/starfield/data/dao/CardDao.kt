@@ -8,6 +8,7 @@ import starfield.data.table.*
 import starfield.plugins.Id
 import starfield.engine.OracleId
 import starfield.plugins.UUIDListSerializer
+import java.text.Normalizer
 import java.util.*
 
 class CardDao {
@@ -267,7 +268,7 @@ class CardDao {
 
     companion object {
         fun normalizeName(name: String): String {
-            var normalizedName = name
+            var normalizedName = Normalizer.normalize(name, Normalizer.Form.NFD)
             if (normalizedName.contains(" // ")) {
                 normalizedName = normalizedName.split(" // ")[0]
             }

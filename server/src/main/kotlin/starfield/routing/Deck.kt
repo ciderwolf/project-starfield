@@ -294,7 +294,7 @@ suspend fun lookupCards(cards: List<Triple<Int, String, String>>): List<ParseDec
 }
 
 fun splitCardLine(line: String): Triple<Int, String, String> {
-    val pattern = Pattern.compile("^(?:(?<count>\\d+) )?(?<name>[\\w ,\\-+'’/!&.:?\"()®]*?)(?: \\((?<source>[A-Z]{3,5})\\))?$")
+    val pattern = Pattern.compile("^(?:(?<count>\\d+) )?(?<name>.*?)(?: \\((?<source>[A-Z]{3,5})\\))?$")
     val matcher = pattern.matcher(line)
     return if (matcher.find()) {
         val count = matcher.group("count")?.toIntOrNull() ?: 1
