@@ -24,7 +24,8 @@ data class Card(
     @SerialName("image_status") val imageStatus: String? = null,
     @SerialName("color_identity") val colorIdentity: List<String>? = null,
     @SerialName("mana_cost") val manaCost: String? = null,
-    @SerialName("all_parts") val parts: List<CardPart>? = null
+    @SerialName("all_parts") val parts: List<CardPart>? = null,
+    @SerialName("rarity") val rarity: Rarity
 ) {
     fun text(): String {
         return if (oracleText != null) {
@@ -90,3 +91,24 @@ data class CardPart(
     val component: String,
     val id: Id
 )
+
+@Serializable
+enum class Rarity {
+    @SerialName("mythic")
+    MYTHIC,
+
+    @SerialName("rare")
+    RARE,
+
+    @SerialName("uncommon")
+    UNCOMMON,
+
+    @SerialName("common")
+    COMMON,
+
+    @SerialName("special")
+    SPECIAL,
+
+    @SerialName("bonus")
+    BONUS
+}

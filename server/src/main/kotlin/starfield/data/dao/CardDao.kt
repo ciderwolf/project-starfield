@@ -4,6 +4,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.sql.*
 import starfield.cli.CardExtra
+import starfield.cli.scryfall.Rarity
 import starfield.data.table.*
 import starfield.plugins.Id
 import starfield.engine.OracleId
@@ -235,6 +236,7 @@ class CardDao {
         val image: String,
         val backImage: String?,
         val thumbnailImage: String,
+        val rarity: Rarity,
         val source: Int
     )
 

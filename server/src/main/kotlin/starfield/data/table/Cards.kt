@@ -25,9 +25,10 @@ object Printings : Table("Printing") {
     val cardId = uuid("card_id").references(Cards.id)
     val setCode = varchar("set_code", 10)
     val collectorNumber = varchar("collector_number", 10)
-    val image = varchar("image", 100)
-    val backImage = varchar("back_image", 100).nullable()
-    val thumbnailImage = varchar("thumbnail_image", 100)
+    val image = text("image")
+    val backImage = text("back_image").nullable()
+    val thumbnailImage = text("thumbnail_image")
+    val rarity = integer("rarity")
     val src = integer("source").references(CardSources.id)
 
     override val primaryKey = PrimaryKey(id)

@@ -161,7 +161,8 @@ suspend fun downloadTokenIdMap(): Map<UUID, CardDao.Printing> {
                 image = image,
                 backImage = backImage,
                 thumbnailImage = thumbnailImage,
-                source = 0
+                source = 0,
+                rarity = card.rarity
             )
             return@associate (id to printing)
 

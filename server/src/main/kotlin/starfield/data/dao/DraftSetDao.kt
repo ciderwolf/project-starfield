@@ -18,7 +18,8 @@ class DraftSetDao {
     @Serializable
     enum class DraftSetType {
         SCRYFALL,
-        CUBE
+        CUBE,
+        CUSTOM
     }
 
     data class DraftSet(
