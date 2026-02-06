@@ -3,8 +3,9 @@ import { newDeck, deleteDeck } from '@/api/deck';
 import type { DeckListing } from '@/api/message';
 import { useDecksCache } from '@/cache/decks';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
-import StyleButton from '@/components/StyleButton.vue';
 import LoadingButton from '@/components/LoadingButton.vue';
+import ItemCard from '@/components/home/ItemCard.vue';
+import ItemCardGrid from '@/components/home/ItemCardGrid.vue';
 import { useDecksStore } from '@/stores/decks';
 import { useRouter } from 'vue-router';
 
@@ -51,16 +52,16 @@ function deckThumbnailUrl(deck: DeckListing) {
         <LoadingSpinner /> Loading decks...
       </h3>
     </div>
-    <div class="deck-cards" v-else-if="Object.keys(decks.decks).length > 0">
-      <div v-for="deck in decks.decks" :key="deck.id">
-        <router-link :to="{ name: 'deckbuilder', params: { id: deck.id } }" class="deck-card">
-          <img :alt="`${deck.name} Thumnail`" class="deck-card-thumbnail" :src="deckThumbnailUrl(deck)" />
-          <h3 class="deck-card-title">{{ deck.name }}</h3>
-          <loading-button type="danger" class="delete-deck-button" :on-click="(e) => deleteDeckClicked(e, deck.id)">
-            Delete deck</loading-button>
-        </router-link>
-      </div>
-    </div>
+    <ItemCardGrid v-else-if="Object.keys(decks.decks).length > 0">
+      <ItemCard v-for="deck in decks.decks" :key="deck.id" :title="deck.name" :image="deckThumbnailUrl(deck)"
+        :to="{ name: 'deckbuilder', params: { id: deck.id } }">
+        <template #actions>
+          <LoadingButton class="delete-button" type="danger" :on-click="(e) => deleteDeckClicked(e, deck.id)">
+            Delete deck
+          </LoadingButton>
+        </template>
+      </ItemCard>
+    </ItemCardGrid>
     <div v-else class="empty-container-title">
       <h3>You have no decks.</h3>
       <p>Click on '+ New Deck' to create one.</p>
@@ -88,51 +89,7 @@ function deckThumbnailUrl(deck: DeckListing) {
   justify-content: center;
 }
 
-.deck-cards {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  background-color: #eee;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  max-width: 80%;
-  width: fit-content;
-  margin: 0 auto;
-  padding: 1em 10%;
-  min-width: 250px;
-}
-
-.deck-card {
-  display: flex;
-  flex-direction: column;
-  text-decoration: none;
-  text-align: center;
-  color: #000;
-  margin: 0.5em;
-  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.5);
-  width: 250px;
-  background: white;
-}
-
-.deck-card:hover {
-  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.5);
-}
-
-.delete-deck-button {
-  display: none;
-  margin: 0 0.5em 0.5em 0.5em;
-}
-
-.deck-card:hover .delete-deck-button {
-  display: block;
-}
-
-.deck-card-thumbnail {
-  height: 182.5px;
-  object-fit: fill;
-}
-
-.deck-card-title {
-  margin: 0.75em;
+.delete-button {
+  width: 100%;
 }
 </style>

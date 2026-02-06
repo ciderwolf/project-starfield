@@ -10,9 +10,11 @@ import DecksView from '../components/home/DecksView.vue';
 import { useDataStore } from '@/stores/data';
 import { Tabs, Tab } from 'vue3-tabs-component';
 import { CLIENT_VERSION } from '@/version';
-import CubesView from '../components/home/CubesView.vue';
 import SetSelector from '@/components/home/SetSelector.vue';
 import type { DraftSet } from '@/api/draft';
+import MenuNavigationBlade from '@/components/home/MenuNavigationBlade.vue';
+import { type ComponentExposed } from 'vue-component-type-helpers';
+import IconButton from '@/components/IconButton.vue';
 
 const showCreateGameModal = ref(false);
 const gameName = ref('');
@@ -51,12 +53,22 @@ function tabChanged(tab: any) {
 function setSelected(set: DraftSet) {
   draftSet.value = set.id;
 }
+
+const menuNavigationBlade = ref<ComponentExposed<typeof MenuNavigationBlade>>();
+function showMenuBlade() {
+  menuNavigationBlade.value?.showMenu();
+}
+
 </script>
 
 <template>
   <div id="main">
+    <MenuNavigationBlade ref="menuNavigationBlade" />
     <main>
-      <h1>Welcome, {{ userName }}</h1>
+      <h1 id="welcome-text">
+        <IconButton @click="showMenuBlade" icon="menu" />
+        Welcome, {{ userName }}
+      </h1>
       <div class="title">
         <h2>Games</h2>
         <style-button @click="showCreateGameModal = true" small>+ Create Game</style-button>
@@ -100,10 +112,7 @@ function setSelected(set: DraftSet) {
         <p>Click on '+ Create game' to create one.</p>
       </div>
       <DecksView />
-      <CubesView />
-
     </main>
-    <p class="version-info" v-if="CLIENT_VERSION">Client version {{ CLIENT_VERSION }}</p>
   </div>
 </template>
 
@@ -117,6 +126,12 @@ function setSelected(set: DraftSet) {
   align-items: center;
   margin-bottom: 1em;
   align-items: center;
+}
+
+#welcome-text {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .empty-container-title {
@@ -138,12 +153,5 @@ function setSelected(set: DraftSet) {
   display: flex;
   flex-direction: column;
   gap: 1em;
-}
-
-.version-info {
-  padding: 1em;
-  font-size: 0.8em;
-  text-align: center;
-  color: #666;
 }
 </style>

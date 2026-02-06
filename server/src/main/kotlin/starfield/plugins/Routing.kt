@@ -74,6 +74,10 @@ fun Application.configureRouting() {
                 cardRouting()
             }
 
+            route("/set") {
+                setRouting()
+            }
+
             route("/cube") {
                 cubeRouting()
             }

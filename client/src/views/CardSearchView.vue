@@ -239,7 +239,7 @@ onUnmounted(() => {
         <input type="text" placeholder="Search for cards..." v-model="query" />
         <loading-spinner v-if="loadingResults" />
       </form>
-      <router-link class="icon-button" :to="`/cards/${setCode}/advanced-search`" title="Advanced Search">
+      <router-link class="icon-button" :to="`/sets/${setCode}/advanced-search`" title="Advanced Search">
         <span class="material-symbols-rounded">tune</span>
       </router-link>
       <button class="icon-button" title="Choose deck" @click="openDeckModal">
@@ -263,8 +263,8 @@ onUnmounted(() => {
       </div>
     </div>
     <div v-if="searchResults.length > 0" class="search-results-container">
-      <router-link v-for="card in searchResults" :to="`/cards/${setCode}/${card.id}`" :key="card.id" class="card-link"
-        @mouseenter="hoverCard(card.id)" @mouseleave="unhoverCard(card.id)">
+      <router-link v-for="card in searchResults" :to="`/sets/${setCode}/cards/${card.id}`" :key="card.id"
+        class="card-link" @mouseenter="hoverCard(card.id)" @mouseleave="unhoverCard(card.id)">
         <img :src="flips[card.id] && card.backImage ? card.backImage : card.image" :alt="card.name" :key="card.id"
           class="card-image"></img>
         <span class="flip-card-button material-symbols-rounded" :class="{ flipped: flips[card.id] }"

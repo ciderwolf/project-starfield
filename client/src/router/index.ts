@@ -42,7 +42,12 @@ const router = createRouter({
       component: () => import('../views/DecklistView.vue')
     },
     {
-      path: '/cube/:id',
+      path: '/cubes',
+      name: 'cubes',
+      component: () => import('../views/CubesView.vue')
+    },
+    {
+      path: '/cubes/:id',
       name: 'cube',
       component: () => import('../views/CubeView.vue')
     },
@@ -52,17 +57,22 @@ const router = createRouter({
       component: () => import('../views/DraftView.vue')
     },
     {
-      path: '/cards/:set',
+      path: '/sets',
+      name: 'sets',
+      component: () => import('../views/SetsView.vue')
+    },
+    {
+      path: '/sets/:set/cards',
       name: 'card-search',
       component: () => import('../views/CardSearchView.vue')
     },
     {
-      path: '/cards/:set/advanced-search',
+      path: '/sets/:set/advanced-search',
       name: 'advanced-search',
       component: () => import('../views/AdvancedSearchView.vue')
     },
     {
-      path: '/cards/:set/:id',
+      path: '/sets/:set/cards/:id',
       name: 'card-details',
       component: () => import('../views/CardDetailView.vue')
     }

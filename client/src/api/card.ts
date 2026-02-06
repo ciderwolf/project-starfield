@@ -32,9 +32,11 @@ export async function searchCards(setCode: string, query: string): Promise<CardD
     }
 }
 
-
-
 export async function getCardDetails(id: string): Promise<CardDetailInfo> {
     const response = await getJson(`/card/${id}/parts`);
     return response as CardDetailInfo;
+}
+
+export async function getCustomSets() {
+    return getJson(`/set`);
 }

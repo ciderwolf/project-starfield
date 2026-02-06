@@ -4,49 +4,50 @@ import { defineStore } from "pinia";
 import { ref } from "vue";
 
 export type CardDetailInfo = {
-    oracleCard: OracleCard,
-    parts: CardDetails[],
+  oracleCard: OracleCard,
+  parts: CardDetails[],
 }
 
 export const useSearchResultsStore = defineStore('searchResults', () => {
-    const queryCache = ref<Map<string, string[]>>(new Map());
-    const cardCache = ref<Map<string, CardDetailInfo>>(new Map());
-    const selectedDeckId = ref<string | null>(null);
+  const queryCache = ref<Map<string, string[]>>(new Map());
+  const cardCache = ref<Map<string, CardDetailInfo>>(new Map());
+  const selectedDeckId = ref<string | null>(null);
 
-    async function searchForCards(setCode: string, query: string): Promise<OracleCard[]> {
-        if (queryCache.value.has(query)) {
-            const cardIds = queryCache.value.get(query)!;
-            return cardIds.map(id => {
-                const cached = cardCache.value.get(id);
-                if (!cached) {
-                    throw new Error(`Card ID ${id} not found in cache`);
-                }
-                return cached.oracleCard;
-            });
+  async function searchForCards(setCode: string, query: string): Promise<OracleCard[]> {
+    const cacheKey = `${setCode}:${query}`;
+    if (queryCache.value.has(cacheKey)) {
+      const cardIds = queryCache.value.get(cacheKey)!;
+      return cardIds.map(id => {
+        const cached = cardCache.value.get(id);
+        if (!cached) {
+          throw new Error(`Card ID ${id} not found in cache`);
         }
-        else {
-            const results = await searchCards(setCode, query);
-            if (results === null) {
-                return [];
-            }
-            queryCache.value.set(query, results.map(cd => cd.oracleCard.id));
-            results.forEach(cd => {
-                cardCache.value.set(cd.oracleCard.id, cd);
-            });
-            return results.map(cd => cd.oracleCard);
-        }
+        return cached.oracleCard;
+      });
+    }
+    else {
+      const results = await searchCards(setCode, query);
+      if (results === null) {
+        return [];
+      }
+      queryCache.value.set(cacheKey, results.map(cd => cd.oracleCard.id));
+      results.forEach(cd => {
+        cardCache.value.set(cd.oracleCard.id, cd);
+      });
+      return results.map(cd => cd.oracleCard);
+    }
+  }
+
+  async function getCardDetails(id: string): Promise<CardDetailInfo> {
+    if (cardCache.value.has(id)) {
+      return cardCache.value.get(id)!;
     }
 
-    async function getCardDetails(id: string): Promise<CardDetailInfo> {
-        if (cardCache.value.has(id)) {
-            return cardCache.value.get(id)!;
-        }
+    // Not found in cache, fetch from API
+    const result = await fetchCardDetails(id);
+    cardCache.value.set(id, result);
+    return result;
+  }
 
-        // Not found in cache, fetch from API
-        const result = await fetchCardDetails(id);
-        cardCache.value.set(id, result);
-        return result;
-    }
-
-    return { searchForCards, getCardDetails, selectedDeckId };
+  return { searchForCards, getCardDetails, selectedDeckId };
 })

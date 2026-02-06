@@ -53,6 +53,7 @@ object Tokens : Table("Token") {
 object CardSources : IntIdTable("CardSource", "card_source_id") {
     val name = varchar("name", 100)
     val code = varchar("code", 5)
+    val icon = text("icon")
 }
 
 object CardExtras : Table("CardExtra") {

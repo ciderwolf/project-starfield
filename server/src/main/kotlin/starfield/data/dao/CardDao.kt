@@ -18,7 +18,8 @@ class CardDao {
         return CardSource(
             id = row[CardSources.id].value,
             name = row[CardSources.name],
-            code = row[CardSources.code]
+            code = row[CardSources.code],
+            icon = row[CardSources.icon]
         )
     }
 
@@ -180,6 +181,10 @@ class CardDao {
         CardSources.selectAll().where { CardSources.id inList keys }.map(::mapDbCardSource)
     }
 
+    suspend fun getSources() = DatabaseSingleton.dbQuery {
+        CardSources.selectAll().where { CardSources.id neq 0 }.map(::mapDbCardSource)
+    }
+
     suspend fun getSourceByCode(code: String) = DatabaseSingleton.dbQuery {
         CardSources.selectAll().where { CardSources.code eq code.uppercase() }
             .singleOrNull()
@@ -262,10 +267,12 @@ class CardDao {
         val tokens: List<Id>?
     )
 
+    @Serializable
     data class CardSource(
         val id: Int,
         val name: String,
-        val code: String
+        val code: String,
+        val icon: String
     )
 
     companion object {

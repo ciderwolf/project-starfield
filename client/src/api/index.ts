@@ -38,6 +38,10 @@ export async function login(name: string, password: string): Promise<JsonRespons
   return postJsonRaw<UserInfo>('login', { name, password });
 }
 
+export async function logout(): Promise<void> {
+  await getJson('logout');
+}
+
 export async function createAccount(name: string, password: string): Promise<JsonResponse<UserInfo>> {
   return postJsonRaw<UserInfo>('create-account', { name, password });
 }
