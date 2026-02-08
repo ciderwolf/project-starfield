@@ -8,7 +8,7 @@ DASH: '-';
 AND: 'and';
 OR: 'or';
 SEPERATOR: '=' | ':' | '>' | '>=' | '<=' | '<' | '!=';
-WORD: [a-zA-Z0-9_*{}/]+;
+WORD: ~[ \t\r\n=:><!]+;
 QUOTED_STRING: '"' ( '\\' . | ~["\\])* '"';
 REGEX: '/' ( '\\' . | ~[/\\])* '/';
 LPAREN: '(';

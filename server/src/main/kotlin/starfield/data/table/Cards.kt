@@ -43,8 +43,8 @@ object Tokens : Table("Token") {
     val subTypes = varchar("sub_types", 100)
     val pt = varchar("pt", 10).nullable()
     val text = varchar("text", 1000)
-    val image = varchar("image", 100)
-    val backImage = varchar("back_image", 100).nullable()
+    val image = text("image")
+    val backImage = text("back_image").nullable()
     val src = integer("source").references(CardSources.id)
 
     override val primaryKey = PrimaryKey(id)

@@ -47,7 +47,7 @@ function showMenuBlade() {
     </div>
     <ItemCardGrid v-else-if="sets.length > 0">
       <ItemCard v-for="set in sets" :key="set.code" :title="set.name" :image="set.icon" :image-alt="`${set.name} Icon`"
-        :to="`/sets/${set.code}/cards`" image-fit="contain" />
+        :to="`/sets/${set.code.toLowerCase()}/cards`" image-fit="contain" />
     </ItemCardGrid>
     <div v-else class="empty-container-title">
       <h3>No sets available.</h3>
