@@ -59,7 +59,7 @@ function pickCard(card: DraftCard) {
       <h2>Draft Ended</h2>
       <p>
         Your draft deck has automatically been saved.
-        <router-link :to="`/deckbuilder/${draft.deckId}`">Go to deckbuilder.</router-link>
+        <router-link :to="`/deckbuilder/${draft.deckId}?display=columns`">Go to deckbuilder.</router-link>
       </p>
     </div>
     <DraftPool />

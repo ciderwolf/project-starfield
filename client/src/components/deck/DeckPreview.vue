@@ -3,16 +3,7 @@ import CardPreview from './CardPreview.vue';
 import type { DeckCard as Card, Deck as DeckData, DeckCard } from '@/api/message';
 import { computed, ref, watchEffect } from 'vue';
 
-const props = defineProps({
-  deckData: {
-    type: Object as () => DeckData,
-    required: true,
-  },
-  includeSideboard: {
-    type: Boolean,
-    default: true,
-  },
-});
+const props = defineProps<{ deckData: DeckData, includeSideboard?: boolean }>();
 
 const deck = computed(() => groupDeckByType(props.deckData));
 

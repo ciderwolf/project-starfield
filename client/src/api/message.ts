@@ -177,19 +177,23 @@ export type CubeListing = {
   name: string;
 }
 
-export type ConflictResolutionStrategy = 'NoConflict' | 'Best' | 'Default' | 'Pinned';
-export type DeckCard = {
-  name: string;
+
+export type DisplayCard = Card & {
+  id: string;
   type: string;
   manaValue: number;
   manaCost: string;
   types: string[];
   superTypes: string[];
   subTypes: string[];
+};
+
+export type CountDisplayCard = DisplayCard & {
   count: number;
-  id: string;
-  image: string;
-  backImage: string | null;
+}
+
+export type ConflictResolutionStrategy = 'NoConflict' | 'Best' | 'Default' | 'Pinned';
+export type DeckCard = CountDisplayCard & {
   source: string;
   conflictResolutionStrategy: ConflictResolutionStrategy;
 };
@@ -501,15 +505,8 @@ type ChangeDraftZoneMessage = {
   sideboard: boolean
 }
 
-export type DraftCard = Card & {
+export type DraftCard = DisplayCard & {
   foil: boolean;
-  id: string;
-  type: string;
-  manaValue: number;
-  manaCost: string;
-  types: string[];
-  superTypes: string[];
-  subTypes: string[];
 };
 
 export type CardDetails = {

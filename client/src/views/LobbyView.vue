@@ -114,7 +114,7 @@ async function startGameClicked() {
         <option v-for="deck in decks.decks" :key="deck.id" :value="deck.id">{{ deck.name }}</option>
       </select>
     </div>
-    <deck-preview v-if="deck" :deckData="deck" />
+    <deck-preview v-if="deck" :deckData="deck" :includeSideboard="true" />
   </div>
 </template>
 

@@ -9,6 +9,8 @@ import { useDecksCache } from '@/cache/decks';
 import type { Deck, DeckCard } from '@/api/message';
 import { useDecksStore } from '@/stores/decks';
 import { useAlertsStore } from '@/stores/alerts';
+import DeckCardEditor from '@/components/deck/DeckCardEditor.vue';
+import ButtonGroup from '@/components/ButtonGroup.vue';
 
 
 const maindeck = ref('');
@@ -21,6 +23,13 @@ const deckId = route.params.id as string;
 const decks = useDecksCache();
 const router = useRouter();
 const alertsStore = useAlertsStore();
+
+const viewMode = computed({
+  get: () => (route.query.display as 'columns' | 'list') || 'list',
+  set: (value: 'columns' | 'list') => {
+    router.replace({ query: { ...route.query, display: value } });
+  }
+});
 
 const mainCount = computed(() => {
   return deck.value?.maindeck.reduce((sum, card) => sum + card.count, 0) || 0;
@@ -52,10 +61,8 @@ function createCardLine(card: DeckCard) {
 onMounted(async () => {
   const decklist = await decks.get(deckId);
   if (decklist) {
-    maindeck.value = decklist.maindeck.map(createCardLine).join('\n');
-    sideboard.value = decklist.sideboard.map(createCardLine).join('\n');
-
     deck.value = decklist;
+    updateDeckText();
   }
 });
 
@@ -83,9 +90,7 @@ const submitDeckClicked = async () => {
   const store = useDecksStore();
   store.decks[deck.value!.id] = { name: deck.value!.name, id: deck.value!.id, thumbnailImage: deck.value!.thumbnailImage };
 
-  const decklist = deck.value;
-  maindeck.value = decklist.maindeck.map(createCardLine).join('\n');
-  sideboard.value = decklist.sideboard.map(createCardLine).join('\n');
+  updateDeckText();
 
   const deckHasUnknownCards = deck.value.maindeck.some(card => card.image === '')
     || deck.value.sideboard.some(card => card.image === '');
@@ -109,6 +114,46 @@ function exitPage() {
   }
 }
 
+function moveToMaindeck(cardId: string) {
+  if (deck.value) {
+    moveCardBetweenZones(cardId, deck.value.sideboard, deck.value.maindeck);
+  }
+}
+
+function moveToSideboard(cardId: string) {
+  if (deck.value) {
+    moveCardBetweenZones(cardId, deck.value.maindeck, deck.value.sideboard);
+  }
+}
+
+function moveCardBetweenZones(cardId: string, source: DeckCard[], destination: DeckCard[]) {
+  const cardIndex = source.findIndex(card => card.id === cardId);
+  if (cardIndex === -1) return;
+
+  const sourceCard = source[cardIndex];
+  const destinationCard = destination.find(card => card.id === cardId);
+  if (destinationCard) {
+    destinationCard.count += 1;
+  } else {
+    destination.push({ ...sourceCard, count: 1 });
+  }
+
+  if (sourceCard.count > 1) {
+    sourceCard.count -= 1;
+  } else {
+    source.splice(cardIndex, 1);
+  }
+
+  updateDeckText();
+}
+
+function updateDeckText() {
+  if (!deck.value) return;
+
+  maindeck.value = deck.value.maindeck.map(createCardLine).join('\n');
+  sideboard.value = deck.value.sideboard.map(createCardLine).join('\n');
+}
+
 </script>
 
 <template>
@@ -122,6 +167,14 @@ function exitPage() {
       </div>
       <input type=text v-model="deck.name" id="deck-name-input">
       <loading-button :on-click="submitDeckAndCloseClicked">Save deck and close</loading-button>
+      <button-group v-model="viewMode" class="deckbuilder-mode-selector">
+        <template #list>
+          <i class="material-symbols-rounded">view_list</i>
+        </template>
+        <template #columns>
+          <i class="material-symbols-rounded">view_column</i>
+        </template>
+      </button-group>
     </div>
     <div id="decklist-deckbuilder">
       <div id="deck-inputs">
@@ -131,7 +184,10 @@ function exitPage() {
           <loading-button :on-click="submitDeckClicked">Save deck</loading-button>
         </div>
       </div>
-      <deck-preview :deckData="deck" />
+      <DeckCardEditor sortBy="manaValue" v-if="viewMode == 'columns'" :maindeck="deck.maindeck"
+        :sideboard="deck.sideboard" direction="row" @move-to-maindeck="moveToMaindeck"
+        @move-to-sideboard="moveToSideboard" />
+      <DeckPreview v-else :deckData="deck" :includeSideboard="true" />
     </div>
     <hr>
     <DeckStatsViz :cards="deck.maindeck" :width="800" :height="600" />
@@ -174,6 +230,10 @@ function exitPage() {
 
 #deck-name-input {
   font-size: 1.75em;
+}
+
+.deckbuilder-mode-selector {
+  margin-left: auto;
 }
 
 #decklist-deckbuilder {

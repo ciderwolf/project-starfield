@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import * as d3 from 'd3';
 import CardPreview from '@/components/deck/CardPreview.vue';
-import type { DeckCard } from '@/api/message';
+import type { CountDisplayCard, DeckCard } from '@/api/message';
 import { computed, onMounted, ref, watch } from 'vue';
 
 type GroupKeys = 'type' | 'manaValue' | 'manaCost';
 
-const props = defineProps<{ cards: DeckCard[], width: number, height: number }>();
+const props = defineProps<{ cards: CountDisplayCard[], width: number, height: number }>();
 
 onMounted(() => {
   watch(() => props.cards, () => {
@@ -187,7 +187,7 @@ function getTooltipText(key: string, value: number) {
   }
 }
 
-function groupByKey(data: DeckCard[], key: GroupKeys) {
+function groupByKey(data: CountDisplayCard[], key: GroupKeys) {
   const result: { [key: string]: number } = {};
   for (const card of data) {
     if (result[card[key]!] === undefined) {
@@ -198,7 +198,7 @@ function groupByKey(data: DeckCard[], key: GroupKeys) {
   return result;
 }
 
-function groupByManaCost(data: DeckCard[]) {
+function groupByManaCost(data: CountDisplayCard[]) {
   const result: { [key: string]: number } = {};
   for (const card of data) {
     const manaCost = card.manaCost;

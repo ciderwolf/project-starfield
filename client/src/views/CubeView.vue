@@ -3,7 +3,7 @@ import { onMounted, ref } from 'vue';
 import DeckPreview from '@/components/deck/DeckPreview.vue';
 import LoadingButton from '@/components/LoadingButton.vue';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 import type { Cube } from '@/api/message';
 import { useCubesCache } from '@/cache/cubes';
 import { syncFromCubeCobra } from '@/api/cube';
