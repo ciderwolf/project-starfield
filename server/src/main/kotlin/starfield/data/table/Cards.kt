@@ -15,13 +15,13 @@ object Cards : Table("Card") {
     val types = text("types")
     val superTypes = text("super_types")
     val subTypes = text("sub_types")
-    val preferredPrintingId = uuid("preferred_printing_id").references(Printings.id).nullable()
+    val preferredPrintingId = uuid("preferred_printing_id").references(Printings.printingId).nullable()
 
     override val primaryKey = PrimaryKey(id)
 }
 
 object Printings : Table("Printing") {
-    val id = uuid("printing_id")
+    val printingId = uuid("printing_id")
     val cardId = uuid("card_id").references(Cards.id)
     val setCode = varchar("set_code", 10)
     val collectorNumber = varchar("collector_number", 10)
@@ -31,7 +31,7 @@ object Printings : Table("Printing") {
     val rarity = integer("rarity")
     val src = integer("source").references(CardSources.id)
 
-    override val primaryKey = PrimaryKey(id)
+    override val primaryKey = PrimaryKey(printingId)
 }
 
 object Tokens : Table("Token") {

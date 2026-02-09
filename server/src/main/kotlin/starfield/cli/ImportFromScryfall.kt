@@ -84,7 +84,7 @@ object ImportFromScryfall : CliktCommand(help = "Import latest cards from Scryfa
 
         DatabaseSingleton.dbQuery {
             Printings.batchUpsert(printings.values.filter { it.cardId in cardIds }) {
-                this[Printings.id] = it.id
+                this[Printings.printingId] = it.id
                 this[Printings.cardId] = it.cardId
                 this[Printings.setCode] = it.setCode
                 this[Printings.collectorNumber] = it.collectorNumber

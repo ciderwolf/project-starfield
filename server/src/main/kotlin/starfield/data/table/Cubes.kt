@@ -13,6 +13,6 @@ object Cubes : UUIDTable("cube") {
 
 object CubeCards : Table("cubecard") {
     val cubeId = uuid("cube_id").references(Cubes.id)
-    val printingId = uuid("printing_id").references(Printings.id)
+    val printingId = uuid("printing_id").references(Printings.printingId)
     val count = integer("count")
 }

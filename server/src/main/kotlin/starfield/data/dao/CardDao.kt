@@ -59,7 +59,7 @@ class CardDao {
 
     suspend fun getCard(id: OracleId) = DatabaseSingleton.dbQuery {
         Cards
-            .innerJoin(Printings, { preferredPrintingId }, { Printings.id })
+            .innerJoin(Printings, { preferredPrintingId }, { Printings.printingId })
             .selectAll()
             .where { Cards.id eq id}
             .singleOrNull()?.let(::mapDbCard)
@@ -68,7 +68,7 @@ class CardDao {
     suspend fun getCards(ids: Iterable<OracleId>): List<Card> {
         return DatabaseSingleton.dbQuery {
             Cards
-                .innerJoin(Printings, { preferredPrintingId }, { id })
+                .innerJoin(Printings, { preferredPrintingId }, { printingId })
                 .selectAll()
                 .where { Cards.id inList ids }
                 .map(::mapDbCard)
@@ -79,11 +79,11 @@ class CardDao {
         Printings
             .innerJoin(Cards, { Cards.id }, { Printings.cardId })
             .selectAll()
-            .where { Printings.id inList ids }
+            .where { Printings.printingId inList ids }
             .map { row ->
                 CardPrinting(
                     name = row[Cards.name],
-                    id = row[Printings.id],
+                    id = row[Printings.printingId],
                     oracleId = row[Cards.id],
                     type = row[Cards.type],
                     types = Json.decodeFromString(row[Cards.types]),
@@ -99,7 +99,7 @@ class CardDao {
 
     suspend fun getCardsWithExtras(ids: Iterable<OracleId>) = DatabaseSingleton.dbQuery {
         val cards = Cards
-            .innerJoin(Printings, { preferredPrintingId }, { id })
+            .innerJoin(Printings, { preferredPrintingId }, { printingId })
             .leftJoin(CardExtras)
             .selectAll()
             .where { Cards.id inList ids }
@@ -131,7 +131,7 @@ class CardDao {
         val fuzzyNames = names.map(::normalizeName)
         val result = DatabaseSingleton.dbQuery {
             Cards
-                .innerJoin(Printings, { preferredPrintingId }, { id })
+                .innerJoin(Printings, { preferredPrintingId }, { printingId })
                 .selectAll()
                 .where { Cards.fuzzyName inList fuzzyNames }
                 .map(::mapDbCard)
@@ -144,7 +144,7 @@ class CardDao {
     suspend fun searchForCards(name: String): List<Card> = DatabaseSingleton.dbQuery {
         val normalizedName = normalizeName(name)
         Cards
-            .innerJoin(Printings, { preferredPrintingId }, { id })
+            .innerJoin(Printings, { preferredPrintingId }, { printingId })
             .selectAll()
             .where { Cards.fuzzyName like "%${normalizedName}%" }
             .map(::mapDbCard)

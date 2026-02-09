@@ -86,7 +86,7 @@ class CubeDao {
                         superTypes = Json.decodeFromString(cardRow[Cards.superTypes]),
                         subTypes = Json.decodeFromString(cardRow[Cards.subTypes]),
                         image = cardRow[Printings.image],
-                        id = cardRow[Printings.id],
+                        id = cardRow[Printings.printingId],
                         backImage = cardRow[Printings.backImage],
                         count = cardRow[CubeCards.count], // Assuming each card is counted as 1 for simplicity
                         source = "Cube",

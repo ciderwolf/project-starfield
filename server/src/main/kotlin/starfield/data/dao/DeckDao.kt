@@ -98,13 +98,13 @@ class DeckDao {
     suspend fun getDeck(deckId: UUID) = DatabaseSingleton.dbQuery {
         Decks
             .leftJoin(Cards)
-            .leftJoin(Printings, { Cards.preferredPrintingId }, { id })
+            .leftJoin(Printings, { Cards.preferredPrintingId }, { printingId })
             .selectAll()
             .where { Decks.id eq deckId }
             .singleOrNull()?.let {
                 val cards = DeckCards
                     .leftJoin(Cards)
-                    .innerJoin(Printings, { Cards.preferredPrintingId }, { id })
+                    .innerJoin(Printings, { Cards.preferredPrintingId }, { printingId })
                     .innerJoin(CardSources)
                     .selectAll()
                     .where { DeckCards.deckId eq deckId }
@@ -115,7 +115,7 @@ class DeckDao {
     suspend fun getDecks(userId: UUID) = DatabaseSingleton.dbQuery {
         val decks = Decks
             .leftJoin(Cards)
-            .leftJoin(Printings, { Cards.preferredPrintingId }, { id })
+            .leftJoin(Printings, { Cards.preferredPrintingId }, { printingId })
             .selectAll()
             .where { Decks.ownerId eq userId }
             .orderBy(Decks.modifiedAt, SortOrder.DESC)
@@ -123,7 +123,7 @@ class DeckDao {
         val deckIds = decks.map {it[Decks.id].value }
         val cards = DeckCards
             .leftJoin(Cards)
-            .innerJoin(Printings, { Cards.preferredPrintingId }, { id })
+            .innerJoin(Printings, { Cards.preferredPrintingId }, { printingId })
             .innerJoin(CardSources)
             .selectAll()
             .where { DeckCards.deckId inList deckIds }
