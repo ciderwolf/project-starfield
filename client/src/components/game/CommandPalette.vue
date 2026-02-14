@@ -203,11 +203,13 @@ const closePalette = () => {
     return;
   }
   emit('close');
-  console.log('Command palette closed');
   visible.value = false;
 };
 
 const handleKeydown = (event: KeyboardEvent) => {
+  if (!visible.value) {
+    return;
+  }
   if (event.key === 'Escape') {
     closePalette();
   }

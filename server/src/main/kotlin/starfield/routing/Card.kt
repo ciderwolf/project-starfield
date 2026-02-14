@@ -62,9 +62,8 @@ fun Route.cardRouting() {
         try {
             val cardDao = CardDao()
             val searchDao = CardSearchDao()
-            val source = cardDao.getSourceByCode(setCode)
-                ?: return@get call.respondError("Set not found", HttpStatusCode.NotFound)
-            val searchResult = searchDao.search(query, source.id)
+            val sourceId = if (setCode == "all") null else cardDao.getSourceByCode(setCode)?.id
+            val searchResult = searchDao.search(query, sourceId)
             val cardPartsByCardId = searchResult.results.groupBy { it.cardId }
             val cards = cardDao.getCards(cardPartsByCardId.keys).map { it.toOracleCard() }
             // order cards by search result order

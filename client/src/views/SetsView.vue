@@ -7,6 +7,7 @@ import ItemCardGrid from '@/components/home/ItemCardGrid.vue';
 import type { ComponentExposed } from 'vue-component-type-helpers';
 import { ref, onMounted } from 'vue';
 import { getCustomSets } from '@/api/card';
+import StyleButton from '@/components/StyleButton.vue';
 
 interface SetInfo {
   name: string;
@@ -39,6 +40,9 @@ function showMenuBlade() {
         <IconButton @click="showMenuBlade" icon="menu" />
         Sets
       </h1>
+      <router-link to="/sets/all/cards">
+        <StyleButton small>Search All Cards</StyleButton>
+      </router-link>
     </div>
     <div class="empty-container-title" v-if="isLoading">
       <h3 class="loading-sets-title">

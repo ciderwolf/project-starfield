@@ -214,7 +214,7 @@ onUnmounted(() => {
       <i>While your cursor is over a card, you can press 'a' to add it to your deck or 's' to add it to your
         sideboard.</i>
       <div style="display: flex; justify-content: space-around;">
-        <div style="display: flex; flex-direction: column; gap: 10px;">
+        <div class="deck-modal-option">
           <h3>Select an existing deck</h3>
           <select v-model="searchStore.selectedDeckId">
             <option disabled :value="null">No deck selected</option>
@@ -224,12 +224,10 @@ onUnmounted(() => {
             <StyleButton small style="width: 100%;">Open in Deckbuilder</StyleButton>
           </router-link>
         </div>
-        <div>
+        <div class="deck-modal-option">
           <h3>Or, create a new deck</h3>
-          <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
-            <input type="text" placeholder="Deck name" v-model="deckName" />
-            <loading-button :onClick="createDeck" small style="width: 100%">Create Deck</loading-button>
-          </div>
+          <input type="text" placeholder="Deck name" v-model="deckName" />
+          <loading-button :onClick="createDeck" small style="width: 100%">Create Deck</loading-button>
         </div>
       </div>
     </Modal>
@@ -421,6 +419,12 @@ h4 {
 
 .error-icon {
   color: #f44336;
+}
+
+.deck-modal-option {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 @media screen and (max-width: 600px) {

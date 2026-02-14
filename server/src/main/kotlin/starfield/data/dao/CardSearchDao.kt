@@ -56,12 +56,15 @@ class CardSearchDao {
             .map(::mapCardDetails)
     }
 
-    suspend fun search(query: String, cardSourceId: Int): SearchResult<List<CardDetail>> {
+    suspend fun search(query: String, cardSourceId: Int?): SearchResult<List<CardDetail>> {
         if (query == "") {
             return SearchResult(
                 results = DatabaseSingleton.dbQuery {
-                    CardParts.selectAll()
-                        .where { CardParts.sourceId eq cardSourceId }
+                    var selection = CardParts.selectAll()
+                    if (cardSourceId != null) {
+                        selection = selection.where { CardParts.sourceId eq cardSourceId }
+                    }
+                    selection
                         .orderBy(Pair(CardParts.number, SortOrder.ASC), Pair(CardParts.partId, SortOrder.ASC))
                         .map(::mapCardDetails)
                         .toList()
@@ -90,14 +93,18 @@ class CardSearchDao {
         )
     }
 
-    private fun buildQuery(query: String, cardSourceId: Int, warnings: MutableList<String>): Query {
+    private fun buildQuery(query: String, cardSourceId: Int?, warnings: MutableList<String>): Query {
         val ast = SearchQueryParser.parse(query)
 
         val condition = addPartToQuery(ast, warnings)
         val query = CardParts.select(CardParts.cardId)
         
-        return if (condition != null) {
+        return if (condition != null && cardSourceId != null) {
             query.where { condition and (CardParts.sourceId eq cardSourceId) }
+        } else if (condition != null) {
+            query.where { condition }
+        } else if (cardSourceId != null) {
+            query.where { CardParts.sourceId eq cardSourceId }
         } else {
             query
         }
