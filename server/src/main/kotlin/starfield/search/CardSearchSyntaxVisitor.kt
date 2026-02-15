@@ -19,6 +19,10 @@ class CardSearchSyntaxVisitor : SearchSyntaxBaseVisitor<SearchSyntaxTree>() {
             val value = ctx.WORD().text
             return SearchSyntaxTree.ValueNode(value, SearchMode.Text)
         }
+        else if (ctx.SEARCH_FILTER() != null) {
+            val value = ctx.SEARCH_FILTER().text
+            return SearchSyntaxTree.ValueNode(value, SearchMode.Text)
+        }
 //        else if (ctx.REGEX() != null) {
 //            val rawValue = ctx.REGEX().text
 //            val value = rawValue.substring(1, rawValue.length - 1) // Remove slashes
@@ -31,7 +35,7 @@ class CardSearchSyntaxVisitor : SearchSyntaxBaseVisitor<SearchSyntaxTree>() {
             val rawValue = ctx.OR().text
             return SearchSyntaxTree.ValueNode(rawValue, SearchMode.Text)
         } else {
-            throw IllegalArgumentException("Invalid search subject. Expected a single word, or a multi-word search term in quotes.")
+            throw SearchParseException("Invalid search subject. Expected a single word, or a multi-word search term in quotes.")
         }
     }
 
@@ -54,7 +58,7 @@ class CardSearchSyntaxVisitor : SearchSyntaxBaseVisitor<SearchSyntaxTree>() {
 
     override fun visitLabelRule(ctx: SearchSyntaxParser.LabelRuleContext): SearchSyntaxTree {
         val condition = SearchSyntaxTree.ConditionNode(
-            field = ctx.WORD().text,
+            field = ctx.SEARCH_FILTER().text,
             operator = SearchOperator.parse(ctx.SEPERATOR().text),
             value = visitSearchSubject(ctx.searchSubject())
         )

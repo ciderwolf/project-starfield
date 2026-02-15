@@ -67,10 +67,14 @@ tasks.generateGrammarSource {
     arguments = arguments + listOf("-visitor", "-long-messages")
 }
 
-tasks.named("compileKotlin") {
+tasks.compileKotlin {
     dependsOn(tasks.generateGrammarSource)
 }
 
-tasks.named("compileJava") {
+tasks.compileTestKotlin {
+    dependsOn(tasks.generateGrammarSource)
+}
+
+tasks.compileJava {
     dependsOn(tasks.generateGrammarSource)
 }
