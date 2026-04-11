@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import LoadingSpinner from '@/components/LoadingSpinner.vue';
+import LoadingState from '@/components/LoadingState.vue';
+import EmptyState from '@/components/EmptyState.vue';
 import LoadingButton from '@/components/LoadingButton.vue';
 import StyleButton from '@/components/StyleButton.vue';
 import Modal from '@/components/Modal.vue';
@@ -75,10 +76,8 @@ function showMenuBlade() {
       </h1>
       <style-button @click="showCreateCubeModal" small>+ New cube</style-button>
     </div>
-    <div class="empty-container-title" v-if="!cubes.isLoaded">
-      <h3 class="loading-cubes-title">
-        <LoadingSpinner /> Loading cubes...
-      </h3>
+    <div v-if="!cubes.isLoaded">
+      <LoadingState message="Loading cubes..." />
     </div>
     <ItemCardGrid v-else-if="Object.keys(cubes.cubes).length > 0">
       <ItemCard v-for="cube in cubes.cubes" :key="cube.id" :title="cube.name" :image="cube.thumbnailImage"
@@ -90,10 +89,7 @@ function showMenuBlade() {
         </template>
       </ItemCard>
     </ItemCardGrid>
-    <div v-else class="empty-container-title">
-      <h3>You have no cubes.</h3>
-      <p>Click on '+ New Cube' to create one.</p>
-    </div>
+    <EmptyState v-else title="You have no cubes." subtitle="Click on '+ New Cube' to create one." />
   </div>
 </template>
 
@@ -114,19 +110,6 @@ function showMenuBlade() {
   display: flex;
   gap: var(--space-lg);
   align-items: center;
-}
-
-.empty-container-title {
-  margin-top: 1em;
-  text-align: center;
-  color: var(--color-gray-900);
-  font-style: italic;
-}
-
-.loading-cubes-title {
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .delete-button {

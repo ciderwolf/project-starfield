@@ -3,7 +3,8 @@ import { computed, onMounted, onUnmounted, ref } from 'vue';
 import DeckPreview from '@/components/deck/DeckPreview.vue';
 import DeckStatsViz from '@/components/deck/DeckStatsViz.vue';
 import LoadingButton from '@/components/LoadingButton.vue';
-import LoadingSpinner from '@/components/LoadingSpinner.vue';
+import LoadingState from '@/components/LoadingState.vue';
+import IconButton from '@/components/IconButton.vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useDecksCache } from '@/cache/decks';
 import type { Deck, DeckCard } from '@/api/message';
@@ -160,9 +161,7 @@ function updateDeckText() {
   <div id="decklist" v-if="deck">
     <div class="title" v-if="deck !== null">
       <div style="display: flex; align-items: center; gap: 10px;">
-        <span @click="exitPage">
-          <span class="material-symbols-rounded" id="home-button">arrow_back</span>
-        </span>
+        <IconButton @click="exitPage" icon="arrow_back" class="nav-button" />
         <h1>Decklist ({{ mainCount }}/{{ sideCount }}) <span id="decklist-title-separator">&mdash;</span></h1>
       </div>
       <input type=text v-model="deck.name" id="deck-name-input">
@@ -193,7 +192,7 @@ function updateDeckText() {
     <DeckStatsViz :cards="deck.maindeck" :width="800" :height="600" />
   </div>
   <div v-else>
-    <h1 class="loading-title"><loading-spinner></loading-spinner> Loading...</h1>
+    <LoadingState full-page />
   </div>
 </template>
 
@@ -203,23 +202,13 @@ function updateDeckText() {
   margin-right: 10px;
 }
 
-#home-button {
-  color: var(--color-text);
-  cursor: pointer;
+.nav-button {
   font-size: var(--font-size-xl);
   padding: var(--space-md);
 }
 
-#home-button:hover {
+.nav-button:hover {
   background-color: var(--overlay-light);
-}
-
-.loading-title {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  margin-top: 25%;
 }
 
 .title {

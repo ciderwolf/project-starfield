@@ -126,6 +126,7 @@ function createToken(token: OracleCard) {
   border-radius: var(--radius-xxl);
   justify-content: center;
   width: 40vw;
+  margin-top: 1rem;
 }
 
 .search-result {

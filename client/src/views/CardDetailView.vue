@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { getCardDetails } from '@/api/card';
 import { type CardDetails, type OracleCard } from '@/api/message';
 import StyleButton from '@/components/StyleButton.vue';
 import { useSearchResultsStore } from '@/stores/search-results';
 import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
+import { cardSymbols } from '@/utils/card-utils';
 
 const route = useRoute();
 
@@ -23,25 +23,6 @@ onMounted(async () => {
 })
 
 
-function cardSymbolGroups(card: CardDetails): string[][] {
-  const cost = card.manaCost;
-  if (!cost) return [];
-
-  const parts = cost.split(' // ');
-  const result: string[][] = [];
-  for (const part of parts) {
-    const matches = part.matchAll(/\{([^\}]+)\}/g);
-    const partSymbols = Array.from(matches).map(match => match[1].replace('/', '').toLowerCase());
-    if (partSymbols.length > 0) {
-      result.push(partSymbols);
-    }
-  }
-  return result;
-}
-
-function cardSymbols(card: CardDetails): string[] {
-  return cardSymbolGroups(card).flatMap(symbol => symbol);
-}
 
 function flipCard() {
   if (cardFlipped.value) {

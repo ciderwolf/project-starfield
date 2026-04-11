@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import { useCardHover } from '@/composables/useCardHover';
 
 interface Card {
   count?: number;
@@ -11,51 +12,16 @@ interface Card {
 
 const props = defineProps<{ card: Card, cursor?: string }>();
 
-const display = ref("none");
-const left = ref(0);
-const top = ref(0);
-const cardImage = ref<HTMLInputElement | null>(null);
+const { hoverStyle, mouseOver, mouseMove, mouseLeave: hoverLeave } = useCardHover();
 
 const dfc = computed(() => props.card.backImage !== null);
 const frontName = computed(() => props.card.name.split(' // ')[0]);
 const backName = computed(() => props.card.name.split(' // ')[1]);
 const backFace = ref(false);
 
-const style = computed(() => ({
-  display: display.value,
-  left: `${left.value}px`,
-  top: `${top.value}px`
-}))
-
-function normalizePreviewY(e: MouseEvent) {
-  const height = (cardImage.value?.height ?? 0) + 20;
-  let newY = e.pageY;
-  if (newY + height > window.innerHeight + window.scrollY) {
-    newY = window.innerHeight + window.scrollY - height;
-  }
-  return newY;
-}
-
-function normalizePreviewX(e: MouseEvent) {
-  const width = (cardImage.value?.width ?? 0) + 20;
-  let newX = e.pageX;
-  if (newX + width > window.innerWidth + window.scrollX) {
-    newX = window.innerWidth + window.scrollX - width;
-  }
-  return newX;
-}
 function mouseLeave() {
-  display.value = 'none';
-  backFace.value = false
-}
-function mouseOver(e: MouseEvent) {
-  display.value = 'inline';
-  left.value = normalizePreviewX(e);
-  top.value = normalizePreviewY(e);
-}
-function mouseMove(e: MouseEvent) {
-  left.value = normalizePreviewX(e);
-  top.value = normalizePreviewY(e);
+  hoverLeave();
+  backFace.value = false;
 }
 function mouseOverDfc(e: MouseEvent) {
   backFace.value = true;
@@ -66,7 +32,7 @@ function mouseOverDfc(e: MouseEvent) {
 <template>
   <div>
     <Teleport to="body">
-      <img :style="style" class="card-preview" :src="backFace ? card.backImage! : card.image" ref="cardImage" />
+      <img :style="hoverStyle" class="card-preview" :src="backFace ? card.backImage! : card.image" ref="cardImage" />
     </Teleport>
     <span class="card-line" :style="{ cursor }" @mouseleave="mouseLeave" @mouseover="mouseOver" @mousemove="mouseMove">
       {{ card.count }} {{ frontName }}</span>

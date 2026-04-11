@@ -2,7 +2,8 @@
 import { onMounted, ref } from 'vue';
 import DeckPreview from '@/components/deck/DeckPreview.vue';
 import LoadingButton from '@/components/LoadingButton.vue';
-import LoadingSpinner from '@/components/LoadingSpinner.vue';
+import LoadingState from '@/components/LoadingState.vue';
+import IconButton from '@/components/IconButton.vue';
 import { useRoute } from 'vue-router';
 import type { Cube } from '@/api/message';
 import { useCubesCache } from '@/cache/cubes';
@@ -40,7 +41,7 @@ async function syncCubeClicked() {
   <div id="decklist" v-if="cube">
     <div class="title" v-if="cube !== null">
       <router-link :to="{ name: 'home' }">
-        <span class="material-symbols-rounded" id="home-button">home</span>
+        <IconButton icon="home" class="nav-button" />
       </router-link>
       <h1>{{ cube.name }}</h1>
       <loading-button :on-click="syncCubeClicked">Re-sync from Cube Cobra</loading-button>
@@ -48,7 +49,7 @@ async function syncCubeClicked() {
     <deck-preview :include-sideboard="false" :deckData="{ maindeck: cube.cards, sideboard: [], ...cube }" />
   </div>
   <div v-else>
-    <h1 class="loading-title"><loading-spinner /> Loading...</h1>
+    <LoadingState full-page />
   </div>
 </template>
 
@@ -57,23 +58,13 @@ async function syncCubeClicked() {
   margin-left: 10px;
 }
 
-#home-button {
-  color: var(--color-text);
-  cursor: pointer;
+.nav-button {
   font-size: var(--font-size-xl);
   padding: var(--space-md);
 }
 
-#home-button:hover {
+.nav-button:hover {
   background-color: var(--overlay-light);
-}
-
-.loading-title {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  margin-top: 25%;
 }
 
 .title {

@@ -3,7 +3,7 @@ import { RouterView, useRouter } from 'vue-router'
 import { ws } from './ws'
 import { authenticate } from './api';
 import { ref } from 'vue';
-import LoadingSpinner from './components/LoadingSpinner.vue';
+import LoadingState from './components/LoadingState.vue';
 import AlertsContainer from './components/AlertsContainer.vue';
 console.log(ws);
 
@@ -20,22 +20,9 @@ authenticate().then((isLoggedIn) => {
 
 <template>
   <RouterView v-if="loaded" />
-  <div v-else class="loading-view"><loading-spinner /> Loading...</div>
+  <LoadingState v-else full-page />
   <AlertsContainer />
 </template>
-
-<style scoped>
-.loading-view {
-  margin: 0 auto;
-  margin-top: 25%;
-  display: flex;
-  align-items: center;
-  gap: var(--space-md);
-  width: fit-content;
-  font-size: var(--font-size-xxl);
-  font-weight: var(--font-weight-light);
-}
-</style>
 
 <style>
 body {

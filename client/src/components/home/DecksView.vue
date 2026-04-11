@@ -2,7 +2,8 @@
 import { newDeck, deleteDeck } from '@/api/deck';
 import type { DeckListing } from '@/api/message';
 import { useDecksCache } from '@/cache/decks';
-import LoadingSpinner from '@/components/LoadingSpinner.vue';
+import LoadingState from '@/components/LoadingState.vue';
+import EmptyState from '@/components/EmptyState.vue';
 import LoadingButton from '@/components/LoadingButton.vue';
 import ItemCard from '@/components/home/ItemCard.vue';
 import ItemCardGrid from '@/components/home/ItemCardGrid.vue';
@@ -47,10 +48,8 @@ function deckThumbnailUrl(deck: DeckListing) {
       <h2>Decks</h2>
       <loading-button :on-click="createDeck" small>+ New Deck</loading-button>
     </div>
-    <div class="empty-container-title" v-if="!decks.isLoaded">
-      <h3 class="loading-decks-title">
-        <LoadingSpinner /> Loading decks...
-      </h3>
+    <div v-if="!decks.isLoaded">
+      <LoadingState message="Loading decks..." />
     </div>
     <ItemCardGrid v-else-if="Object.keys(decks.decks).length > 0">
       <ItemCard v-for="deck in decks.decks" :key="deck.id" :title="deck.name" :image="deckThumbnailUrl(deck)"
@@ -62,10 +61,7 @@ function deckThumbnailUrl(deck: DeckListing) {
         </template>
       </ItemCard>
     </ItemCardGrid>
-    <div v-else class="empty-container-title">
-      <h3>You have no decks.</h3>
-      <p>Click on '+ New Deck' to create one.</p>
-    </div>
+    <EmptyState v-else title="You have no decks." subtitle="Click on '+ New Deck' to create one." />
   </div>
 </template>
 
@@ -74,19 +70,6 @@ function deckThumbnailUrl(deck: DeckListing) {
   display: flex;
   gap: var(--space-xl);
   align-items: center;
-}
-
-.empty-container-title {
-  margin-top: 1em;
-  text-align: center;
-  color: var(--color-gray-900);
-  font-style: italic;
-}
-
-.loading-decks-title {
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .delete-button {

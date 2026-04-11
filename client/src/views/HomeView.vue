@@ -15,6 +15,7 @@ import type { DraftSet } from '@/api/draft';
 import MenuNavigationBlade from '@/components/home/MenuNavigationBlade.vue';
 import { type ComponentExposed } from 'vue-component-type-helpers';
 import IconButton from '@/components/IconButton.vue';
+import EmptyState from '@/components/EmptyState.vue';
 
 const showCreateGameModal = ref(false);
 const gameName = ref('');
@@ -107,10 +108,7 @@ function showMenuBlade() {
           <game-listing-row :game="game"></game-listing-row>
         </div>
       </div>
-      <div v-else class="empty-container-title">
-        <h3>No games right now.</h3>
-        <p>Click on '+ Create game' to create one.</p>
-      </div>
+      <EmptyState v-else title="No games right now." subtitle="Click on '+ Create game' to create one." />
       <DecksView />
     </main>
   </div>
@@ -132,13 +130,6 @@ function showMenuBlade() {
   display: flex;
   align-items: center;
   gap: var(--space-md);
-}
-
-.empty-container-title {
-  margin-top: 1em;
-  text-align: center;
-  color: var(--color-gray-900);
-  font-style: italic;
 }
 
 #main {

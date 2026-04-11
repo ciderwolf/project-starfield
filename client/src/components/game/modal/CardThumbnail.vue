@@ -1,7 +1,7 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import type { OracleCard } from '@/api/message';
-import { computed, ref } from 'vue';
-
+import { useCardHover } from '@/composables/useCardHover';
 
 const props = defineProps<{ card?: OracleCard, class?: string }>();
 
@@ -21,49 +21,16 @@ const emit = defineEmits<{
   (event: 'mouseleave', e: MouseEvent): void
 }>()
 
-const left = ref(0);
-const top = ref(0);
-const display = ref("none");
-const cardImage = ref<HTMLInputElement>();
+const { hoverStyle, mouseOver: hoverOver, mouseMove, mouseLeave: hoverLeave } = useCardHover();
 
-const hoverStyle = computed(() => ({
-  display: display.value,
-  left: `${left.value}px`,
-  top: `${top.value}px`
-}))
-
-function normalizePreviewY(e: MouseEvent) {
-  const height = (cardImage.value?.height ?? 0) + 20;
-  let newY = e.pageY;
-  if (newY + height > window.innerHeight + window.scrollY) {
-    newY = window.innerHeight + window.scrollY - height;
-  }
-  return newY;
-}
-
-function normalizePreviewX(e: MouseEvent) {
-  const width = (cardImage.value?.width ?? 0) + 20;
-  let newX = e.pageX;
-  if (newX + width > window.innerWidth + window.scrollX) {
-    newX = window.innerWidth + window.scrollX - width;
-  }
-  return newX;
-}
 function mouseLeave(e: MouseEvent) {
-  display.value = 'none';
+  hoverLeave();
   emit('mouseleave', e);
 }
 
 function mouseOver(e: MouseEvent) {
-  display.value = 'inline';
-  // get the x coordiate of the mouse
-  left.value = normalizePreviewX(e);
-  top.value = normalizePreviewY(e);
+  hoverOver(e);
   emit('mouseover', e);
-}
-function mouseMove(e: MouseEvent) {
-  left.value = normalizePreviewX(e);
-  top.value = normalizePreviewY(e);
 }
 
 </script>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import LoadingSpinner from '@/components/LoadingSpinner.vue';
+import LoadingState from '@/components/LoadingState.vue';
+import EmptyState from '@/components/EmptyState.vue';
 import IconButton from '@/components/IconButton.vue';
 import MenuNavigationBlade from '@/components/home/MenuNavigationBlade.vue';
 import ItemCard from '@/components/home/ItemCard.vue';
@@ -44,18 +45,14 @@ function showMenuBlade() {
         <StyleButton small>Search All Cards</StyleButton>
       </router-link>
     </div>
-    <div class="empty-container-title" v-if="isLoading">
-      <h3 class="loading-sets-title">
-        <LoadingSpinner /> Loading sets...
-      </h3>
+    <div v-if="isLoading">
+      <LoadingState message="Loading sets..." />
     </div>
     <ItemCardGrid v-else-if="sets.length > 0">
       <ItemCard v-for="set in sets" :key="set.code" :title="set.name" :image="set.icon" :image-alt="`${set.name} Icon`"
         :to="`/sets/${set.code.toLowerCase()}/cards`" image-fit="contain" />
     </ItemCardGrid>
-    <div v-else class="empty-container-title">
-      <h3>No sets available.</h3>
-    </div>
+    <EmptyState v-else title="No sets available." />
   </div>
 </template>
 
@@ -77,18 +74,5 @@ function showMenuBlade() {
   display: flex;
   gap: var(--space-lg);
   align-items: center;
-}
-
-.empty-container-title {
-  margin-top: 1em;
-  text-align: center;
-  color: var(--color-gray-900);
-  font-style: italic;
-}
-
-.loading-sets-title {
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 </style>
