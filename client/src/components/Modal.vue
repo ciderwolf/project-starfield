@@ -32,15 +32,15 @@ onUnmounted(() => {
 
 <template>
   <div class="modal" v-if="visible" :class="{ minimized }">
-    <div class="modal-minimized" v-if="minimized">
+    <div class="modal-minimized" @click="maximize" v-if="minimized">
       <h3>{{ title ?? 'Minimized Window' }}</h3>
-      <span class="modal-control" @click="maximize">&plus;</span>
+      <span class="material-symbols-rounded modal-control">add</span>
     </div>
     <div class="modal-background" v-if="!minimized"></div>
     <div class="modal-content" v-if="!minimized" :style="modalContentStyles">
       <div class="modal-controls">
-        <span class="modal-control" @click="minimize">&ndash;</span>
-        <span class="modal-control" @click="emit('close')">&times;</span>
+        <span class="material-symbols-rounded modal-control" @click="minimize">minimize</span>
+        <span class="material-symbols-rounded modal-control" @click="emit('close')">close</span>
       </div>
       <slot></slot>
     </div>
@@ -67,7 +67,7 @@ onUnmounted(() => {
   bottom: 0;
   right: 0;
   width: max-content;
-  border-radius: 20px 20px 0 0;
+  border-radius: 0.5rem 0.5rem 0 0;
   box-shadow: var(--shadow-lg);
   cursor: pointer;
   background: var(--color-white);
@@ -88,18 +88,23 @@ onUnmounted(() => {
   position: absolute;
   top: 0;
   right: 0;
+  margin: 0.5rem;
 }
 
 .modal-control {
-  padding: 0 0.5rem;
-  top: 1rem;
-  right: 1rem;
-  font-size: 2rem;
+  font-size: 24px;
   cursor: pointer;
+  background: none;
+  border: none;
+  padding: var(--space-xs);
+  border-radius: var(--radius-md);
+  color: var(--color-gray-700);
+  transition: background-color var(--transition-normal), color var(--transition-normal);
 }
 
 .modal-control:hover {
-  background-color: var(--color-gray-400);
+  background-color: var(--color-gray-100);
+  color: var(--color-black);
 }
 
 .modal-content {

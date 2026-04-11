@@ -6,154 +6,160 @@
  */
 
 :root {
-  /* ──────────────────────────────────────
+    /* ──────────────────────────────────────
      Colors – Primary (Brand Blue)
      ────────────────────────────────────── */
-  --color-primary: rgb(78, 128, 220);
-  --color-primary-hover: #3f65b0;
-  --color-primary-active: #375595;
-  --color-primary-light: hsl(219, 87%, 94%);
-  --color-primary-text: hsl(219, 67%, 58%);
+    --color-primary: rgb(78, 128, 220);
+    --color-primary-hover: #3f65b0;
+    --color-primary-active: #375595;
+    --color-primary-light: hsl(219, 87%, 94%);
+    --color-primary-text: hsl(219, 67%, 58%);
 
-  /* ──────────────────────────────────────
+    /* ──────────────────────────────────────
      Colors – Danger / Error
      ────────────────────────────────────── */
-  --color-danger: #f00;
-  --color-danger-hover: #f55;
-  --color-danger-active: #f77;
+    --color-danger: #f00;
+    --color-danger-hover: #f55;
+    --color-danger-active: #f77;
 
-  /* ──────────────────────────────────────
+    /* ──────────────────────────────────────
      Colors – Alert Variants
      ────────────────────────────────────── */
-  --color-alert-danger-bg: #f8d7da;
-  --color-alert-danger-border: #f5c6cb;
-  --color-alert-danger-text: #721c24;
+    --color-alert-danger-bg: #f8d7da;
+    --color-alert-danger-border: #f5c6cb;
+    --color-alert-danger-text: #721c24;
 
-  --color-alert-success-bg: #d4edda;
-  --color-alert-success-border: #c3e6cb;
-  --color-alert-success-text: #155724;
+    --color-alert-success-bg: #d4edda;
+    --color-alert-success-border: #c3e6cb;
+    --color-alert-success-text: #155724;
 
-  --color-alert-info-bg: #d1ecf1;
-  --color-alert-info-border: #bee5eb;
-  --color-alert-info-text: #0c5460;
+    --color-alert-info-bg: #d1ecf1;
+    --color-alert-info-border: #bee5eb;
+    --color-alert-info-text: #0c5460;
 
-  --color-alert-warning-bg: #fff3cd;
-  --color-alert-warning-border: #ffeeba;
-  --color-alert-warning-text: #856404;
+    --color-alert-warning-bg: #fff3cd;
+    --color-alert-warning-border: #ffeeba;
+    --color-alert-warning-text: #856404;
 
-  /* ──────────────────────────────────────
+    /* ──────────────────────────────────────
      Colors – Neutral / Gray Scale
      ────────────────────────────────────── */
-  --color-white: #fff;
-  --color-gray-50: #f9f9f9;
-  --color-gray-100: #f5f5f5;
-  --color-gray-150: #f0f0f0;
-  --color-gray-200: #eee;
-  --color-gray-300: #ddd;
-  --color-gray-400: #ccc;
-  --color-gray-500: #aaa;
-  --color-gray-600: #999;
-  --color-gray-650: #888;
-  --color-gray-700: #666;
-  --color-gray-750: #555;
-  --color-gray-800: #4f4f4f;
-  --color-gray-900: #333;
-  --color-black: #000;
+    --color-white: #fff;
+    --color-gray-50: #f9f9f9;
+    --color-gray-100: #f5f5f5;
+    --color-gray-150: #f0f0f0;
+    --color-gray-200: #eee;
+    --color-gray-300: #ddd;
+    --color-gray-400: #ccc;
+    --color-gray-500: #aaa;
+    --color-gray-600: #999;
+    --color-gray-650: #888;
+    --color-gray-700: #666;
+    --color-gray-750: #555;
+    --color-gray-800: #4f4f4f;
+    --color-gray-900: #333;
+    --color-black: #000;
 
-  /* Semantic neutral aliases */
-  --color-text: var(--color-black);
-  --color-text-muted: var(--color-gray-700);
-  --color-text-placeholder: var(--color-gray-600);
-  --color-text-disabled: #cdcdcd;
-  --color-bg: var(--color-white);
-  --color-bg-subtle: var(--color-gray-200);
-  --color-bg-muted: var(--color-gray-150);
-  --color-border: var(--color-gray-300);
-  --color-border-strong: var(--color-black);
-  --color-border-input: rgb(123, 123, 123);
+    /* Semantic neutral aliases */
+    --color-text: var(--color-black);
+    --color-text-muted: var(--color-gray-700);
+    --color-text-placeholder: var(--color-gray-600);
+    --color-text-disabled: #cdcdcd;
+    --color-bg: var(--color-white);
+    --color-bg-subtle: var(--color-gray-200);
+    --color-bg-muted: var(--color-gray-150);
+    --color-border: var(--color-gray-300);
+    --color-border-strong: var(--color-black);
+    --color-border-input: rgb(123, 123, 123);
 
-  /* ──────────────────────────────────────
+    /* ──────────────────────────────────────
      Colors – Overlays
      ────────────────────────────────────── */
-  --overlay-light: rgba(0, 0, 0, 0.2);
-  --overlay-medium: rgba(0, 0, 0, 0.4);
-  --overlay-heavy: rgba(0, 0, 0, 0.5);
-  --overlay-extra-heavy: rgba(0, 0, 0, 0.6);
+    --overlay-light: rgba(0, 0, 0, 0.2);
+    --overlay-medium: rgba(0, 0, 0, 0.4);
+    --overlay-heavy: rgba(0, 0, 0, 0.5);
+    --overlay-extra-heavy: rgba(0, 0, 0, 0.6);
 
-  /* ──────────────────────────────────────
+    /* ──────────────────────────────────────
      Typography – Font Family
      ────────────────────────────────────── */
-  --font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
-    Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    --font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+        Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 
-  /* ──────────────────────────────────────
+    /* ──────────────────────────────────────
      Typography – Font Sizes
      ────────────────────────────────────── */
-  --font-size-xs: 0.8em;     /* small labels, log text */
-  --font-size-sm: 1em;       /* base / body */
-  --font-size-md: 1.25em;    /* buttons, tabs */
-  --font-size-lg: 1.5em;     /* section headings */
-  --font-size-xl: 2em;       /* page headings */
-  --font-size-xxl: 2.5em;    /* hero / loading */
+    --font-size-xs: 0.8em;
+    /* small labels, log text */
+    --font-size-sm: 1em;
+    /* base / body */
+    --font-size-md: 1.25em;
+    /* buttons, tabs */
+    --font-size-lg: 1.5em;
+    /* section headings */
+    --font-size-xl: 2em;
+    /* page headings */
+    --font-size-xxl: 2.5em;
+    /* hero / loading */
 
-  /* Fixed-pixel sizes (for UI chrome that shouldn't scale with em) */
-  --font-size-fixed-xs: 12px;
-  --font-size-fixed-sm: 14px;
-  --font-size-fixed-md: 16px;
-  --font-size-fixed-lg: 20px;
+    /* Fixed-pixel sizes (for UI chrome that shouldn't scale with em) */
+    --font-size-fixed-xs: 12px;
+    --font-size-fixed-sm: 14px;
+    --font-size-fixed-md: 16px;
+    --font-size-fixed-lg: 20px;
 
-  /* ──────────────────────────────────────
+    /* ──────────────────────────────────────
      Typography – Font Weights
      ────────────────────────────────────── */
-  --font-weight-light: 300;
-  --font-weight-normal: 400;
-  --font-weight-medium: 500;
-  --font-weight-bold: 700;
+    --font-weight-light: 300;
+    --font-weight-normal: 400;
+    --font-weight-medium: 500;
+    --font-weight-bold: 700;
 
-  /* ──────────────────────────────────────
+    /* ──────────────────────────────────────
      Spacing
      ────────────────────────────────────── */
-  --space-xxs: 2px;
-  --space-xs: 4px;
-  --space-sm: 5px;
-  --space-md: 10px;
-  --space-lg: 12px;
-  --space-xl: 20px;
-  --space-xxl: 30px;
+    --space-xxs: 2px;
+    --space-xs: 4px;
+    --space-sm: 5px;
+    --space-md: 10px;
+    --space-lg: 12px;
+    --space-xl: 20px;
+    --space-xxl: 30px;
 
-  /* ──────────────────────────────────────
+    /* ──────────────────────────────────────
      Border Radius
      ────────────────────────────────────── */
-  --radius-sm: 3px;
-  --radius-md: 5px;
-  --radius-lg: 8px;
-  --radius-xl: 10px;
-  --radius-xxl: 15px;
-  --radius-round: 50%;
-  --radius-pill: 500px;
+    --radius-sm: 3px;
+    --radius-md: 5px;
+    --radius-lg: 8px;
+    --radius-xl: 10px;
+    --radius-xxl: 15px;
+    --radius-round: 50%;
+    --radius-pill: 500px;
 
-  /* ──────────────────────────────────────
+    /* ──────────────────────────────────────
      Box Shadows
      ────────────────────────────────────── */
-  --shadow-sm: 0 0 5px 0 rgba(0, 0, 0, 0.5);
-  --shadow-md: 0 0 10px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 0 1rem rgba(0, 0, 0, 0.5);
-  --shadow-xl: 0 0 20px rgba(0, 0, 0, 0.3);
-  --shadow-dropdown: 0 4px 8px rgba(0, 0, 0, 0.1);
+    --shadow-sm: 0 0 5px 0 rgba(0, 0, 0, 0.5);
+    --shadow-md: 0 0 10px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 0 1rem rgba(0, 0, 0, 0.5);
+    --shadow-xl: 0 0 20px rgba(0, 0, 0, 0.3);
+    --shadow-dropdown: 0 4px 8px rgba(0, 0, 0, 0.1);
 
-  /* ──────────────────────────────────────
+    /* ──────────────────────────────────────
      Z-Index Layers
      ────────────────────────────────────── */
-  --z-base: 1;
-  --z-dropdown: 100;
-  --z-modal: 1000;
-  --z-tooltip: 10001;
-  --z-card-preview: 200000;
+    --z-base: 1;
+    --z-dropdown: 100;
+    --z-modal: 1000;
+    --z-tooltip: 10001;
+    --z-card-preview: 200000;
 
-  /* ──────────────────────────────────────
+    /* ──────────────────────────────────────
      Transitions
      ────────────────────────────────────── */
-  --transition-fast: 0.1s ease;
-  --transition-normal: 0.2s ease;
-  --transition-slow: 0.3s ease;
+    --transition-fast: 0.1s ease;
+    --transition-normal: 0.2s ease;
+    --transition-slow: 0.3s ease;
 }
