@@ -1,10 +1,26 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref, watch } from 'vue'
 
 const props = defineProps<{ visible: boolean, title?: string, modalContentStyles?: string }>()
 const minimized = ref(false);
 
 const emit = defineEmits(['close']);
+
+watch(() => props.visible, (visible) => {
+  if (visible && !minimized.value) {
+    document.body.style.overflow = 'hidden';
+  } else {
+    document.body.style.overflow = '';
+  }
+});
+
+watch(minimized, (isMinimized) => {
+  if (isMinimized || !props.visible) {
+    document.body.style.overflow = '';
+  } else {
+    document.body.style.overflow = 'hidden';
+  }
+});
 
 function minimize() {
   minimized.value = true;
@@ -27,19 +43,20 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('keydown', keyPressed);
+  document.body.style.overflow = '';
 })
 </script>
 
 <template>
   <div class="modal" v-if="visible" :class="{ minimized }">
     <div class="modal-minimized" @click="maximize" v-if="minimized">
-      <h3>{{ title ?? 'Minimized Window' }}</h3>
+      <h3>{{ title }}</h3>
       <span class="material-symbols-rounded modal-control">add</span>
     </div>
     <div class="modal-background" v-if="!minimized"></div>
     <div class="modal-content" v-if="!minimized" :style="modalContentStyles">
       <div class="modal-controls">
-        <span class="material-symbols-rounded modal-control" @click="minimize">minimize</span>
+        <span class="material-symbols-rounded modal-control" @click="minimize" v-if="title">minimize</span>
         <span class="material-symbols-rounded modal-control" @click="emit('close')">close</span>
       </div>
       <slot></slot>
