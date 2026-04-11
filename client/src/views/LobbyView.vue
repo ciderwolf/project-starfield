@@ -128,7 +128,7 @@ async function startGameClicked() {
 .player-status-cards {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: var(--space-xl);
   margin: 0 auto;
   width: fit-content;
   flex-wrap: wrap;
@@ -138,28 +138,28 @@ async function startGameClicked() {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
+  gap: var(--space-xl);
   margin: 0 auto;
   width: 250px;
   height: 150px;
-  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.5);
-  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-xl);
 }
 
 .bot-status-card {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: var(--space-xl);
   margin: 50px auto;
   width: 150px;
-  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.5);
-  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-xl);
 }
 
 .deck-select-section {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: var(--space-xl);
   margin: 0 auto;
   width: fit-content;
 }

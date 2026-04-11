@@ -175,8 +175,8 @@ onUnmounted(() => {
 <style>
 .zone-bounds {
   position: absolute;
-  border: 1px solid black;
-  background-color: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--color-black);
+  background-color: var(--overlay-light);
   /* pointer-events: none; */
   box-sizing: border-box;
 }
@@ -184,11 +184,11 @@ onUnmounted(() => {
 .zone-bubble {
   position: absolute;
   font-size: 0.8rem;
-  background-color: rgba(0, 0, 0, 0.4);
+  background-color: var(--overlay-medium);
   border-radius: 0.2rem;
   margin: 0.1rem;
-  z-index: 2;
-  color: white;
+  z-index: var(--z-base);
+  color: var(--color-white);
 }
 
 .zone-count {
@@ -200,21 +200,21 @@ onUnmounted(() => {
 .zone-options {
   top: 0;
   right: 0;
-  font-size: 1em;
-  background-color: rgba(0, 0, 0, 0.4);
+  font-size: var(--font-size-sm);
+  background-color: var(--overlay-medium);
   padding: 0 0.3rem 0.2rem 0.3rem;
   pointer-events: all;
   cursor: pointer;
 }
 
 .zone-options:hover {
-  background-color: rgba(0, 0, 0, 0.6);
+  background-color: var(--overlay-extra-heavy);
 }
 
 .drag-rect {
   position: absolute;
-  border: 1px solid black;
-  background-color: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--color-black);
+  background-color: var(--overlay-light);
   pointer-events: none;
   box-sizing: border-box;
 }

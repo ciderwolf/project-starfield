@@ -26,13 +26,13 @@ function getPlayerIcon(id: string) {
 
 <style scoped>
 .draft-pack-queues {
-  margin-top: 20px;
+  margin-top: var(--space-xl);
 }
 
 .pack-queue-player {
   display: flex;
   align-items: center;
-  margin: 5px 0;
+  margin: var(--space-sm) 0;
 }
 
 .pack-queue-container {

@@ -243,7 +243,7 @@ onUnmounted(() => {
 
 .inputs {
   display: flex;
-  gap: 10px;
+  gap: var(--space-md);
   align-items: center;
 }
 
@@ -256,8 +256,8 @@ onUnmounted(() => {
 img.card-thumbnail__card {
   width: 10rem;
   margin: 0.5rem;
-  border: 3px solid black;
-  border-radius: 10px !important;
+  border: 3px solid var(--color-black);
+  border-radius: var(--radius-xl) !important;
   cursor: pointer;
   filter: grayscale(50%) brightness(75%);
 }

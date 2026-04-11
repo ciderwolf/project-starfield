@@ -195,8 +195,8 @@ function moveToMaindeck(cardId: string) {
 
 .deck-card-editor {
   display: flex;
-  gap: 10px;
-  padding: 0 10px;
+  gap: var(--space-md);
+  padding: 0 var(--space-md);
   overflow: scroll;
 }
 
@@ -247,17 +247,17 @@ function moveToMaindeck(cardId: string) {
 
 .deck-groups {
   display: flex;
-  gap: 20px;
+  gap: var(--space-xl);
   overflow: scroll;
   height: 100%;
 }
 
 .grouped-cards {
   position: relative;
-  background-color: #f9f9f9;
-  border: 1px solid #ddd;
-  padding: 10px;
-  border-radius: 5px;
+  background-color: var(--color-gray-50);
+  border: 1px solid var(--color-gray-300);
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
 }
 
 .grouped-cards h4 {
@@ -272,10 +272,10 @@ function moveToMaindeck(cardId: string) {
 .card-line-container {
   display: flex;
   align-items: center;
-  padding: 5px;
-  margin: 5px 0;
-  border: 1px solid #000;
-  border-radius: 5px;
+  padding: var(--space-sm);
+  margin: var(--space-sm) 0;
+  border: 1px solid var(--color-black);
+  border-radius: var(--radius-md);
   justify-content: space-between;
 }
 
@@ -340,14 +340,14 @@ function moveToMaindeck(cardId: string) {
 
 .card-symbol-group:not(:last-child)::after {
   content: " // ";
-  margin-right: 5px;
+  margin-right: var(--space-sm);
   padding: 0;
-  color: #888;
+  color: var(--color-gray-650);
 }
 
 hr {
   border: none;
-  border-top: 1px solid #ddd;
+  border-top: 1px solid var(--color-gray-300);
   margin: 10px 0;
 }
 </style>

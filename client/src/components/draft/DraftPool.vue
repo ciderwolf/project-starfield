@@ -229,8 +229,8 @@ onUnmounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px;
-  background-color: #f0f0f0;
+  padding: var(--space-md);
+  background-color: var(--color-gray-150);
 }
 
 .draft-pool {
@@ -238,8 +238,8 @@ onUnmounted(() => {
   max-width: 600px;
   height: 100vh;
   position: relative;
-  border: 1px solid #ddd;
-  background: #eee;
+  border: 1px solid var(--color-gray-300);
+  background: var(--color-gray-200);
   box-sizing: border-box;
   display: flex;
 }
@@ -251,20 +251,20 @@ onUnmounted(() => {
   width: 5px;
   height: 100%;
   cursor: ew-resize;
-  background-color: #ccc;
+  background-color: var(--color-gray-400);
   box-sizing: border-box;
 }
 
 .draft-pool-content {
   overflow-y: scroll;
   width: 100%;
-  padding: 10px;
+  padding: var(--space-md);
 }
 
 
 .leave-draft-control {
   display: flex;
-  gap: 5px;
+  gap: var(--space-sm);
   justify-content: right;
 }
 </style>

@@ -4,6 +4,7 @@ import vClickOutside from "click-outside-vue3"
 
 import App from './App.vue'
 import router from './router'
+import './assets/variables.css'
 
 const app = createApp(App)
 

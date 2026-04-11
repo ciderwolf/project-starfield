@@ -28,11 +28,11 @@ withDefaults(defineProps<{
   flex-direction: column;
   text-decoration: none;
   text-align: center;
-  color: #000;
+  color: var(--color-black);
   margin: 0.5em;
-  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.5);
+  box-shadow: var(--shadow-sm);
   width: 250px;
-  background: white;
+  background: var(--color-white);
   height: min-content;
 }
 

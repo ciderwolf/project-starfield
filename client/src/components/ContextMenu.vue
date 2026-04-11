@@ -147,19 +147,19 @@ function optionClicked(option: ContextMenuOption) {
 <style scoped>
 .card-context-menu {
   position: absolute;
-  background-color: #fff;
-  border-radius: 3px;
-  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.5);
-  padding: 5px;
-  z-index: 100;
+  background-color: var(--color-white);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-sm);
+  z-index: var(--z-dropdown);
   box-sizing: content-box;
   min-width: max-content;
 }
 
 .card-context-menu-title {
-  font-size: 14px;
-  font-weight: bold;
-  margin-bottom: 5px;
+  font-size: var(--font-size-fixed-sm);
+  font-weight: var(--font-weight-bold);
+  margin-bottom: var(--space-sm);
 }
 
 .card-context-menu-options {
@@ -175,13 +175,13 @@ function optionClicked(option: ContextMenuOption) {
 
 .card-context-menu-submenu:hover,
 .card-context-menu-option:hover {
-  background: #eee;
+  background: var(--color-gray-200);
 }
 
 .card-context-menu-seperator {
   height: 1px;
-  background-color: #ccc;
-  margin: 5px 0;
+  background-color: var(--color-gray-400);
+  margin: var(--space-sm) 0;
 }
 
 .card-context-menu-submenu {
@@ -192,9 +192,9 @@ function optionClicked(option: ContextMenuOption) {
 }
 
 .card-context-menu-submenu-title {
-  font-size: 12px;
-  font-weight: bold;
-  margin: 5px 0;
+  font-size: var(--font-size-fixed-xs);
+  font-weight: var(--font-weight-bold);
+  margin: var(--space-sm) 0;
 }
 
 .card-context-menu-submenu-title::after {
@@ -204,17 +204,17 @@ function optionClicked(option: ContextMenuOption) {
 
 .card-context-menu-submenu-seperator {
   height: 1px;
-  background-color: #ccc;
+  background-color: var(--color-gray-400);
 }
 
 .card-context-menu-submenu-text {
-  font-size: 12px;
-  margin: 5px 0;
+  font-size: var(--font-size-fixed-xs);
+  margin: var(--space-sm) 0;
 }
 
 .card-context-menu-text {
-  font-size: 12px;
-  margin: 5px 0;
+  font-size: var(--font-size-fixed-xs);
+  margin: var(--space-sm) 0;
 }
 
 .card-context-menu-text.option-disabled {
@@ -227,12 +227,12 @@ function optionClicked(option: ContextMenuOption) {
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
+  gap: var(--space-xl);
 }
 
 .card-context-menu-number-input {
-  font-size: 12px;
-  margin: 5px 0;
+  font-size: var(--font-size-fixed-xs);
+  margin: var(--space-sm) 0;
   width: 50px;
   text-align: right;
 }

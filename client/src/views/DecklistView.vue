@@ -204,10 +204,10 @@ function updateDeckText() {
 }
 
 #home-button {
-  color: black;
+  color: var(--color-text);
   cursor: pointer;
-  font-size: 2em;
-  padding: 10px;
+  font-size: var(--font-size-xl);
+  padding: var(--space-md);
 }
 
 #home-button:hover {
@@ -248,8 +248,8 @@ function updateDeckText() {
 }
 
 #decklist textarea {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  font-size: 1em;
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
   min-width: 300px;
   min-height: 400px;
   margin: 5px 0;

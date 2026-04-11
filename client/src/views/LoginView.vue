@@ -54,16 +54,16 @@ async function loginClicked(e: Event) {
 
 .create-account-text {
   text-align: center;
-  color: #666;
+  color: var(--color-gray-700);
 }
 
 .create-account-text a {
-  color: #666;
+  color: var(--color-gray-700);
   text-decoration: underline;
 }
 
 .create-account-text a:hover {
-  color: #333;
+  color: var(--color-gray-900);
 
 }
 

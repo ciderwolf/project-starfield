@@ -184,8 +184,8 @@ watch([() => props.zoneRect, () => props.card.x, () => props.card.y], () => {
   background-size: contain;
   margin: 0;
   pointer-events: all;
-  border-radius: 3px;
-  z-index: 1;
+  border-radius: var(--radius-sm);
+  z-index: var(--z-base);
   box-sizing: border-box;
 }
 
@@ -199,12 +199,12 @@ watch([() => props.zoneRect, () => props.card.x, () => props.card.y], () => {
   bottom: 0;
   right: 0;
   width: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  color: white;
-  padding: 2px;
-  border-radius: 3px;
-  font-size: 0.8em;
-  font-weight: bold;
+  background-color: var(--overlay-heavy);
+  color: var(--color-white);
+  padding: var(--space-xxs);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
   text-align: center;
   padding: 0;
 }
@@ -214,10 +214,10 @@ watch([() => props.zoneRect, () => props.card.x, () => props.card.y], () => {
   top: 25%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 1.5em;
-  color: white;
-  background-color: rgba(0, 0, 0, 0.5);
-  padding: 2px;
-  border-radius: 50%;
+  font-size: var(--font-size-lg);
+  color: var(--color-white);
+  background-color: var(--overlay-heavy);
+  padding: var(--space-xxs);
+  border-radius: var(--radius-round);
 }
 </style>

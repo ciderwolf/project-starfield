@@ -12,9 +12,9 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  background-color: #eee;
-  border: 1px solid #ddd;
-  border-radius: 5px;
+  background-color: var(--color-gray-200);
+  border: 1px solid var(--color-gray-300);
+  border-radius: var(--radius-md);
   max-width: 80%;
   width: fit-content;
   margin: 0 auto;

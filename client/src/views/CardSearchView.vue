@@ -279,7 +279,7 @@ onUnmounted(() => {
 
 <style scoped>
 #card-search {
-  padding-top: 20px;
+  padding-top: var(--space-xl);
 }
 
 .title-bar {
@@ -294,8 +294,8 @@ onUnmounted(() => {
 #search-bar {
   display: flex;
   align-items: center;
-  padding-left: 5px;
-  border: 1px solid #ccc;
+  padding-left: var(--space-sm);
+  border: 1px solid var(--color-gray-400);
   max-width: 500px;
   min-width: 300px;
   width: 50%;
@@ -303,14 +303,14 @@ onUnmounted(() => {
 
 #search-bar input {
   flex: 1;
-  padding: 10px;
-  font-size: 16px;
+  padding: var(--space-md);
+  font-size: var(--font-size-fixed-md);
   border: none;
   outline: none;
 }
 
 .material-symbols-rounded {
-  color: black;
+  color: var(--color-text);
 }
 
 .icon-button {
@@ -319,12 +319,12 @@ onUnmounted(() => {
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 5px;
-  padding: 5px;
+  gap: var(--space-sm);
+  padding: var(--space-sm);
 }
 
 .icon-button:hover {
-  background: #ddd;
+  background: var(--color-gray-300);
 }
 
 .search-results-container {
@@ -351,11 +351,11 @@ onUnmounted(() => {
   cursor: pointer;
   user-select: none;
   font-size: 24pt;
-  color: #555;
+  color: var(--color-gray-750);
   background: #eeea;
-  border: 2px solid #555;
-  border-radius: 50%;
-  padding: 5px;
+  border: 2px solid var(--color-gray-750);
+  border-radius: var(--radius-round);
+  padding: var(--space-sm);
   position: absolute;
   top: 12.5%;
   left: 50%;
@@ -379,7 +379,7 @@ onUnmounted(() => {
 }
 
 h4 {
-  color: #333;
+  color: var(--color-gray-900);
   font-style: italic;
   text-align: center;
   margin-top: 5%;
@@ -389,18 +389,18 @@ h4 {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 5px 10px;
-  border-radius: 4px;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
   min-width: 90px;
 }
 
 .pending-badge {
   background: #ff9800;
-  color: white;
-  font-weight: bold;
-  font-size: 12px;
-  padding: 2px 8px;
-  border-radius: 12px;
+  color: var(--color-white);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-fixed-xs);
+  padding: var(--space-xxs) 8px;
+  border-radius: var(--radius-xl);
   min-width: 20px;
   text-align: center;
 }
@@ -424,7 +424,7 @@ h4 {
 .deck-modal-option {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--space-md);
 }
 
 @media screen and (max-width: 600px) {

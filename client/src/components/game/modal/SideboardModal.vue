@@ -94,17 +94,17 @@ async function submitSideboardChoices() {
 .deck-column {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  background: #eee;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  padding: 10px;
+  gap: var(--space-md);
+  background: var(--color-gray-200);
+  border: 1px solid var(--color-gray-300);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
 }
 
 .card {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-md);
   overflow: hidden;
   white-space: nowrap;
   width: 300px;

@@ -105,15 +105,15 @@ function doMenuAction(action: string) {
 .player-info {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-xs);
   position: absolute;
-  padding: 2px;
+  padding: var(--space-xxs);
   height: 108px;
   width: 94px;
-  font-size: 0.8em;
+  font-size: var(--font-size-xs);
 
-  background-color: white;
-  border: 1px solid #000;
+  background-color: var(--color-white);
+  border: 1px solid var(--color-black);
   border-radius: 0;
   box-sizing: border-box;
 }
@@ -134,14 +134,14 @@ function doMenuAction(action: string) {
 .player-info .end-turn-indicator {
   display: flex;
   align-items: center;
-  gap: 2px;
-  padding-right: 4px;
+  gap: var(--space-xxs);
+  padding-right: var(--space-xs);
 }
 
 .player-info .end-turn-button {
   cursor: pointer;
-  transition: background-color 0.2s;
-  border-radius: 3px;
+  transition: background-color var(--transition-normal);
+  border-radius: var(--radius-sm);
 }
 
 .player-info .end-turn-button:hover {

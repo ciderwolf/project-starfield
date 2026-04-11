@@ -30,32 +30,32 @@ authenticate().then((isLoggedIn) => {
   margin-top: 25%;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-md);
   width: fit-content;
-  font-size: 2.5em;
-  font-weight: 300;
+  font-size: var(--font-size-xxl);
+  font-weight: var(--font-weight-light);
 }
 </style>
 
 <style>
 body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-family: var(--font-family);
   margin: 0;
 }
 
 input,
 select {
-  border: 1px solid rgb(123, 123, 123);
-  background: white;
+  border: 1px solid var(--color-border-input);
+  background: var(--color-white);
   outline: none;
-  border-radius: 3px;
-  font-size: 1em;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
   padding: 0.25em 0.5em;
 }
 
 input:focus,
 select:focus {
-  border-color: rgb(78, 128, 220);
+  border-color: var(--color-primary);
 }
 
 a {

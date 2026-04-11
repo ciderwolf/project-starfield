@@ -79,7 +79,7 @@ function createCard(token: OracleCard) {
 
 .input-row {
   display: flex;
-  gap: 10px;
+  gap: var(--space-md);
   align-items: center;
 }
 
@@ -92,9 +92,9 @@ function createCard(token: OracleCard) {
   flex-wrap: wrap;
   overflow-y: scroll;
   max-height: 400px;
-  background-color: #eee;
-  border: 1px solid #ddd;
-  border-radius: 15px;
+  background-color: var(--color-gray-200);
+  border: 1px solid var(--color-gray-300);
+  border-radius: var(--radius-xxl);
   justify-content: center;
   width: 100%;
 }

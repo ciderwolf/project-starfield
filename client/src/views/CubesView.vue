@@ -106,20 +106,20 @@ function showMenuBlade() {
 
 .title {
   display: flex;
-  gap: 20px;
+  gap: var(--space-xl);
   align-items: center;
 }
 
 .title-text {
   display: flex;
-  gap: 12px;
+  gap: var(--space-lg);
   align-items: center;
 }
 
 .empty-container-title {
   margin-top: 1em;
   text-align: center;
-  color: #333;
+  color: var(--color-gray-900);
   font-style: italic;
 }
 

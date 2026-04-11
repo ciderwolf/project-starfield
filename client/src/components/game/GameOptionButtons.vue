@@ -88,7 +88,7 @@ const expanded = ref(false);
 <style scoped>
 .game-options {
   border: none;
-  background-color: #aaa;
+  background-color: var(--color-gray-500);
   font-size: 1rem;
   text-align: center;
   display: flex;
@@ -102,7 +102,7 @@ const expanded = ref(false);
 }
 
 .game-options button:hover {
-  background-color: #4f4f4f;
+  background-color: var(--color-gray-800);
 }
 
 .button-group {
@@ -123,15 +123,15 @@ const expanded = ref(false);
 .icon-button {
   display: flex;
   align-items: center;
-  padding: 5px;
-  gap: 5px;
+  padding: var(--space-sm);
+  gap: var(--space-sm);
   border: none;
   background-color: transparent;
-  color: white;
-  padding: 5px;
+  color: var(--color-white);
+  padding: var(--space-sm);
   margin: 0;
   cursor: pointer;
-  border-radius: 5px;
+  border-radius: var(--radius-md);
 }
 
 .icon-button.expanded {
@@ -140,7 +140,7 @@ const expanded = ref(false);
 
 .icon-button-text {
   display: none;
-  font-size: 1em;
+  font-size: var(--font-size-sm);
 }
 
 .icon-button.expanded .icon-button-text {
@@ -152,21 +152,21 @@ const expanded = ref(false);
   left: 50%;
   top: 100%;
   transform: translateX(-50%);
-  color: white;
-  background: #aaa;
+  color: var(--color-white);
+  background: var(--color-gray-500);
   border: none;
   cursor: pointer;
   width: 25%;
-  border-bottom-left-radius: 5px;
-  border-bottom-right-radius: 5px;
+  border-bottom-left-radius: var(--radius-md);
+  border-bottom-right-radius: var(--radius-md);
   height: 16px;
 }
 
 .show-more span {
-  font-size: 16px;
+  font-size: var(--font-size-fixed-md);
 }
 
 .show-more:hover {
-  background: #4f4f4f;
+  background: var(--color-gray-800);
 }
 </style>

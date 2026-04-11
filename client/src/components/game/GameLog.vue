@@ -58,21 +58,21 @@ function clearHover(message: CondensedMessage) {
 }
 
 .log-message {
-  background-color: #eee;
-  color: black;
-  padding: 5px;
-  margin: 2px;
-  border-radius: 5px;
+  background-color: var(--color-gray-200);
+  color: var(--color-text);
+  padding: var(--space-sm);
+  margin: var(--space-xxs);
+  border-radius: var(--radius-md);
   font-size: 0.8rem;
 }
 
 .log-message:hover {
-  background-color: #ddd;
+  background-color: var(--color-gray-300);
   cursor: default;
 }
 
 .log-repeat {
   font-size: 0.6rem;
-  color: #3f65b0;
+  color: var(--color-primary-hover);
 }
 </style>

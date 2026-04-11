@@ -96,13 +96,13 @@ function updateValue(type: 'LIFE' | 'POISON', event: Event) {
 
 .player-counter-label {
   text-transform: uppercase;
-  font-size: 0.8em;
+  font-size: var(--font-size-xs);
 }
 
 .player-counter-value {
   width: 78px;
-  background-color: white;
-  border: 1px solid #000;
+  background-color: var(--color-white);
+  border: 1px solid var(--color-black);
   border-left: none;
   border-right: none;
   border-radius: 0;
@@ -110,7 +110,7 @@ function updateValue(type: 'LIFE' | 'POISON', event: Event) {
 }
 
 .player-counter-value:disabled {
-  -webkit-text-fill-color: black;
+  -webkit-text-fill-color: var(--color-text);
   opacity: 1;
 }
 </style>

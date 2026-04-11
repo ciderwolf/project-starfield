@@ -83,7 +83,7 @@ onUnmounted(() => {
   position: fixed;
   top: 25%;
   right: 0;
-  z-index: 100;
+  z-index: var(--z-dropdown);
   pointer-events: none;
   height: 100%;
   display: flex;
@@ -93,7 +93,7 @@ onUnmounted(() => {
 
 .card-preview-image {
   height: 50%;
-  border-radius: 10px;
+  border-radius: var(--radius-xl);
 }
 
 .card-preview-image.rotated {
@@ -103,8 +103,8 @@ onUnmounted(() => {
 
 .preview-help-text {
   margin: none;
-  padding: 0 10px;
-  color: white;
+  padding: 0 var(--space-md);
+  color: var(--color-white);
   background: #0008;
 
 }

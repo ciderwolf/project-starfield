@@ -52,8 +52,8 @@ async function logoutPressed() {
 
 .menu-blade-content h2 {
   margin: 0 0 16px 0;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #eee;
+  padding-bottom: var(--space-lg);
+  border-bottom: 1px solid var(--color-gray-200);
 }
 
 .menu-blade-content ul {
@@ -64,55 +64,55 @@ async function logoutPressed() {
 }
 
 .menu-blade-content li {
-  margin: 4px 0;
-  border-radius: 8px;
-  transition: background-color 0.2s;
+  margin: var(--space-xs) 0;
+  border-radius: var(--radius-lg);
+  transition: background-color var(--transition-normal);
 }
 
 .menu-blade-content li a {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
+  gap: var(--space-lg);
+  padding: var(--space-lg) 16px;
   text-decoration: none;
-  color: black;
-  font-weight: 500;
+  color: var(--color-text);
+  font-weight: var(--font-weight-medium);
 }
 
 .menu-blade-content li:hover {
-  background-color: #f5f5f5;
+  background-color: var(--color-gray-100);
 }
 
 .menu-blade-content li:has(a.router-link-exact-active) {
-  background-color: hsl(219, 87%, 94%);
+  background-color: var(--color-primary-light);
 }
 
 .menu-blade-content li a.router-link-exact-active {
-  color: rgb(78, 128, 220);
+  color: var(--color-primary);
 }
 
 .menu-blade-content li a.router-link-exact-active i {
-  color: hsl(219, 67%, 58%);
+  color: var(--color-primary-text);
 }
 
 .menu-blade-content li i {
-  font-size: 20px;
+  font-size: var(--font-size-fixed-lg);
 }
 
 .logout-btn {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
+  gap: var(--space-lg);
+  padding: var(--space-lg) 16px;
   margin-top: auto;
   background: none;
-  border: 1px solid #ddd;
-  border-radius: 8px;
+  border: 1px solid var(--color-gray-300);
+  border-radius: var(--radius-lg);
   cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  color: #666;
-  transition: background-color 0.2s, color 0.2s;
+  font-size: var(--font-size-fixed-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-700);
+  transition: background-color var(--transition-normal), color var(--transition-normal);
 }
 
 .logout-btn:hover {
@@ -122,14 +122,14 @@ async function logoutPressed() {
 }
 
 .logout-btn i {
-  font-size: 20px;
+  font-size: var(--font-size-fixed-lg);
 }
 
 .version-info {
   margin: 0;
   padding-top: 1em;
-  font-size: 0.8em;
+  font-size: var(--font-size-xs);
   text-align: center;
-  color: #666;
+  color: var(--color-gray-700);
 }
 </style>

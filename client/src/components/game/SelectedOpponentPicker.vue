@@ -59,15 +59,15 @@ function selectPlayer(player: string) {
 .opponent-button {
   display: flex;
   align-items: center;
-  padding: 5px;
-  gap: 5px;
+  padding: var(--space-sm);
+  gap: var(--space-sm);
   border: none;
-  background: white;
-  color: black;
-  padding: 5px;
+  background: var(--color-white);
+  color: var(--color-text);
+  padding: var(--space-sm);
   margin: 0;
   cursor: pointer;
-  border-radius: 5px;
+  border-radius: var(--radius-md);
   min-width: 0;
   flex: 1;
 }
@@ -78,11 +78,11 @@ function selectPlayer(player: string) {
 
 .notification-badge {
   background-color: red;
-  color: white;
-  border-radius: 50%;
-  padding: 2px;
-  font-size: 0.8em;
-  margin-left: 5px;
+  color: var(--color-white);
+  border-radius: var(--radius-round);
+  padding: var(--space-xxs);
+  font-size: var(--font-size-xs);
+  margin-left: var(--space-sm);
   width: 16px;
   height: 16px;
   display: flex;

@@ -83,16 +83,16 @@ function mouseOverDfc(e: MouseEvent) {
   background-size: 224px auto;
   height: 310px;
   position: absolute;
-  z-index: 200000;
-  border: 3px solid white;
-  border-radius: 5px;
+  z-index: var(--z-card-preview);
+  border: 3px solid var(--color-white);
+  border-radius: var(--radius-md);
   pointer-events: none;
 }
 
 .card-line {
   margin-top: 0;
   margin-bottom: 0;
-  color: black;
+  color: var(--color-text);
   text-decoration: none;
 }
 </style>

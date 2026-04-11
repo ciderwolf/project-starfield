@@ -64,7 +64,7 @@ function endGameClicked() {
   display: flex;
   justify-content: space-between;
   margin-top: 1rem;
-  gap: 20px;
+  gap: var(--space-xl);
 }
 
 .buttons button {

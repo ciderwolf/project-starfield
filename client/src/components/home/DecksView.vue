@@ -72,14 +72,14 @@ function deckThumbnailUrl(deck: DeckListing) {
 <style scoped>
 .title {
   display: flex;
-  gap: 20px;
+  gap: var(--space-xl);
   align-items: center;
 }
 
 .empty-container-title {
   margin-top: 1em;
   text-align: center;
-  color: #333;
+  color: var(--color-gray-900);
   font-style: italic;
 }
 

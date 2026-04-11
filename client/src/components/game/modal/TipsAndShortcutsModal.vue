@@ -67,11 +67,11 @@ function open() {
 .modal-content-row {
   display: flex;
   align-items: center;
-  gap: 30px;
+  gap: var(--space-xxl);
 }
 
 .hint {
   color: gray;
-  font-size: 0.8em
+  font-size: var(--font-size-xs)
 }
 </style>

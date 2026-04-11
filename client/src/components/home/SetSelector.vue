@@ -176,9 +176,9 @@ async function downloadSetFromScryfall(): Promise<void> {
   display: flex;
   align-items: center;
   width: 100%;
-  background: #fff;
+  background: var(--color-white);
   border: none;
-  border-radius: 4px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   text-align: left;
 }
@@ -196,13 +196,13 @@ async function downloadSetFromScryfall(): Promise<void> {
   position: fixed;
   max-height: 300px;
   overflow-y: auto;
-  background: #fff;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  background: var(--color-white);
+  border: 1px solid var(--color-gray-400);
+  border-radius: var(--radius-md);
   z-index: 9999;
   margin-top: 2px;
   padding-top: 0;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-dropdown);
 }
 
 .search-container {
@@ -214,7 +214,7 @@ async function downloadSetFromScryfall(): Promise<void> {
   width: 100%;
   padding-right: 30px;
   box-sizing: border-box;
-  font-size: 16px;
+  font-size: var(--font-size-fixed-md);
 }
 
 .clear-search-btn {
@@ -224,9 +224,9 @@ async function downloadSetFromScryfall(): Promise<void> {
   transform: translateY(-50%);
   background: none;
   border: none;
-  color: #999;
+  color: var(--color-gray-600);
   cursor: pointer;
-  font-size: 14px;
+  font-size: var(--font-size-fixed-sm);
   padding: 0;
   display: flex;
   align-items: center;
@@ -242,12 +242,12 @@ async function downloadSetFromScryfall(): Promise<void> {
 .dropdown-item {
   display: flex;
   align-items: center;
-  padding: 10px;
+  padding: var(--space-md);
   cursor: pointer;
 }
 
 .dropdown-item:hover {
-  background: #f5f5f5;
+  background: var(--color-gray-100);
 }
 
 .dropdown-item.active {
@@ -275,9 +275,9 @@ async function downloadSetFromScryfall(): Promise<void> {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding: 10px;
-  color: #666;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  color: var(--color-gray-700);
   font-style: italic;
 }
 

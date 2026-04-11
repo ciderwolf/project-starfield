@@ -57,17 +57,17 @@ async function rollDieSubmit(size: number) {
 .modal-content-row {
   display: flex;
   align-items: center;
-  gap: 30px;
+  gap: var(--space-xxl);
 }
 
 .dice-count-input {
   width: 50px;
   height: 36px;
-  margin: 0 10px;
-  padding: 5px;
-  font-size: 1.25rem;
+  margin: 0 var(--space-md);
+  padding: var(--space-sm);
+  font-size: var(--font-size-md);
   text-align: center;
   border: 1px solid #0005;
-  border-radius: 5px;
+  border-radius: var(--radius-md);
 }
 </style>

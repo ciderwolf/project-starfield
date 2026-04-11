@@ -103,7 +103,7 @@ function flipCard() {
 .card-details-container {
   display: flex;
   flex-direction: row;
-  margin-top: 20px;
+  margin-top: var(--space-xl);
   flex-wrap: wrap;
   justify-content: center;
 }
@@ -119,13 +119,13 @@ img {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-lg);
 }
 
 .flip-card-button {
   width: max-content;
   display: flex;
-  gap: 12px;
+  gap: var(--space-lg);
 }
 
 .flip-card-button span {
@@ -150,12 +150,12 @@ img {
 .card-text {
   font-family: "EB Garamond", serif;
   font-optical-sizing: auto;
-  font-weight: 400;
+  font-weight: var(--font-weight-normal);
   font-style: normal;
   font-size: 14pt;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid var(--color-gray-300);
   margin: 0;
-  padding: 10px;
+  padding: var(--space-md);
 }
 
 .card-pt {

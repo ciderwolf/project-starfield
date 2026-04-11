@@ -49,12 +49,12 @@ onUnmounted(() => {
 
 <style scoped>
 .modal {
-  z-index: 1000;
+  z-index: var(--z-modal);
   position: absolute;
 }
 
 .modal-background {
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: var(--overlay-heavy);
   position: fixed;
   top: 0;
   left: 0;
@@ -68,17 +68,17 @@ onUnmounted(() => {
   right: 0;
   width: max-content;
   border-radius: 20px 20px 0 0;
-  box-shadow: 0 0 1rem rgba(0, 0, 0, 0.5);
+  box-shadow: var(--shadow-lg);
   cursor: pointer;
-  background: white;
+  background: var(--color-white);
 }
 
 .modal.minimized .modal-minimized {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 30px;
-  padding: 0 20px;
+  gap: var(--space-xxl);
+  padding: 0 var(--space-xl);
 }
 
 .modal-controls {
@@ -99,18 +99,18 @@ onUnmounted(() => {
 }
 
 .modal-control:hover {
-  background-color: #ccc;
+  background-color: var(--color-gray-400);
 }
 
 .modal-content {
-  background-color: white;
+  background-color: var(--color-white);
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   padding: 2rem;
   border-radius: 0.5rem;
-  box-shadow: 0 0 1rem rgba(0, 0, 0, 0.5);
+  box-shadow: var(--shadow-lg);
   max-height: 80%;
   overflow-y: scroll;
   width: max-content;

@@ -58,9 +58,9 @@ onUnmounted(() => {
   background-position: center;
   height: 350px;
   width: 250px;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  margin: 10px;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  margin: var(--space-md);
   cursor: default;
   position: relative;
 }
@@ -76,10 +76,10 @@ onUnmounted(() => {
 .dfc-hint {
   position: absolute;
   bottom: 0px;
-  background-color: rgba(0, 0, 0, 0.5);
-  color: white;
-  padding: 5px;
-  border-radius: 5px;
-  font-size: 0.8em;
+  background-color: var(--overlay-heavy);
+  color: var(--color-white);
+  padding: var(--space-sm);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-xs);
 }
 </style>

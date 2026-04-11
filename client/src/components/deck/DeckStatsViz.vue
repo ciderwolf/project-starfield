@@ -353,12 +353,12 @@ const cardSuperTypeDetails = computed(() => getCardTypeDetails('superTypes'));
   align-items: center;
   flex-wrap: wrap;
   justify-content: center;
-  background-color: #eee;
-  border: 1px solid #ddd;
-  border-radius: 5px;
+  background-color: var(--color-gray-200);
+  border: 1px solid var(--color-gray-300);
+  border-radius: var(--radius-md);
   max-width: 80%;
   width: 100%;
-  margin: 20px auto;
+  margin: var(--space-xl) auto;
   padding: 1em 2em;
   min-width: 250px;
 }
@@ -369,7 +369,7 @@ const cardSuperTypeDetails = computed(() => getCardTypeDetails('superTypes'));
   align-items: center;
   justify-content: center;
   width: 100%;
-  gap: 20px;
+  gap: var(--space-xl);
 }
 
 .viz-cards {
@@ -377,10 +377,10 @@ const cardSuperTypeDetails = computed(() => getCardTypeDetails('superTypes'));
   flex-direction: column;
   max-height: 100%;
   overflow-y: auto;
-  background-color: white;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  padding: 30px 10px;
+  background-color: var(--color-white);
+  border: 1px solid var(--color-gray-300);
+  border-radius: var(--radius-md);
+  padding: var(--space-xxl) var(--space-md);
   min-width: 250px;
 }
 
@@ -393,7 +393,7 @@ const cardSuperTypeDetails = computed(() => getCardTypeDetails('superTypes'));
 .card-type-details-container {
   display: flex;
   flex-direction: row;
-  gap: 20px;
+  gap: var(--space-xl);
   align-items: baseline;
   justify-content: space-around;
   width: 100%;
@@ -404,7 +404,7 @@ const cardSuperTypeDetails = computed(() => getCardTypeDetails('superTypes'));
   flex-direction: column;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 20px;
+  gap: var(--space-xl);
   box-sizing: border-box;
   max-width: 50%;
 }
@@ -412,12 +412,12 @@ const cardSuperTypeDetails = computed(() => getCardTypeDetails('superTypes'));
 .card-type-details>div {
   display: flex;
   flex-direction: row;
-  background-color: #f9f9f9;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  padding: 10px;
+  background-color: var(--color-gray-50);
+  border: 1px solid var(--color-gray-300);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
   width: 100%;
-  gap: 20px;
+  gap: var(--space-xl);
   box-sizing: border-box;
   flex-wrap: wrap;
 }
@@ -434,19 +434,19 @@ const cardSuperTypeDetails = computed(() => getCardTypeDetails('superTypes'));
 
 <style>
 svg.d3-chart {
-  background-color: white;
-  border-radius: 5px;
-  border: 1px solid #ddd;
-  padding: 5px;
+  background-color: var(--color-white);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-gray-300);
+  padding: var(--space-sm);
 }
 
 .d3-chart-tooltip {
   position: fixed;
-  background-color: white;
-  border: 1px solid #555;
-  border-radius: 2px;
+  background-color: var(--color-white);
+  border: 1px solid var(--color-gray-750);
+  border-radius: var(--radius-sm);
   pointer-events: none;
-  padding: 5px;
-  z-index: 10001;
+  padding: var(--space-sm);
+  z-index: var(--z-tooltip);
 }
 </style>

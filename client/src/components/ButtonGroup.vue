@@ -31,23 +31,23 @@ function select(value: string) {
 <style scoped>
 .button-group {
   display: inline-flex;
-  border: 1px solid rgb(78, 128, 220);
-  border-radius: 3px;
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-sm);
   overflow: hidden;
 }
 
 .button-group-item {
-  background-color: #fff;
+  background-color: var(--color-white);
   border: none;
-  border-right: 1px solid rgb(78, 128, 220);
-  color: black;
+  border-right: 1px solid var(--color-primary);
+  color: var(--color-text);
   cursor: pointer;
-  font-size: 1.25em;
+  font-size: var(--font-size-md);
   padding: 0.5em 1em;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.1s ease;
+  transition: background-color var(--transition-fast);
 }
 
 .button-group-item:last-child {
@@ -55,28 +55,28 @@ function select(value: string) {
 }
 
 .button-group-item:hover {
-  background-color: #eee;
+  background-color: var(--color-gray-200);
 }
 
 .button-group-item:active {
-  background-color: #ddd;
+  background-color: var(--color-gray-300);
 }
 
 .button-group-item.active {
-  background-color: rgb(78, 128, 220);
-  color: #fff;
+  background-color: var(--color-primary);
+  color: var(--color-white);
 }
 
 .button-group-item.active:hover {
-  background-color: #3f65b0;
+  background-color: var(--color-primary-hover);
 }
 
 .button-group-item.active:active {
-  background-color: #375595;
+  background-color: var(--color-primary-active);
 }
 
 .button-group.small .button-group-item {
-  font-size: 1em;
+  font-size: var(--font-size-sm);
   padding: 0.25em 0.5em;
 }
 </style>

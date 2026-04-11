@@ -122,7 +122,7 @@ function showMenuBlade() {
 
 .title {
   display: flex;
-  gap: 20px;
+  gap: var(--space-xl);
   align-items: center;
   margin-bottom: 1em;
   align-items: center;
@@ -131,13 +131,13 @@ function showMenuBlade() {
 #welcome-text {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-md);
 }
 
 .empty-container-title {
   margin-top: 1em;
   text-align: center;
-  color: #333;
+  color: var(--color-gray-900);
   font-style: italic;
 }
 

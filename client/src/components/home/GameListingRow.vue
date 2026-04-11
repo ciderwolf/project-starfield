@@ -65,11 +65,11 @@ function spectateGameClicked(id: string) {
   justify-content: space-between;
   align-items: center;
   padding: 0.5rem;
-  border: 1px solid #ddd;
-  background: #eee;
+  border: 1px solid var(--color-gray-300);
+  background: var(--color-gray-200);
   border-radius: 0.5rem;
   margin: 0.5rem auto;
-  gap: 10px;
+  gap: var(--space-md);
   width: 50%;
   min-width: min-content;
 }
@@ -83,7 +83,7 @@ function spectateGameClicked(id: string) {
 }
 
 .game-listing .game-player {
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 .game-listing .game-player::after {

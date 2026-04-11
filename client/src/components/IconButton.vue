@@ -10,17 +10,17 @@ defineProps<{ icon: string }>();
 
 <style scoped>
 .icon-button {
-  font-size: 1em;
+  font-size: var(--font-size-sm);
   background: none;
   border: none;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 5px;
-  padding: 5px;
+  gap: var(--space-sm);
+  padding: var(--space-sm);
 }
 
 .icon-button:hover {
-  background: #ddd;
+  background: var(--color-gray-300);
 }
 </style>

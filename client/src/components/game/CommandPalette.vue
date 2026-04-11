@@ -285,8 +285,8 @@ function handleCommandClick(command: Command) {
 
 <style scoped>
 .description {
-  font-size: 0.8em;
-  color: #999;
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-600);
   margin-left: 8px;
   font-style: italic;
 }
@@ -299,7 +299,7 @@ li.selected .description {
   position: absolute;
   height: 100vh;
   width: 100vw;
-  z-index: 100;
+  z-index: var(--z-dropdown);
   pointer-events: none;
 }
 
@@ -307,8 +307,8 @@ li.selected .description {
   pointer-events: all;
   background-color: #fff8;
   backdrop-filter: blur(10px);
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  border: 1px solid var(--color-gray-400);
+  border-radius: var(--radius-md);
   min-width: 500px;
   max-width: 40%;
   margin: 0 auto;
@@ -321,7 +321,7 @@ li.selected .description {
   display: flex;
   width: 100%;
   padding: 8px;
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid var(--color-gray-400);
   border-radius: 0;
   box-sizing: border-box;
 }
@@ -346,12 +346,12 @@ li.selected .description {
 }
 
 .command-palette-content li:hover {
-  background-color: #f0f0f0;
+  background-color: var(--color-gray-150);
 }
 
 .command-palette-content li.selected {
   background-color: #007bff;
-  color: #fff;
+  color: var(--color-white);
 }
 
 .command-palette-content li.selected:hover {
@@ -359,7 +359,7 @@ li.selected .description {
 }
 
 p {
-  color: #999;
+  color: var(--color-gray-600);
   text-align: center;
   margin: 0;
   font-style: italic;

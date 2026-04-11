@@ -349,7 +349,7 @@ const resetFilters = () => {
 .header {
   position: sticky;
   top: 0;
-  background-color: white;
+  background-color: var(--color-white);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -374,9 +374,9 @@ const resetFilters = () => {
 }
 
 .search-section {
-  background-color: #eee;
-  border: 1px solid #ddd;
-  border-radius: 8px;
+  background-color: var(--color-gray-200);
+  border: 1px solid var(--color-gray-300);
+  border-radius: var(--radius-lg);
   padding: 1.5rem;
 }
 
@@ -414,7 +414,7 @@ const resetFilters = () => {
   font-size: 1.5rem;
   line-height: 1;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--transition-normal);
 }
 
 .remove-btn:hover {

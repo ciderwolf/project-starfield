@@ -48,7 +48,7 @@ const bladeStyle = computed(() => ({
   left: 0;
   width: 100vw;
   height: 100vh;
-  z-index: 1000;
+  z-index: var(--z-modal);
   pointer-events: none;
 }
 
@@ -56,19 +56,19 @@ const bladeStyle = computed(() => ({
   position: absolute;
   top: 0;
   height: 100%;
-  background-color: #fff;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  background-color: var(--color-white);
+  box-shadow: var(--shadow-xl);
   display: flex;
   flex-direction: column;
   pointer-events: all;
 }
 
 .blade-left {
-  border-right: 1px solid #ccc;
+  border-right: 1px solid var(--color-gray-400);
 }
 
 .blade-right {
-  border-left: 1px solid #ccc;
+  border-left: 1px solid var(--color-gray-400);
 }
 
 .blade-close {
@@ -77,18 +77,18 @@ const bladeStyle = computed(() => ({
   background: none;
   border: none;
   cursor: pointer;
-  padding: 4px;
+  padding: var(--space-xs);
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 4px;
-  color: #666;
-  transition: background-color 0.2s, color 0.2s;
+  border-radius: var(--radius-md);
+  color: var(--color-gray-700);
+  transition: background-color var(--transition-normal), color var(--transition-normal);
 }
 
 .blade-close:hover {
-  background-color: #f0f0f0;
-  color: #333;
+  background-color: var(--color-gray-150);
+  color: var(--color-gray-900);
 }
 
 .blade-left .blade-close {
@@ -109,7 +109,7 @@ const bladeStyle = computed(() => ({
 /* Slide from right transitions */
 .slide-right-enter-active,
 .slide-right-leave-active {
-  transition: transform 0.3s ease;
+  transition: transform var(--transition-slow);
 }
 
 .slide-right-enter-from,
@@ -120,7 +120,7 @@ const bladeStyle = computed(() => ({
 /* Slide from left transitions */
 .slide-left-enter-active,
 .slide-left-leave-active {
-  transition: transform 0.3s ease;
+  transition: transform var(--transition-slow);
 }
 
 .slide-left-enter-from,

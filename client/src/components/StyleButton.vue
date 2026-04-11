@@ -16,12 +16,12 @@ withDefaults(defineProps<{ type?: string, disabled?: boolean, small?: boolean }>
 
 <style scoped>
 .button {
-  background-color: #fff;
-  border: 1px solid #999;
-  border-radius: 3px;
-  color: #666;
+  background-color: var(--color-white);
+  border: 1px solid var(--color-gray-600);
+  border-radius: var(--radius-sm);
+  color: var(--color-gray-700);
   cursor: pointer;
-  font-size: 1.25em;
+  font-size: var(--font-size-md);
   padding: 0.5em 1em;
   display: flex;
   align-items: center;
@@ -29,16 +29,16 @@ withDefaults(defineProps<{ type?: string, disabled?: boolean, small?: boolean }>
 }
 
 .button.small {
-  font-size: 1em;
+  font-size: var(--font-size-sm);
   padding: 0.25em 0.5em;
 }
 
 .button:hover {
-  background-color: #eee;
+  background-color: var(--color-gray-200);
 }
 
 .button:active {
-  background-color: #ddd;
+  background-color: var(--color-gray-300);
 }
 
 .button:disabled {
@@ -47,30 +47,30 @@ withDefaults(defineProps<{ type?: string, disabled?: boolean, small?: boolean }>
 }
 
 .button.default {
-  background-color: rgb(78, 128, 220);
-  border-color: rgb(78, 128, 220);
-  color: #fff;
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-white);
 }
 
 .button.default:hover {
-  background-color: #3f65b0;
+  background-color: var(--color-primary-hover);
 }
 
 .button.default:active {
-  background-color: #375595;
+  background-color: var(--color-primary-active);
 }
 
 .button.danger {
-  background-color: #f00;
-  border-color: #f00;
-  color: #fff;
+  background-color: var(--color-danger);
+  border-color: var(--color-danger);
+  color: var(--color-white);
 }
 
 .button.danger:hover {
-  background-color: #f55;
+  background-color: var(--color-danger-hover);
 }
 
 .button.danger:active {
-  background-color: #f77;
+  background-color: var(--color-danger-active);
 }
 </style>

@@ -82,7 +82,7 @@ function mouseMove(e: MouseEvent) {
   width: 100px;
   height: 140px;
   object-fit: contain;
-  border-radius: 5px;
+  border-radius: var(--radius-md);
 }
 
 .card-preview {
@@ -90,9 +90,9 @@ function mouseMove(e: MouseEvent) {
   background-size: 224px auto;
   height: 310px;
   position: absolute;
-  z-index: 200000;
-  border: 3px solid white;
-  border-radius: 5px;
+  z-index: var(--z-card-preview);
+  border: 3px solid var(--color-white);
+  border-radius: var(--radius-md);
   pointer-events: none;
 }
 </style>
