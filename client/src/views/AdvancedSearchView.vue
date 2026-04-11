@@ -418,7 +418,7 @@ const resetFilters = () => {
 }
 
 .remove-btn:hover {
-  color: red;
+  color: var(--color-danger);
 }
 
 input[type="text"],

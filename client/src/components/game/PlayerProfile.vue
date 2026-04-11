@@ -16,14 +16,14 @@ const playerInfoPositionInfo = computed<StyleValue>(() => {
     return {
       right: '0',
       bottom: '0',
-      backgroundColor: board.currentPlayer === props.player.index ? 'lightblue' : 'white',
+      backgroundColor: board.currentPlayer === props.player.index ? 'var(--color-accent-highlight)' : 'var(--color-white)',
       flexDirection: 'column-reverse',
     };
   } else {
     return {
       right: '0',
       top: '0',
-      backgroundColor: board.currentPlayer === props.player.index ? 'lightblue' : 'white',
+      backgroundColor: board.currentPlayer === props.player.index ? 'var(--color-accent-highlight)' : 'var(--color-white)',
       flexDirection: 'column',
     };
   }
@@ -94,7 +94,8 @@ function doMenuAction(action: string) {
       <span class="material-symbols-rounded">{{ arrow }}</span>
       <i>Waiting</i>
     </span>
-    <span v-else style="color: gray; cursor: not-allowed;" class="end-turn-indicator end-turn-button">
+    <span v-else style="color: var(--color-text-muted); cursor: not-allowed;"
+      class="end-turn-indicator end-turn-button">
       <span class="material-symbols-rounded">{{ arrow }}</span>
       <i>End Turn</i>
     </span>

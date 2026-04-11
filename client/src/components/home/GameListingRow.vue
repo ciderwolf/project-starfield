@@ -79,7 +79,7 @@ function spectateGameClicked(id: string) {
 }
 
 .game-listing .game-players.in-progress {
-  color: gray;
+  color: var(--color-text-muted);
 }
 
 .game-listing .game-player {

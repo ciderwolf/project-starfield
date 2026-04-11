@@ -292,7 +292,7 @@ function handleCommandClick(command: Command) {
 }
 
 li.selected .description {
-  color: #d0d0d0;
+  color: var(--color-gray-300);
 }
 
 .command-palette {
@@ -350,12 +350,12 @@ li.selected .description {
 }
 
 .command-palette-content li.selected {
-  background-color: #007bff;
+  background-color: var(--color-primary);
   color: var(--color-white);
 }
 
 .command-palette-content li.selected:hover {
-  background-color: #0056b3;
+  background-color: var(--color-primary-hover);
 }
 
 p {

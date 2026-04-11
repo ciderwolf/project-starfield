@@ -223,8 +223,8 @@ function moveToMaindeck(cardId: string) {
   width: 30px;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.2s ease;
-  z-index: 1;
+  transition: opacity var(--transition-normal);
+  z-index: var(--z-base);
 }
 
 .deck-groups-wrapper::before {
@@ -265,7 +265,7 @@ function moveToMaindeck(cardId: string) {
   padding: 0;
   text-align: right;
   font-size: 0.7em;
-  color: gray;
+  color: var(--color-text-muted);
   text-transform: uppercase;
 }
 

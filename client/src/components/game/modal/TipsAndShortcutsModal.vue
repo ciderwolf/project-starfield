@@ -71,7 +71,7 @@ function open() {
 }
 
 .hint {
-  color: gray;
+  color: var(--color-text-muted);
   font-size: var(--font-size-xs)
 }
 </style>

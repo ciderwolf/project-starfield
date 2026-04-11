@@ -218,7 +218,7 @@ function optionClicked(option: ContextMenuOption) {
 }
 
 .card-context-menu-text.option-disabled {
-  color: gray;
+  color: var(--color-text-muted);
   cursor: not-allowed;
 }
 

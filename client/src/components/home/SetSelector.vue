@@ -199,7 +199,7 @@ async function downloadSetFromScryfall(): Promise<void> {
   background: var(--color-white);
   border: 1px solid var(--color-gray-400);
   border-radius: var(--radius-md);
-  z-index: 9999;
+  z-index: var(--z-modal);
   margin-top: 2px;
   padding-top: 0;
   box-shadow: var(--shadow-dropdown);
@@ -236,7 +236,7 @@ async function downloadSetFromScryfall(): Promise<void> {
 }
 
 .clear-search-btn:hover {
-  color: red;
+  color: var(--color-danger);
 }
 
 .dropdown-item {
@@ -251,7 +251,7 @@ async function downloadSetFromScryfall(): Promise<void> {
 }
 
 .dropdown-item.active {
-  background: #e0e0e0;
+  background: var(--color-gray-300);
 }
 
 .set-icon {
@@ -264,9 +264,9 @@ async function downloadSetFromScryfall(): Promise<void> {
 .loading-spinner {
   width: 20px;
   height: 20px;
-  border: 3px solid #f3f3f3;
-  border-top: 3px solid #3498db;
-  border-radius: 50%;
+  border: 3px solid var(--color-gray-100);
+  border-top: 3px solid var(--color-primary);
+  border-radius: var(--radius-round);
   animation: spin 1s linear infinite;
   margin-right: 8px;
 }

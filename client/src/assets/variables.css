@@ -21,6 +21,17 @@
     --color-danger: #f00;
     --color-danger-hover: #f55;
     --color-danger-active: #f77;
+    --color-error-text: orangered;
+
+    /* ──────────────────────────────────────
+     Colors – Accent
+     ────────────────────────────────────── */
+    --color-accent-highlight: lightblue;
+    --color-accent-save-pending: #ff9800;
+    --color-accent-success: #4caf50;
+    --color-accent-error: #f44336;
+    --color-accent-selection: red;
+    --color-accent-selection-shadow: rgb(206, 131, 131);
 
     /* ──────────────────────────────────────
      Colors – Alert Variants

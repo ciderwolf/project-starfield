@@ -73,11 +73,11 @@ function selectPlayer(player: string) {
 }
 
 .opponent-button.current {
-  background: lightblue;
+  background: var(--color-accent-highlight);
 }
 
 .notification-badge {
-  background-color: red;
+  background-color: var(--color-danger);
   color: var(--color-white);
   border-radius: var(--radius-round);
   padding: var(--space-xxs);

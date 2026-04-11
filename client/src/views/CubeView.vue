@@ -65,7 +65,7 @@ async function syncCubeClicked() {
 }
 
 #home-button:hover {
-  background-color: rgba(0, 0, 0, 0.1);
+  background-color: var(--overlay-light);
 }
 
 .loading-title {

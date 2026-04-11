@@ -67,7 +67,7 @@ async function rollDieSubmit(size: number) {
   padding: var(--space-sm);
   font-size: var(--font-size-md);
   text-align: center;
-  border: 1px solid #0005;
+  border: 1px solid var(--color-gray-750);
   border-radius: var(--radius-md);
 }
 </style>

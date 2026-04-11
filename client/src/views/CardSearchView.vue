@@ -395,7 +395,7 @@ h4 {
 }
 
 .pending-badge {
-  background: #ff9800;
+  background: var(--color-accent-save-pending);
   color: var(--color-white);
   font-weight: var(--font-weight-bold);
   font-size: var(--font-size-fixed-xs);
@@ -414,11 +414,11 @@ h4 {
 }
 
 .success-icon {
-  color: #4caf50;
+  color: var(--color-accent-success);
 }
 
 .error-icon {
-  color: #f44336;
+  color: var(--color-accent-error);
 }
 
 .deck-modal-option {

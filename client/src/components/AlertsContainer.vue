@@ -48,7 +48,7 @@ function closeAlert(id: string) {
 }
 
 .close-alert:hover {
-  color: red;
+  color: var(--color-danger);
 }
 
 .alert-error {

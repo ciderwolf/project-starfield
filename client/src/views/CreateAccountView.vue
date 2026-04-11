@@ -61,7 +61,7 @@ h1 {
 }
 
 .error-message {
-  color: orangered;
+  color: var(--color-error-text);
   text-align: center;
 }
 </style>

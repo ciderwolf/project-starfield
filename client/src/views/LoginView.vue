@@ -48,7 +48,7 @@ async function loginClicked(e: Event) {
 }
 
 .error-message {
-  color: orangered;
+  color: var(--color-error-text);
   text-align: center;
 }
 

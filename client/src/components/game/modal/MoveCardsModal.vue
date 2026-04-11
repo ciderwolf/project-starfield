@@ -248,7 +248,7 @@ onUnmounted(() => {
 }
 
 .inputs i {
-  color: gray;
+  color: var(--color-text-muted);
 }
 </style>
 
@@ -267,7 +267,7 @@ img.card-thumbnail__card {
 }
 
 .card-thumbnail__card.selected {
-  border-color: red;
-  box-shadow: 0 0 0.3rem rgb(206, 131, 131);
+  border-color: var(--color-accent-selection);
+  box-shadow: 0 0 0.3rem var(--color-accent-selection-shadow);
 }
 </style>
