@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ContextMenuDefinition, ContextMenuOption } from '@/context-menu';
+import type { ContextMenuDefinition, ContextMenuOption, NumberInputOption } from '@/context-menu';
 import { computed, reactive, ref, onMounted } from 'vue';
 
 interface Position {
@@ -9,7 +9,7 @@ interface Position {
 
 const props = defineProps<{ realPos?: Position, relativePos?: Position, parentPos?: Position, menu: ContextMenuDefinition, zIndex?: number }>();
 const emit = defineEmits<{
-  (event: 'select', option: string, argument: number): void
+  (event: 'select', option: ContextMenuOption): void
 }>();
 
 const submenuVisibilities = reactive<{ [index: number]: { x: number, y: number, persistant: boolean } }>({});
@@ -102,8 +102,14 @@ function cancelSubClick(e: MouseEvent) {
 
 function optionClicked(option: ContextMenuOption) {
   if (option.type == 'text' && !option.disabled) {
+    emit('select', option);
     option.effect();
   }
+}
+
+function numberOptionClicked(option: NumberInputOption, value: number) {
+  emit('select', option);
+  option.effect(value);
 }
 </script>
 
@@ -119,7 +125,7 @@ function optionClicked(option: ContextMenuOption) {
         </template>
         <template v-if="option.type == 'number'">
           <div class="card-context-menu-option card-context-menu-number-option"
-            @click="option.effect(numberInputs[index])">
+            @click="numberOptionClicked(option, numberInputs[index])">
             <div class="card-context-menu-text">{{ option.title }}</div>
             <input class="card-context-menu-number-input" type="number" :min="option.min" :max="option.max"
               v-model.number="numberInputs[index]" :placeholder="`${option.default}`" @click="cancelSubClick" />

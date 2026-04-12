@@ -185,7 +185,7 @@ onUnmounted(() => {
 .zone-bubble {
   position: absolute;
   font-size: 0.8rem;
-  background-color: var(--overlay-medium);
+  background-color: var(--overlay-heavy);
   border-radius: 0.2rem;
   margin: 0.1rem;
   z-index: var(--z-base);

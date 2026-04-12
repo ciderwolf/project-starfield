@@ -26,7 +26,7 @@ type TextOption = {
   disabled?: boolean;
 }
 
-type NumberInputOption = {
+export type NumberInputOption = {
   type: 'number';
   title: string;
   default?: number;
@@ -37,7 +37,7 @@ type NumberInputOption = {
 }
 
 
-type ActionEmit = (action: string, ...args: any[]) => void;
+export type ActionEmit = (action: string, ...args: any[]) => void;
 
 export function createContextMenu(zone: number, card: BoardCard, emit: ActionEmit) {
   switch (zone) {

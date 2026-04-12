@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import { reactive, ref, watch } from 'vue';
 import type { BoardCard as BoardCardData } from '@/api/message';
 import BoardCard from '@/components/game/card/BoardCard.vue';
-import ContextMenu from '@/components/ContextMenu.vue';
-import { createHandContextMenu, createLibraryContextMenu, type ContextMenuDefinition } from '@/context-menu';
+import { createHandContextMenu, createLibraryContextMenu, type ActionEmit } from '@/context-menu';
 import { client } from '@/ws';
 import { ZONES } from '@/zones';
 import { useNotificationsCache } from '@/cache/notifications';
+import { computed } from 'vue';
 
 
 const props = defineProps<{ zoneBounds?: DOMRect, card: BoardCardData }>()
@@ -17,28 +16,14 @@ function moveZone(zoneId: number, x: number, y: number) {
   client.moveCardToZone(props.card.id, zoneId, x, y);
 }
 
-
-const showMenu = ref(false);
-const menuPos = reactive({ x: 0, y: 0 });
-function showContextMenu(e: MouseEvent) {
-  if (e.detail > 1 || showMenu.value) {
-    return;
-  }
-
-  menuPos.x = e.clientX + 5;
-  menuPos.y = e.clientY + 5;
-
+const menuDefinition = computed(() => {
   if (props.card.zone === ZONES.library.id) {
-    menuDefinition.value = createLibraryContextMenu(props.card, doMenuAction);
+    return createLibraryContextMenu(props.card, doMenuAction);
   } else {
-    menuDefinition.value = createHandContextMenu(props.card, doMenuAction);
+    return createHandContextMenu(props.card, doMenuAction);
   }
-
-  showMenu.value = true;
-}
+});
 function doMenuAction(name: string, ...args: any[]) {
-  showMenu.value = false;
-
   switch (name) {
     case 'move-zone':
       moveZone(args[0], 0, 0);
@@ -77,19 +62,8 @@ function doMenuAction(name: string, ...args: any[]) {
       console.error('Unknown action for pile card', name, args);
   }
 }
-
-
-watch([() => props.zoneBounds, () => props.card.x, () => props.card.y], () => {
-  if (props.zoneBounds) {
-    showMenu.value = false;
-  }
-});
-
-const menuDefinition = ref<ContextMenuDefinition>({ options: [] });
-
 </script>
 
 <template>
-  <BoardCard :parent-bounds="zoneBounds" :card="card" @move-zone="moveZone" @contextmenu="showContextMenu" />
-  <ContextMenu v-if="showMenu" v-click-outside="() => showMenu = false" :real-pos="menuPos" :menu="menuDefinition" />
+  <BoardCard :parent-bounds="zoneBounds" :card="card" :context-menu="menuDefinition" @move-zone="moveZone" />
 </template>

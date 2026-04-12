@@ -19,15 +19,18 @@ const props = defineProps<{
   moving: boolean
 }>();
 
-const emits = defineEmits<{
+const emit = defineEmits<{
   (event: 'dblclick'): void
   (event: 'mousedown', e: MouseEvent): void
   (event: 'mouseup', e: MouseEvent): void
+  (event: 'contextmenu', e: MouseEvent): void
+  (event: 'changecounter', value: number): void
 }>();
 
 const image = ref<HTMLImageElement>();
 const boardPos = reactive<Position>({ x: 0, y: 0 });
 const animate = ref(false);
+const isMe = computed(() => board.zoneIsMovable(props.card.zone));
 
 defineExpose<{ getBounds: () => DOMRect, recomputePosition: () => void, cardPosition: () => Position }>({
   getBounds: () => image.value!.getBoundingClientRect(),
@@ -145,6 +148,20 @@ function mouseLeave() {
   notifications.hideCardPreview();
 }
 
+function increaseCounter() {
+  emit('changecounter', props.card.counter + 1);
+}
+
+function decreaseCounter() {
+  emit('changecounter', Math.max(0, props.card.counter - 1));
+}
+
+function swallow(e: Event) {
+  e.stopPropagation();
+  e.preventDefault();
+}
+
+
 onMounted(() => {
   if (props.zoneRect) {
     updateScreenPosFromVirtualCoords();
@@ -163,10 +180,11 @@ watch([() => props.zoneRect, () => props.card.x, () => props.card.y], () => {
 </script>
 
 <template>
-  <figure class="board-card" :style="positionInfo" draggable="false" @dblclick="$emit('dblclick')"
-    @mousedown="$emit('mousedown', $event)" @mouseup="$emit('mouseup', $event)" @mouseenter="mouseEnter"
-    @mouseleave="mouseLeave" ref="image">
-    <span v-if="card.counter > 0" class="board-card-counter">{{ card.counter }}</span>
+  <figure ref="image" class="board-card" :style="positionInfo" draggable="false" @dblclick="$emit('dblclick')"
+    @mousedown="$emit('mousedown', $event)" @mouseup="$emit('mouseup', $event)"
+    @contextmenu.prevent="$emit('contextmenu', $event)" @mouseenter="mouseEnter" @mouseleave="mouseLeave">
+    <span v-if="card.counter > 0" class="board-card-counter" :class="{ adjustable: isMe }" @click="increaseCounter"
+      @contextmenu="decreaseCounter" @dblclick="swallow" @mousedown="swallow">{{ card.counter }}</span>
     <span v-if="shouldShowRevealedIndicator" class="board-card-status-icon material-symbols-rounded">visibility</span>
     <span v-if="card.note" class="board-card-status-icon material-symbols-rounded"
       :title="card.note">sticky_note_2</span>
@@ -207,6 +225,10 @@ watch([() => props.zoneRect, () => props.card.x, () => props.card.y], () => {
   font-weight: var(--font-weight-bold);
   text-align: center;
   padding: 0;
+}
+
+.adjustable {
+  cursor: pointer;
 }
 
 .board-card-status-icon {

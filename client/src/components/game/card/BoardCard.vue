@@ -1,18 +1,26 @@
 <script setup lang="ts">
 import { useZoneStore } from '@/stores/zone';
-import { onMounted, onUnmounted, reactive, ref } from 'vue';
+import { onMounted, onUnmounted, reactive, ref, watch } from 'vue';
 import { type ComponentExposed } from 'vue-component-type-helpers';
 import { type BoardCard } from '@/api/message';
 import CardImage from './CardImage.vue';
+import CardContextMenu from './CardContextMenu.vue';
 import { useNotificationsCache } from '@/cache/notifications';
 import { nonRotatedRect, useBoardStore } from '@/stores/board';
+import type { ContextMenuDefinition } from '@/context-menu';
+import { client } from '@/ws';
+
 
 interface Position {
   x: number;
   y: number;
 }
 
-const props = defineProps<{ card: BoardCard, parentBounds?: DOMRect }>();
+const props = defineProps<{
+  card: BoardCard,
+  parentBounds?: DOMRect,
+  contextMenu: ContextMenuDefinition;
+}>();
 const image = ref<ComponentExposed<typeof CardImage>>();
 
 defineExpose<{ recomputePosition: () => void }>({ recomputePosition: () => image.value!.recomputePosition() });
@@ -20,13 +28,13 @@ const emit = defineEmits<{
   (event: 'move', x: number, y: number): void
   (event: 'move-zone', zoneId: number, x: number, y: number): void
   (event: 'dblclick'): void,
-  (event: 'contextmenu', e: MouseEvent): void,
 }>()
 
 const zones = useZoneStore();
 const notifications = useNotificationsCache();
 const board = useBoardStore();
 
+const contextMenu = ref<ComponentExposed<typeof CardContextMenu>>();
 const imagePos = reactive<Position>({ x: 0, y: 0 });
 const offsetPos = reactive<Position>({ x: 0, y: 0 });
 const moving = ref(false);
@@ -49,7 +57,7 @@ function onMouseUp(e: MouseEvent) {
     moving.value = false;
     // if the card hasn't actually moved, skip
     if (!hasMoved) {
-      emit('contextmenu', e);
+      contextMenu.value?.showContextMenu(e);
       return;
     }
     hasMoved = false;
@@ -101,6 +109,17 @@ function onMouseMove(e: MouseEvent) {
   }
 }
 
+function onDoubleClick() {
+  contextMenu.value?.closeContextMenu();
+  emit('dblclick');
+}
+
+function onChangeCounter(value: number) {
+  contextMenu.value?.closeContextMenu();
+  client.changeCardAttribute(props.card.id, { type: 'counter', counter: value });
+}
+
+
 onMounted(() => {
   document.addEventListener('mousemove', onMouseMove);
 });
@@ -109,9 +128,16 @@ onUnmounted(() => {
   document.removeEventListener('mousemove', onMouseMove);
 });
 
+watch([() => props.parentBounds, () => props.card.x, () => props.card.y], () => {
+  if (props.parentBounds) {
+    contextMenu.value?.closeContextMenu();
+  }
+});
+
 </script>
 
 <template>
   <card-image :card="card" :moving="moving" :image-pos="imagePos" :zone-rect="parentBounds" ref="image"
-    @dblclick="$emit('dblclick')" @mousedown="onMouseDown" @mouseup="onMouseUp" />
+    @dblclick="onDoubleClick" @mousedown="onMouseDown" @mouseup="onMouseUp" @changecounter="onChangeCounter" />
+  <card-context-menu ref="contextMenu" :card="props.card" :context-menu="props.contextMenu" :debounce-click="true" />
 </template>
