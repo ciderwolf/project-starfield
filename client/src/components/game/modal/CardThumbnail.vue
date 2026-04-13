@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import type { OracleCard } from '@/api/message';
 import { useCardHover } from '@/composables/useCardHover';
 
@@ -21,7 +21,8 @@ const emit = defineEmits<{
   (event: 'mouseleave', e: MouseEvent): void
 }>()
 
-const { hoverStyle, mouseOver: hoverOver, mouseMove, mouseLeave: hoverLeave } = useCardHover();
+const cardImage = ref<HTMLImageElement>();
+const { hoverStyle, mouseOver: hoverOver, mouseMove, mouseLeave: hoverLeave } = useCardHover(cardImage);
 
 function mouseLeave(e: MouseEvent) {
   hoverLeave();

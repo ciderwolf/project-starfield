@@ -12,7 +12,8 @@ interface Card {
 
 const props = defineProps<{ card: Card, cursor?: string }>();
 
-const { hoverStyle, mouseOver, mouseMove, mouseLeave: hoverLeave } = useCardHover();
+const cardImage = ref<HTMLImageElement>();
+const { hoverStyle, mouseOver, mouseMove, mouseLeave: hoverLeave } = useCardHover(cardImage);
 
 const dfc = computed(() => props.card.backImage !== null);
 const frontName = computed(() => props.card.name.split(' // ')[0]);

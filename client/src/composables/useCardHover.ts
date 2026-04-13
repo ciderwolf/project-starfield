@@ -1,10 +1,9 @@
-import { computed, ref } from 'vue';
+import { computed, ref, type Ref } from 'vue';
 
-export function useCardHover() {
+export function useCardHover(cardImage: Ref<HTMLImageElement | undefined>) {
     const display = ref('none');
     const left = ref(0);
     const top = ref(0);
-    const cardImage = ref<HTMLImageElement>();
 
     const hoverStyle = computed(() => ({
         display: display.value,
@@ -45,5 +44,5 @@ export function useCardHover() {
         display.value = 'none';
     }
 
-    return { cardImage, hoverStyle, mouseOver, mouseMove, mouseLeave };
+    return { hoverStyle, mouseOver, mouseMove, mouseLeave };
 }
