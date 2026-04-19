@@ -18,7 +18,7 @@ function showMenu() {
 
 async function logoutPressed() {
   await logout();
-  router.push('/login');
+  window.location.href = '/login';
 }
 </script>
 
