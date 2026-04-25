@@ -1,5 +1,5 @@
 import { postJson, getJson, deleteJson, putJson } from ".";
-import type { Cube } from "./message";
+import type { Cube, DraftStrategy } from "./message";
 
 export async function fetchCube(id: string) {
   return await getJson(`cube/${id}`);
@@ -15,6 +15,14 @@ export async function importCubeFromCubeCobra(cubeCobraId: string): Promise<Cube
 
 export async function syncFromCubeCobra(cubeId: string): Promise<Cube> {
   return await putJson(`cube/sync/cube-cobra?id=${cubeId}`);
+}
+
+export async function getDraftStrategy(cubeId: string): Promise<DraftStrategy> {
+  return await getJson(`cube/${cubeId}/draft-info`);
+}
+
+export async function postDraftStrategy(cubeId: string, draftStrategy: DraftStrategy) {
+  return await postJson(`cube/${cubeId}/draft-info`, draftStrategy);
 }
 
 export async function deleteCube(cubeId: string) {

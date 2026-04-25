@@ -2,6 +2,7 @@ package starfield.data.dao
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import starfield.plugins.Id
@@ -37,7 +38,15 @@ class CubeCobraDao {
 
     @Serializable
     data class CubeCard(
-        val cardID: Id
+        val cardID: Id,
+        val details: CubeCardDetails,
+    )
+
+    @Serializable
+    data class CubeCardDetails(
+        val elo: Double,
+        @SerialName("color_identity") val colorIdentity: List<String>,
+        @SerialName("scryfall_id") val scryfallID: Id,
     )
 
     suspend fun getCube(cubeCobraId: String): Cube? {

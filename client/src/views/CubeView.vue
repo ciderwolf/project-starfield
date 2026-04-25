@@ -1,21 +1,27 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import DeckPreview from '@/components/deck/DeckPreview.vue';
 import LoadingButton from '@/components/LoadingButton.vue';
 import LoadingState from '@/components/LoadingState.vue';
 import IconButton from '@/components/IconButton.vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import type { Cube } from '@/api/message';
 import { useCubesCache } from '@/cache/cubes';
 import { syncFromCubeCobra } from '@/api/cube';
 import { useCubesStore } from '@/stores/cubes';
+import { useDataStore } from '@/stores/data';
 
 const cube = ref<Cube | null>(null);
 
 const route = useRoute();
+const router = useRouter();
+
 const cubeId = route.params.id as string;
 const cubes = useCubesCache();
 const cubeStore = useCubesStore();
+const dataStore = useDataStore();
+
+const isMine = computed(() => cube.value?.ownerId === dataStore.userId);
 
 onMounted(async () => {
   const cubeList = await cubes.get(cubeId);
@@ -35,16 +41,22 @@ async function syncCubeClicked() {
   };
 }
 
+function exitPage() {
+  if (window.history.state?.back) {
+    router.back();
+  } else {
+    router.push({ name: 'home' });
+  }
+}
+
 </script>
 
 <template>
   <div id="decklist" v-if="cube">
     <div class="title" v-if="cube !== null">
-      <router-link :to="{ name: 'home' }">
-        <IconButton icon="home" class="nav-button" />
-      </router-link>
+      <IconButton @click="exitPage" icon="arrow_back" class="nav-button" />
       <h1>{{ cube.name }}</h1>
-      <loading-button :on-click="syncCubeClicked">Re-sync from Cube Cobra</loading-button>
+      <loading-button v-if="isMine" :on-click="syncCubeClicked">Re-sync from Cube Cobra</loading-button>
     </div>
     <deck-preview :include-sideboard="false" :deckData="{ maindeck: cube.cards, sideboard: [], ...cube }" />
   </div>
