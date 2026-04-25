@@ -1,19 +1,13 @@
 <script setup lang="ts">
 import { downloadSet, getSets } from '@/api/draft';
-import { ref, onMounted, computed, onUnmounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import type { DraftSet } from '@/api/draft';
-import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import LoadingButton from '../LoadingButton.vue';
-import { setConstantValue } from 'typescript';
+import RichSelector from '../RichSelector.vue';
 
 const sets = ref<DraftSet[]>([]);
 const loading = ref(true);
 const selectedSet = ref<DraftSet | null>(null);
-const isDropdownOpen = ref(false);
-const searchQuery = ref('');
-const searchInputRef = ref<HTMLInputElement | null>(null);
-const dropdownRef = ref<HTMLElement | null>(null);
-const dropdownPosition = ref({ top: 0, left: 0, width: 0 });
 
 const emit = defineEmits<{
   (e: 'set-selected', set: DraftSet): void;
@@ -32,262 +26,47 @@ onMounted(async () => {
   }
 });
 
-function updateDropdownPosition() {
-  if (!dropdownRef.value) return;
-
-  const button = document.querySelector('.dropdown-toggle') as HTMLElement;
-  if (button) {
-    const rect = button.getBoundingClientRect();
-    dropdownPosition.value = {
-      top: rect.bottom,
-      left: rect.left,
-      width: rect.width
-    };
-  }
-};
-
-function toggleDropdown() {
-  isDropdownOpen.value = !isDropdownOpen.value;
-  if (isDropdownOpen.value) {
-    // Wait for the next tick to ensure the dropdown is in the DOM
-    setTimeout(() => {
-      updateDropdownPosition();
-    }, 0);
-  }
-};
-
-function selectSet(set: DraftSet) {
+function onSelect(set: DraftSet) {
   selectedSet.value = set;
   emit('set-selected', set);
-  searchQuery.value = set.name;
-  isDropdownOpen.value = false;
-};
+}
 
-const filteredSets = computed(() => {
-  if (!searchQuery.value) return sets.value;
-  const query = searchQuery.value.toLowerCase();
-  return sets.value.filter(set =>
-    set.name.toLowerCase().includes(query) ||
-    set.setType.toLowerCase().includes(query)
-  );
-});
+function filterSet(set: DraftSet, query: string) {
+  return set.name.toLowerCase().includes(query) || set.setType.toLowerCase().includes(query);
+}
 
-function openDropdown() {
-  isDropdownOpen.value = true;
-  setTimeout(() => {
-    updateDropdownPosition();
-  }, 0);
-};
+async function downloadSetFromScryfall(query: string): Promise<void> {
+  if (!query) return;
 
-function clearSearch() {
-  searchQuery.value = '';
-  if (searchInputRef.value) {
-    searchInputRef.value.focus();
-  }
-};
-
-function closeDropdownOnOutsideClick(e: MouseEvent) {
-  // don't close if the click on .dropdown-menu
-  if (dropdownRef.value && dropdownRef.value.contains(e.target as Node)) {
-    return;
-  }
-  isDropdownOpen.value = false;
-};
-
-// Update dropdown position on window resize
-function handleResize() {
-  if (isDropdownOpen.value) {
-    updateDropdownPosition();
-  }
-};
-
-onMounted(() => {
-  window.addEventListener('resize', handleResize);
-  window.addEventListener('scroll', handleResize);
-});
-
-onUnmounted(() => {
-  window.removeEventListener('resize', handleResize);
-  window.removeEventListener('scroll', handleResize);
-});
-
-async function downloadSetFromScryfall(): Promise<void> {
-  if (!searchQuery.value) return;
-
-  const result = await downloadSet(searchQuery.value);
+  const result = await downloadSet(query);
   if (!sets.value.some(s => s.id === result.id)) {
     sets.value.push(result);
   }
-  selectSet(result);
+  onSelect(result);
 }
 </script>
 
 <template>
-  <div class="set-selector" v-click-outside="closeDropdownOnOutsideClick">
-    <div class="dropdown">
-      <button @click="toggleDropdown" class="dropdown-toggle" :disabled="loading">
-        <loading-spinner v-if="loading" />
-        <template v-else>
-          <div class="search-container">
-            <input ref="searchInputRef" type="text" v-model="searchQuery" placeholder="Search sets..."
-              class="search-input" @focus="openDropdown" @click.stop />
-            <button v-if="searchQuery" class="clear-search-btn" @click.stop="clearSearch" title="Clear search">
-              ✕
-            </button>
-          </div>
-        </template>
-      </button>
-
-      <Teleport to="body">
-        <div v-if="isDropdownOpen" ref="dropdownRef" class="dropdown-menu" :style="{
-          top: `${dropdownPosition.top}px`,
-          left: `${dropdownPosition.left}px`,
-          width: `${dropdownPosition.width}px`
-        }">
-          <div v-if="filteredSets.length === 0" class="no-results">
-            No matching sets found
-            <LoadingButton :on-click="downloadSetFromScryfall" small>Import set with code '{{ searchQuery }}' from
-              Scryfall
-            </LoadingButton>
-          </div>
-          <div v-for="set in filteredSets" :key="set.id" class="dropdown-item" @click="selectSet(set)"
-            :class="{ 'active': selectedSet?.id === set.id }">
-            <img v-if="set.image" :src="set.image" class="set-icon" />
-            <span v-else class="material-symbols-rounded set-icon">deployed_code</span>
-            <span>{{ set.name }}</span>
-          </div>
-        </div>
-      </Teleport>
-    </div>
-  </div>
+  <RichSelector :items="sets" :loading="loading" placeholder="Search sets..." :filter="filterSet" @select="onSelect">
+    <template #item="{ item }">
+      <img v-if="item.image" :src="item.image" class="set-icon" />
+      <span v-else class="material-symbols-rounded set-icon">deployed_code</span>
+      <span>{{ item.name }}</span>
+    </template>
+    <template #empty="{ query }">
+      No matching sets found
+      <LoadingButton :on-click="() => downloadSetFromScryfall(query)" small>
+        Import set with code '{{ query }}' from Scryfall
+      </LoadingButton>
+    </template>
+  </RichSelector>
 </template>
 
 <style scoped>
-.set-selector {
-  position: relative;
-  width: 100%;
-}
-
-.dropdown {
-  position: relative;
-}
-
-.dropdown-toggle {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  background: var(--color-white);
-  border: none;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  text-align: left;
-}
-
-.dropdown-toggle:disabled {
-  cursor: not-allowed;
-  opacity: 0.7;
-}
-
-.dropdown-arrow {
-  margin-left: auto;
-}
-
-.dropdown-menu {
-  position: fixed;
-  max-height: 300px;
-  overflow-y: auto;
-  background: var(--color-white);
-  border: 1px solid var(--color-gray-400);
-  border-radius: var(--radius-md);
-  z-index: var(--z-modal);
-  margin-top: 2px;
-  padding-top: 0;
-  box-shadow: var(--shadow-dropdown);
-}
-
-.search-container {
-  position: relative;
-  width: 100%;
-}
-
-.search-input {
-  width: 100%;
-  padding-right: 30px;
-  box-sizing: border-box;
-  font-size: var(--font-size-fixed-md);
-}
-
-.clear-search-btn {
-  position: absolute;
-  right: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  color: var(--color-gray-600);
-  cursor: pointer;
-  font-size: var(--font-size-fixed-sm);
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-}
-
-.clear-search-btn:hover {
-  color: var(--color-danger);
-}
-
-.dropdown-item {
-  display: flex;
-  align-items: center;
-  padding: var(--space-md);
-  cursor: pointer;
-}
-
-.dropdown-item:hover {
-  background: var(--color-gray-100);
-}
-
-.dropdown-item.active {
-  background: var(--color-gray-300);
-}
-
 .set-icon {
   width: 20px;
   height: 20px;
   margin-right: 8px;
   object-fit: contain;
-}
-
-.loading-spinner {
-  width: 20px;
-  height: 20px;
-  border: 3px solid var(--color-gray-100);
-  border-top: 3px solid var(--color-primary);
-  border-radius: var(--radius-round);
-  animation: spin 1s linear infinite;
-  margin-right: 8px;
-}
-
-.no-results {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-md);
-  padding: var(--space-md);
-  color: var(--color-gray-700);
-  font-style: italic;
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-
-  100% {
-    transform: rotate(360deg);
-  }
 }
 </style>

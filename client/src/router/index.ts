@@ -52,6 +52,11 @@ const router = createRouter({
       component: () => import('../views/CubeView.vue')
     },
     {
+      path: '/cubes/:id/admin',
+      name: 'cube-admin',
+      component: () => import('../views/CubeAdminView.vue')
+    },
+    {
       path: '/draft/:id',
       name: 'draft',
       component: () => import('../views/DraftView.vue')

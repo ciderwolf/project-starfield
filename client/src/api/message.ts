@@ -168,15 +168,33 @@ export type DeckListing = {
 
 export type Cube = {
   id: string;
+  ownerId: string;
+  remoteId: string;
   name: string;
   thumbnailImage: string;
   cards: DeckCard[];
 }
+
 export type CubeListing = {
   id: string;
   name: string;
 }
 
+export type DraftStrategy = {
+  cards: BotCard[];
+  target_curve: Record<number, number>;
+  archetype_colors: number;
+  mana_fixers: string[];
+  target_fixing: number;
+  color_combinations: string[][];
+}
+type BotCard = {
+  id: string;
+  cmc: number;
+  colors: string[];
+  type: string[];
+  synergy_score: number;
+}
 
 export type DisplayCard = Card & {
   id: string;
@@ -210,7 +228,7 @@ export type OracleCard = {
   id: string;
   image: string;
   backImage: string | null;
-  tokens: string[] | null;
+  tokens?: string[] | null;
 }
 
 export type SpecialAction = 'MULLIGAN' | 'SCOOP' | 'SHUFFLE' | 'UNTAP_ALL' | 'END_TURN';

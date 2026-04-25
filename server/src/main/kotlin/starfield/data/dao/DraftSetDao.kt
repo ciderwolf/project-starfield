@@ -92,13 +92,16 @@ class DraftSetDao {
         )
     }
 
-    suspend fun upsertDraftSetFromCube(id: UUID, name: String, boosterInfo: BoosterConfig) = DatabaseSingleton.dbQuery {
+    suspend fun upsertDraftSetFromCube(id: UUID, name: String, boosterInfo: BoosterConfig, strategy: StrategyInfo?) = DatabaseSingleton.dbQuery {
         DraftSets.upsert {
             it[DraftSets.id] = id
             it[DraftSets.name] = name
             it[DraftSets.setType] = DraftSetType.CUBE.ordinal
             it[DraftSets.image] = "" // No image for cubes
             it[DraftSets.boosterInfo] = Json.encodeToString(boosterInfo)
+            if (strategy != null) {
+                it[DraftSets.strategy] = Json.encodeToString(strategy)
+            }
         }
     }
 
