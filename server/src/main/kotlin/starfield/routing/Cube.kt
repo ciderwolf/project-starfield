@@ -122,7 +122,7 @@ fun Route.cubeRouting() {
             cubeData.image.uri,
             cubeData.cards.mainboard.map { it.cardID }
         )
-        val createdCube = cubeDao.getCube(session.id, createdId)
+        val createdCube = cubeDao.getCube(createdId, session.id)
         val draftStrategy = createDraftStrategy(cubeData)
         setBoosterInfo(createdCube!!, draftStrategy)
         call.respondSuccess(createdCube)
@@ -176,19 +176,19 @@ suspend fun createDraftStrategy(cube: CubeCobraDao.Cube): StrategyInfo {
         .toMap()
 
     val sortedElos = cube.cards.mainboard.map { it.details.elo }.sorted()
-    // Percentile cutoffs: cards with elo < quintiles[i] map to score i+1 (1..5)
-    val percentiles = (1..4).map { i ->
-        val pos = i * sortedElos.size / 5.0
+    // Percentile cutoffs: cards with elo < percentiles[i] map to score 1 + i*0.5 (1..5 in 0.5 steps)
+    val percentiles = (1..9).map { i ->
+        val pos = i * sortedElos.size / 10.0
         val idx = pos.toInt().coerceAtMost(sortedElos.size - 1)
         sortedElos[idx]
     }
 
     fun eloToScore(elo: Double): Double {
-        var score = 1
+        var score = 0
         for (cutoff in percentiles) {
             if (elo >= cutoff) score++ else break
         }
-        return score.toDouble()
+        return 1.0 + score * 0.5
     }
 
     val allColorCombinations = cube.cards.mainboard
