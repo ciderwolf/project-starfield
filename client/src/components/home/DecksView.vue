@@ -18,7 +18,7 @@ const router = useRouter();
 const createDeck = async () => {
   const deck = await newDeck();
   decksCache.put(deck.id, deck);
-  decks.decks[deck.id] = { name: deck.name, id: deck.id, thumbnailImage: "" };
+  decks.decks[deck.id] = { name: deck.name, id: deck.id, thumbnailImage: "", ownerId: deck.ownerId };
   router.push({ name: 'deckbuilder', params: { id: deck.id } });
 };
 

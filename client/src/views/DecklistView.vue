@@ -90,7 +90,12 @@ const submitDeckClicked = async () => {
   deck.value = await decks.set(deck.value!.id, { name: deck.value!.name, main, side });
 
   const store = useDecksStore();
-  store.decks[deck.value!.id] = { name: deck.value!.name, id: deck.value!.id, thumbnailImage: deck.value!.thumbnailImage };
+  store.decks[deck.value!.id] = {
+    name: deck.value!.name,
+    id: deck.value!.id,
+    thumbnailImage: deck.value!.thumbnailImage,
+    ownerId: deck.value!.ownerId
+  };
 
   updateDeckText();
 

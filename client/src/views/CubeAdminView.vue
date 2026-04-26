@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getDraftStrategy, syncFromCubeCobra, postDraftStrategy } from '@/api/cube';
+import { getDraftStrategy, syncFromCubeCobra, postDraftStrategy, deleteCube } from '@/api/cube';
 import { type Cube, type DraftStrategy } from '@/api/message';
 import { useCubesCache } from '@/cache/cubes';
 import ColorCombinationChooser from '@/components/admin/ColorCombinationChooser.vue';
@@ -17,10 +17,11 @@ import RichSelector from '@/components/RichSelector.vue';
 import { useCubesStore } from '@/stores/cubes';
 import { Tabs, Tab } from 'vue3-tabs-component';
 import { ref, onMounted, computed } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import BackButton from '@/components/BackButton.vue';
 
 const route = useRoute();
+const router = useRouter();
 const cubeId = route.params.id as string;
 const cubes = useCubesCache();
 const cubeStore = useCubesStore();
@@ -56,6 +57,7 @@ async function syncCubeClicked() {
     id: cubeResponse.id,
     name: cubeResponse.name,
     thumbnailImage: cubeResponse.thumbnailImage,
+    ownerId: cubeResponse.ownerId,
   };
 }
 
@@ -69,6 +71,17 @@ async function saveDraftStrategy() {
     synergy_score: cardRatings.value[card.id] || 0,
   }));
   await postDraftStrategy(cubeId, draftStrategy.value);
+}
+
+async function deleteCubeClicked() {
+  if (!cube.value) return;
+  if (!window.confirm(`Delete cube "${cube.value.name}"? This cannot be undone.`)) return;
+  const deleted = await deleteCube(cubeId);
+  if (deleted) {
+    cubes.remove(cubeId);
+    delete cubeStore.cubes[cubeId];
+    router.push({ name: 'cubes' });
+  }
 }
 
 const combinations = ref<string[][]>([]);
@@ -116,10 +129,11 @@ const filteredRatingCards = computed(() => {
           online
           <span class="material-symbols-rounded">open_in_new</span></a>
         <LoadingButton :on-click="syncCubeClicked" small>Sync latest cards</LoadingButton>
+        <LoadingButton type="danger" :on-click="deleteCubeClicked" small>Delete cube</LoadingButton>
       </div>
     </section>
     <h2 class="section-title">Set up draft strategy
-      <LoadingIconButton :on-click="saveDraftStrategy" icon="save" size="xs" />
+      <LoadingIconButton :on-click="saveDraftStrategy" icon="save" size="sm" />
     </h2>
     <section class="panel">
       <h3 class="section-title">
