@@ -47,7 +47,7 @@ function toggleFlip(e: MouseEvent, cardId: string) {
 async function createDeck() {
   const deck = await newDeck(deckName.value.trim());
   decksCache.put(deck.id, deck);
-  decksStore.decks[deck.id] = { name: deck.name, id: deck.id, thumbnailImage: "" };
+  decksStore.decks[deck.id] = { name: deck.name, id: deck.id, thumbnailImage: "", ownerId: deck.ownerId };
   showDeckModal.value = false;
   searchStore.selectedDeckId = deck.id;
 };

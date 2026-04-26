@@ -8,8 +8,9 @@ import ItemCard from '@/components/home/ItemCard.vue';
 import ItemCardGrid from '@/components/home/ItemCardGrid.vue';
 import { useCubesCache } from '@/cache/cubes';
 import { useCubesStore } from '@/stores/cubes';
-import { deleteCube, importCubeFromCubeCobra } from '@/api/cube';
-import { ref } from 'vue';
+import { useDataStore } from '@/stores/data';
+import { importCubeFromCubeCobra } from '@/api/cube';
+import { computed, ref } from 'vue';
 import IconButton from '@/components/IconButton.vue';
 import MenuNavigationBlade from '@/components/home/MenuNavigationBlade.vue';
 import type { ComponentExposed } from 'vue-component-type-helpers';
@@ -17,18 +18,17 @@ import type { ComponentExposed } from 'vue-component-type-helpers';
 
 const cubesCache = useCubesCache();
 const cubes = useCubesStore();
+const data = useDataStore();
 
 const isCreatingCube = ref(false);
 const cubeCobraId = ref('')
 
-async function deleteCubeClicked(e: MouseEvent, id: string) {
-  e.preventDefault();
-  const deleted = await deleteCube(id);
-  if (deleted) {
-    cubesCache.remove(id);
-    delete cubes.cubes[id];
-  }
-}
+const myCubes = computed(() =>
+  Object.values(cubes.cubes).filter(c => c.ownerId === data.userId),
+);
+const publicCubes = computed(() =>
+  Object.values(cubes.cubes).filter(c => c.ownerId !== data.userId),
+);
 
 async function importCube() {
   const cube = await importCubeFromCubeCobra(cubeCobraId.value);
@@ -37,6 +37,7 @@ async function importCube() {
     id: cube.id,
     name: cube.name,
     thumbnailImage: cube.thumbnailImage,
+    ownerId: cube.ownerId,
   };
 
   isCreatingCube.value = false;
@@ -79,17 +80,26 @@ function showMenuBlade() {
     <div v-if="!cubes.isLoaded">
       <LoadingState message="Loading cubes..." />
     </div>
-    <ItemCardGrid v-else-if="Object.keys(cubes.cubes).length > 0">
-      <ItemCard v-for="cube in cubes.cubes" :key="cube.id" :title="cube.name" :image="cube.thumbnailImage"
-        :to="{ name: 'cube', params: { id: cube.id } }">
-        <template #actions>
-          <LoadingButton class="delete-button" type="danger" :on-click="(e) => deleteCubeClicked(e, cube.id)">
-            Delete cube
-          </LoadingButton>
-        </template>
-      </ItemCard>
-    </ItemCardGrid>
-    <EmptyState v-else title="You have no cubes." subtitle="Click on '+ New Cube' to create one." />
+    <template v-else>
+      <section>
+        <h2>My cubes</h2>
+        <ItemCardGrid v-if="myCubes.length > 0">
+          <ItemCard v-for="cube in myCubes" :key="cube.id" :title="cube.name" :image="cube.thumbnailImage"
+            :to="{ name: 'cube', params: { id: cube.id } }">
+          </ItemCard>
+        </ItemCardGrid>
+        <EmptyState v-else title="You have no cubes." subtitle="Click on '+ New Cube' to create one." />
+      </section>
+      <section>
+        <h2>Public cubes</h2>
+        <ItemCardGrid v-if="publicCubes.length > 0">
+          <ItemCard v-for="cube in publicCubes" :key="cube.id" :title="cube.name" :image="cube.thumbnailImage"
+            :to="{ name: 'cube', params: { id: cube.id } }">
+          </ItemCard>
+        </ItemCardGrid>
+        <EmptyState v-else title="No public cubes available." subtitle="" />
+      </section>
+    </template>
   </div>
 </template>
 

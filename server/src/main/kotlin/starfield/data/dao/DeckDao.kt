@@ -150,7 +150,7 @@ class DeckDao {
     }
 
     suspend fun deleteDeck(deckId: UUID, userId: UUID) = DatabaseSingleton.dbQuery {
-        if (getDeck(deckId)?.owner != userId) {
+        if (getDeck(deckId)?.ownerId != userId) {
             return@dbQuery 0
         }
         DeckCards.deleteWhere { DeckCards.deckId eq deckId }

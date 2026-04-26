@@ -24,9 +24,9 @@ fun Route.cubeRouting() {
         )
 
         val cubeDao = CubeDao()
-        val myCubes = cubeDao.getCubeListings(session.id)
+        val cubes = cubeDao.getCubeListings()
 
-        call.respondSuccess(myCubes)
+        call.respondSuccess(cubes)
     }
 
     get("/{id}") {
@@ -37,7 +37,8 @@ fun Route.cubeRouting() {
         )
 
         val cubeDao = CubeDao()
-        val cube = cubeDao.getCube(session.id, uuid) ?: return@get call.respondError("Cube not found")
+        val cube = cubeDao.getCube(uuid)
+            ?: return@get call.respondError("Cube not found")
 
         call.respondSuccess(cube)
     }
@@ -50,7 +51,7 @@ fun Route.cubeRouting() {
         )
 
         val cubeDao = CubeDao()
-        cubeDao.getCube(session.id, uuid)
+        cubeDao.getCube(uuid, session.id)
             ?: return@get call.respondError("Cube not found")
 
         val draftSetDao = DraftSetDao()
@@ -68,7 +69,7 @@ fun Route.cubeRouting() {
         )
 
         val cubeDao = CubeDao()
-        val cube = cubeDao.getCube(session.id, uuid)
+        val cube = cubeDao.getCube(uuid, session.id)
             ?: return@post call.respondError("Cube not found")
 
         val strategyInfo = call.receive<StrategyInfo>()
@@ -90,6 +91,7 @@ fun Route.cubeRouting() {
         )
 
         val cubeDao = CubeDao()
+
         if (cubeDao.deleteCube(session.id, uuid)) {
             val draftSetDao = DraftSetDao()
             draftSetDao.deleteDraftSet(uuid)
@@ -174,8 +176,8 @@ suspend fun createDraftStrategy(cube: CubeCobraDao.Cube): StrategyInfo {
         .toMap()
 
     val sortedElos = cube.cards.mainboard.map { it.details.elo }.sorted()
-    // Quintile cutoffs: cards with elo < quintiles[i] map to score i+1 (1..5)
-    val quintiles = (1..4).map { i ->
+    // Percentile cutoffs: cards with elo < quintiles[i] map to score i+1 (1..5)
+    val percentiles = (1..4).map { i ->
         val pos = i * sortedElos.size / 5.0
         val idx = pos.toInt().coerceAtMost(sortedElos.size - 1)
         sortedElos[idx]
@@ -183,7 +185,7 @@ suspend fun createDraftStrategy(cube: CubeCobraDao.Cube): StrategyInfo {
 
     fun eloToScore(elo: Double): Double {
         var score = 1
-        for (cutoff in quintiles) {
+        for (cutoff in percentiles) {
             if (elo >= cutoff) score++ else break
         }
         return score.toDouble()
@@ -213,7 +215,7 @@ suspend fun createDraftStrategy(cube: CubeCobraDao.Cube): StrategyInfo {
         archetypeColors = numColors,
         manaFixers = listOf(),
         targetFixing = numColors * 1.5,
-        colorCombinations = colorCombinations.map { it.toList().map { it.toString() } }
+        colorCombinations = colorCombinations.map { it.toList().map { c -> c.toString() } }
     )
 }
 

@@ -59,7 +59,7 @@ data class DeckCard(
 @Serializable
 data class Deck(
     val id: Id,
-    val owner: Id,
+    val ownerId: Id,
     val name: String,
     val thumbnailImage: String?,
     val maindeck: List<DeckCard>,
@@ -83,7 +83,8 @@ data class DeckAddCards(
 data class DeckListing(
     val id: Id,
     val name: String,
-    val thumbnailImage: String?
+    val thumbnailImage: String?,
+    val ownerId: Id,
 )
 
 fun Route.deckRouting() {
@@ -96,7 +97,7 @@ fun Route.deckRouting() {
 
         val deckDao = DeckDao()
         val myDecks = deckDao.getDecks(session.id)
-            .map { DeckListing(it.id, it.name, it.thumbnailImage) }
+            .map { DeckListing(it.id, it.name, it.thumbnailImage, it.ownerId) }
 
         call.respondSuccess(myDecks)
     }
@@ -110,7 +111,7 @@ fun Route.deckRouting() {
 
         val deckDao = DeckDao()
         val deck = deckDao.getDeck(uuid) ?: return@get call.respondError("Deck not found")
-        if (deck.owner != session.id) {
+        if (deck.ownerId != session.id) {
             return@get call.respondError("You don't have access to that deck",
             status = HttpStatusCode.Forbidden)
         }
@@ -139,7 +140,7 @@ fun Route.deckRouting() {
         val deckDao = DeckDao()
         val deck = deckDao.getDeck(deckId) ?: return@post call.respondError("Deck not found")
 
-        if (deck.owner != session.id) {
+        if (deck.ownerId != session.id) {
             return@post call.respondError("This deck does not belong to you",
             status = HttpStatusCode.Forbidden)
         }
@@ -158,7 +159,7 @@ fun Route.deckRouting() {
 
         call.respondSuccess(Deck(
             deckId,
-            deck.owner,
+            deck.ownerId,
             upload.name,
             thumbnailCard?.thumbnailImage,
             maindeck.map { DeckCard.new(it) },
@@ -176,7 +177,7 @@ fun Route.deckRouting() {
         val deckDao = DeckDao()
         val deck = deckDao.getDeck(deckId) ?: return@post call.respondError("Deck not found")
 
-        if (deck.owner != session.id) {
+        if (deck.ownerId != session.id) {
             return@post call.respondError("This deck does not belong to you",
                 status = HttpStatusCode.Forbidden)
         }

@@ -20,7 +20,8 @@ class CubeDao {
         return DeckListing(
             id = row[Cubes.id].value,
             name = row[Cubes.name],
-            thumbnailImage = row[Cubes.thumbnailImage]
+            thumbnailImage = row[Cubes.thumbnailImage],
+            ownerId = row[Cubes.ownerId],
         )
     }
 
@@ -67,10 +68,15 @@ class CubeDao {
         }.firstNotNullOfOrNull(::mapDbCubeListing)
     }
 
-    suspend fun getCube(ownerId: UUID, cubeId: UUID) = DatabaseSingleton.dbQuery {
-        Cubes.selectAll().where {
-            (Cubes.id eq cubeId) and (Cubes.ownerId eq ownerId)
-        }.firstNotNullOfOrNull { row ->
+    suspend fun getCube(cubeId: UUID, ownerId: UUID? = null) = DatabaseSingleton.dbQuery {
+        val query = if (ownerId != null) {
+            Cubes.selectAll().where {
+                (Cubes.id eq cubeId) and (Cubes.ownerId eq ownerId)
+            }
+        } else {
+            Cubes.selectAll().where { Cubes.id eq cubeId }
+        }
+        query.firstNotNullOfOrNull { row ->
             val cards = CubeCards
                 .innerJoin(Printings)
                 .innerJoin(Cards, { Cards.id }, { Printings.cardId })
@@ -129,8 +135,8 @@ class CubeDao {
         getCubeListing(ownerId, cubeId) ?: return@dbQuery false
 
         CubeCards.deleteWhere { CubeCards.cubeId eq cubeId }
-        Cubes.deleteWhere { (Cubes.id eq cubeId) and (Cubes.ownerId eq ownerId) }
-        return@dbQuery true
+        val result = Cubes.deleteWhere { (Cubes.id eq cubeId) and (Cubes.ownerId eq ownerId) }
+        return@dbQuery result > 0
     }
 
     enum class CubeSource {

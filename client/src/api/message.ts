@@ -158,12 +158,14 @@ export type Deck = {
   name: string;
   id: string;
   thumbnailImage: string;
+  ownerId: string;
 }
 
 export type DeckListing = {
   name: string;
   id: string;
   thumbnailImage: string;
+  ownerId: string;
 }
 
 export type Cube = {
@@ -173,11 +175,6 @@ export type Cube = {
   name: string;
   thumbnailImage: string;
   cards: DeckCard[];
-}
-
-export type CubeListing = {
-  id: string;
-  name: string;
 }
 
 export type DraftStrategy = {
