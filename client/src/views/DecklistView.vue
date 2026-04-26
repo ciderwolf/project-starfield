@@ -12,6 +12,7 @@ import { useDecksStore } from '@/stores/decks';
 import { useAlertsStore } from '@/stores/alerts';
 import DeckCardEditor from '@/components/deck/DeckCardEditor.vue';
 import ButtonGroup from '@/components/ButtonGroup.vue';
+import BackButton from '@/components/BackButton.vue';
 
 
 const maindeck = ref('');
@@ -161,7 +162,7 @@ function updateDeckText() {
   <div id="decklist" v-if="deck">
     <div class="title" v-if="deck !== null">
       <div style="display: flex; align-items: center; gap: 10px;">
-        <IconButton @click="exitPage" icon="arrow_back" class="nav-button" />
+        <BackButton />
         <h1>Decklist ({{ mainCount }}/{{ sideCount }}) <span id="decklist-title-separator">&mdash;</span></h1>
       </div>
       <input type=text v-model="deck.name" id="deck-name-input">
@@ -200,15 +201,6 @@ function updateDeckText() {
 #decklist {
   margin-left: 10px;
   margin-right: 10px;
-}
-
-.nav-button {
-  font-size: var(--font-size-xl);
-  padding: var(--space-md);
-}
-
-.nav-button:hover {
-  background-color: var(--overlay-light);
 }
 
 .title {
