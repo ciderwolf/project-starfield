@@ -7,11 +7,11 @@ import { useRoute, useRouter } from 'vue-router';
 import type { Cube } from '@/api/message';
 import { useCubesCache } from '@/cache/cubes';
 import { useDataStore } from '@/stores/data';
+import BackButton from '@/components/BackButton.vue';
 
 const cube = ref<Cube | null>(null);
 
 const route = useRoute();
-const router = useRouter();
 
 const cubeId = route.params.id as string;
 const cubes = useCubesCache();
@@ -26,23 +26,16 @@ onMounted(async () => {
   }
 });
 
-function exitPage() {
-  if (window.history.state?.back) {
-    router.back();
-  } else {
-    router.push({ name: 'home' });
-  }
-}
 
 </script>
 
 <template>
   <div id="decklist" v-if="cube">
     <div class="title" v-if="cube !== null">
-      <IconButton @click="exitPage" icon="arrow_back" class="nav-button" />
+      <BackButton />
       <h1>{{ cube.name }}</h1>
       <router-link :to="`/cubes/${cube.id}/admin`" v-if="isMine">
-        <IconButton icon="settings" class="nav-button" />
+        <IconButton icon="settings" size="xl" />
       </router-link>
     </div>
     <deck-preview :include-sideboard="false" :deckData="{ maindeck: cube.cards, sideboard: [], ...cube }" />
@@ -55,15 +48,6 @@ function exitPage() {
 <style scoped>
 #decklist {
   margin-left: 10px;
-}
-
-.nav-button {
-  font-size: var(--font-size-xl);
-  padding: var(--space-md);
-}
-
-.nav-button:hover {
-  background-color: var(--overlay-light);
 }
 
 .title {

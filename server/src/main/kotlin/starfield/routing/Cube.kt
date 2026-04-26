@@ -76,7 +76,7 @@ fun Route.cubeRouting() {
         val draftSetDao = DraftSetDao()
         val draftSet = draftSetDao.getDraftSet(cube.id)
             ?: return@post call.respondError("Draft info not found")
-        
+
         draftSetDao.upsertDraftSetFromCube(cube.id, cube.name, draftSet.boosterInfo, strategyInfo)
 
         call.respondSuccess(cube)
@@ -97,8 +97,6 @@ fun Route.cubeRouting() {
         } else {
             call.respondError("Cube not found", status = HttpStatusCode.NotFound)
         }
-
-
     }
 
     post("/import/cube-cobra") {

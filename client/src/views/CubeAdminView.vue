@@ -18,6 +18,7 @@ import { useCubesStore } from '@/stores/cubes';
 import { Tabs, Tab } from 'vue3-tabs-component';
 import { ref, onMounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
+import BackButton from '@/components/BackButton.vue';
 
 const route = useRoute();
 const cubeId = route.params.id as string;
@@ -102,7 +103,10 @@ const filteredRatingCards = computed(() => {
 
 <template>
   <div id="cube-admin" v-if="cube">
-    <h1>{{ cube.name }}</h1>
+    <div style="display: flex; align-items: center;">
+      <BackButton />
+      <h1>{{ cube.name }}</h1>
+    </div>
     <h2 class="section-title">Cube info</h2>
     <section class="panel">
       <div class="cube-header">
@@ -115,12 +119,12 @@ const filteredRatingCards = computed(() => {
       </div>
     </section>
     <h2 class="section-title">Set up draft strategy
-      <LoadingIconButton :on-click="saveDraftStrategy" icon="save" small />
+      <LoadingIconButton :on-click="saveDraftStrategy" icon="save" size="xs" />
     </h2>
     <section class="panel">
       <h3 class="section-title">
         Color combinations
-        <IconButton icon="add" @click="combinations.push([])" small />
+        <IconButton icon="add" @click="combinations.push([])" size="xs" />
         <HelpPopover text="Which color combinations are supported in the draft format? The draft AI will aim for these
       combinations when making picks." />
       </h3>
