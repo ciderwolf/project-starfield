@@ -2,9 +2,9 @@
 import { computed, onMounted, ref, watch } from 'vue';
 import type { OracleCard } from '@/api/message';
 import CardThumbnail from '@/components/game/modal/CardThumbnail.vue';
-import Modal from '@/components/Modal.vue';
+import Modal from '@/components/shared/Modal.vue';
 import StarRating from '@/components/admin/StarRating.vue';
-import StyleButton from '@/components/StyleButton.vue';
+import StyleButton from '@/components/shared/StyleButton.vue';
 import HelpPopover from './HelpPopover.vue';
 
 const props = defineProps<{

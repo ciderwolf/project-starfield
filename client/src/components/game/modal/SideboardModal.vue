@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { getVirtualSideboardingIds } from '@/api/game';
 import type { OracleCard } from '@/api/message';
-import Modal from '@/components/Modal.vue'
-import StyleButton from '@/components/StyleButton.vue';
-import LoadingSpinner from '@/components/LoadingSpinner.vue';
+import Modal from '@/components/shared/Modal.vue'
+import StyleButton from '@/components/shared/StyleButton.vue';
+import LoadingSpinner from '@/components/shared/LoadingSpinner.vue';
 import CardPreview from '@/components/deck/CardPreview.vue';
 import { client } from '@/ws';
 import { ref } from 'vue';

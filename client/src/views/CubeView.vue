@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import DeckPreview from '@/components/deck/DeckPreview.vue';
-import LoadingState from '@/components/LoadingState.vue';
-import IconButton from '@/components/IconButton.vue';
+import LoadingState from '@/components/shared/LoadingState.vue';
+import IconButton from '@/components/shared/IconButton.vue';
 import { useRoute, useRouter } from 'vue-router';
 import type { Cube } from '@/api/message';
 import { useCubesCache } from '@/cache/cubes';
 import { useDataStore } from '@/stores/data';
-import BackButton from '@/components/BackButton.vue';
+import BackButton from '@/components/shared/BackButton.vue';
 
 const cube = ref<Cube | null>(null);
 

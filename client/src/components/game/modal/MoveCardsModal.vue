@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import Modal from '@/components/Modal.vue'
-import ContextMenu from '@/components/ContextMenu.vue';
-import StyleButton from '@/components/StyleButton.vue';
+import Modal from '@/components/shared/Modal.vue';
+import ContextMenu from '@/components/shared/ContextMenu.vue';
+import StyleButton from '@/components/shared/StyleButton.vue';
 import CardThumbnail from '@/components/game/modal/CardThumbnail.vue';
 import { computed, onMounted, onUnmounted, reactive, ref, type ComputedRef } from 'vue';
 import { getMoveZoneActions, type ContextMenuDefinition, type ContextMenuOption } from '@/context-menu';

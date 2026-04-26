@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import Modal from '@/components/Modal.vue';
+import Modal from '@/components/shared/Modal.vue';
 import { HotkeyAttribute, hotkeys } from '@/hotkeys';
 
 const hotkeyDescriptions = hotkeys.map(h => {

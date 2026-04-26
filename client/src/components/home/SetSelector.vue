@@ -2,8 +2,8 @@
 import { downloadSet, getSets } from '@/api/draft';
 import { ref, onMounted } from 'vue';
 import type { DraftSet } from '@/api/draft';
-import LoadingButton from '../LoadingButton.vue';
-import RichSelector from '../RichSelector.vue';
+import LoadingButton from '@/components/shared/LoadingButton.vue';
+import RichSelector from '@/components/shared/RichSelector.vue';
 
 const sets = ref<DraftSet[]>([]);
 const loading = ref(true);

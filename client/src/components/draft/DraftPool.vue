@@ -1,16 +1,14 @@
 <script setup lang="ts">
 import { useDraftStore } from '@/stores/draft';
-import CardPreview from '../deck/CardPreview.vue';
 import { computed, ref, onMounted, onUnmounted } from 'vue';
-import StyleButton from '../StyleButton.vue';
+import StyleButton from '@/components/shared/StyleButton.vue';
 import { endGame } from '@/api/lobby';
 import { useRouter } from 'vue-router';
 import { draftClient } from '@/ws';
-import type { CountDisplayCard, DisplayCard } from '@/api/message';
-import { cardFrameColor, cardSymbolGroups, cardSymbols, cardColors } from '@/utils/card-utils';
-import Modal from '../Modal.vue';
-import DeckStatsViz from '../deck/DeckStatsViz.vue';
-import DeckCardEditor from '../deck/DeckCardEditor.vue';
+import type { CountDisplayCard, } from '@/api/message';
+import Modal from '@/components/shared/Modal.vue';
+import DeckStatsViz from '@/components/deck/DeckStatsViz.vue';
+import DeckCardEditor from '@/components/deck/DeckCardEditor.vue';
 
 interface GroupedCards {
   label: string;

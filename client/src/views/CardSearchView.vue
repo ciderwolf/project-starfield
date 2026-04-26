@@ -1,16 +1,16 @@
 <script setup lang="ts">
 import { type OracleCard } from '@/api/message';
-import LoadingSpinner from '@/components/LoadingSpinner.vue';
+import LoadingSpinner from '@/components/shared/LoadingSpinner.vue';
 import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useSearchResultsStore } from '@/stores/search-results';
-import Modal from '@/components/Modal.vue';
+import Modal from '@/components/shared/Modal.vue';
 import { useDecksCache } from '@/cache/decks';
 import { useDecksStore } from '@/stores/decks';
-import LoadingButton from '@/components/LoadingButton.vue';
+import LoadingButton from '@/components/shared/LoadingButton.vue';
 import { addCardsToDeck, newDeck } from '@/api/deck';
 import { useAlertsStore } from '@/stores/alerts';
-import StyleButton from '@/components/StyleButton.vue';
+import StyleButton from '@/components/shared/StyleButton.vue';
 
 
 const decksCache = useDecksCache();

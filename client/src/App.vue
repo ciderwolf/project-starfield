@@ -3,7 +3,7 @@ import { RouterView, useRouter } from 'vue-router'
 import { ws } from './ws'
 import { authenticate } from './api';
 import { ref } from 'vue';
-import LoadingState from './components/LoadingState.vue';
+import LoadingState from './components/shared/LoadingState.vue';
 import AlertsContainer from './components/AlertsContainer.vue';
 console.log(ws);
 

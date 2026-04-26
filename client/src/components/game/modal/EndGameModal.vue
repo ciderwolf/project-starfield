@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { endGame } from '@/api/lobby';
 import { useNotificationsCache } from '@/cache/notifications';
-import Modal from '@/components/Modal.vue';
-import StyleButton from '@/components/StyleButton.vue';
+import Modal from '@/components/shared/Modal.vue';
+import StyleButton from '@/components/shared/StyleButton.vue';
 import { useGameStore } from '@/stores/games';
 import { client } from '@/ws';
 import { ref } from 'vue';

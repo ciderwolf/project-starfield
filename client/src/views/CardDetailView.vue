@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { type CardDetails, type OracleCard } from '@/api/message';
-import StyleButton from '@/components/StyleButton.vue';
+import StyleButton from '@/components/shared/StyleButton.vue';
 import { useSearchResultsStore } from '@/stores/search-results';
 import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';

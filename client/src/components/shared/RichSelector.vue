@@ -1,6 +1,6 @@
 <script setup lang="ts" generic="T">
 import { computed, onMounted, onUnmounted, ref } from 'vue';
-import LoadingSpinner from '@/components/LoadingSpinner.vue';
+import LoadingSpinner from '@/components/shared/LoadingSpinner.vue';
 
 const props = withDefaults(defineProps<{
     items: T[];

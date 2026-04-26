@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { BoardCard } from '@/api/message';
-import ContextMenu from '@/components/ContextMenu.vue';
+import ContextMenu from '@/components/shared/ContextMenu.vue';
 import type { ActionEmit, ContextMenuDefinition } from '@/context-menu';
 import { reactive, ref } from 'vue';
 
