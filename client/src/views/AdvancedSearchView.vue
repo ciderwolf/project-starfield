@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import StyleButton from '@/components/StyleButton.vue';
+import StyleButton from '@/components/shared/StyleButton.vue';
 
 const route = useRoute();
 const router = useRouter();

@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import Modal from '@/components/Modal.vue'
-import LoadingButton from '@/components/LoadingButton.vue';
-import StyleButton from '@/components/StyleButton.vue';
+import Modal from '@/components/shared/Modal.vue';
+import LoadingButton from '@/components/shared/LoadingButton.vue';
+import StyleButton from '@/components/shared/StyleButton.vue';
 import CardThumbnail from '@/components/game/modal/CardThumbnail.vue';
 import { ref } from 'vue';
 import { searchForCards } from '@/api/game';

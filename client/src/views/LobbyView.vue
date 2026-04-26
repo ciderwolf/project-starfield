@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import DeckPreview from '@/components/deck/DeckPreview.vue';
-import StyleButton from '@/components/StyleButton.vue';
+import StyleButton from '@/components/shared/StyleButton.vue';
 import { submitDeckChoice, leaveGame, kickPlayer, startGame } from '@/api/lobby';
 import { useDecksStore } from '@/stores/decks';
 import { useGameStore } from '@/stores/games';

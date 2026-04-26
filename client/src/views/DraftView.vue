@@ -3,7 +3,7 @@ import type { DraftCard } from '@/api/message';
 import DraftCardElement from '@/components/draft/DraftCard.vue';
 import DraftPackQueues from '@/components/draft/DraftPackQueues.vue';
 import DraftPool from '@/components/draft/DraftPool.vue';
-import LoadingSpinner from '@/components/LoadingSpinner.vue';
+import LoadingSpinner from '@/components/shared/LoadingSpinner.vue';
 import { useDecksStore } from '@/stores/decks';
 import { useDraftStore } from '@/stores/draft';
 import { useGameStore } from '@/stores/games';

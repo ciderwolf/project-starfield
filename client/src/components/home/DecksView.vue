@@ -2,9 +2,9 @@
 import { newDeck, deleteDeck } from '@/api/deck';
 import type { DeckListing } from '@/api/message';
 import { useDecksCache } from '@/cache/decks';
-import LoadingState from '@/components/LoadingState.vue';
-import EmptyState from '@/components/EmptyState.vue';
-import LoadingButton from '@/components/LoadingButton.vue';
+import LoadingState from '@/components/shared/LoadingState.vue';
+import EmptyState from '@/components/shared/EmptyState.vue';
+import LoadingButton from '@/components/shared/LoadingButton.vue';
 import ItemCard from '@/components/home/ItemCard.vue';
 import ItemCardGrid from '@/components/home/ItemCardGrid.vue';
 import { useDecksStore } from '@/stores/decks';

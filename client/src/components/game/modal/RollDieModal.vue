@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import Modal from '@/components/Modal.vue';
-import StyleButton from '@/components/StyleButton.vue';
+import Modal from '@/components/shared/Modal.vue';
+import StyleButton from '@/components/shared/StyleButton.vue';
 import { rollDie } from '@/api/game';
 
 defineExpose({ open });

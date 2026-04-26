@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import LoadingButton from '@/components/LoadingButton.vue';
+import LoadingButton from '@/components/shared/LoadingButton.vue';
 import { createAccount, login } from '@/api';
 import { ws } from '@/ws';
 import { useRouter } from 'vue-router';

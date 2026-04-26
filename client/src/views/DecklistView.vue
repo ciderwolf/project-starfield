@@ -2,17 +2,17 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import DeckPreview from '@/components/deck/DeckPreview.vue';
 import DeckStatsViz from '@/components/deck/DeckStatsViz.vue';
-import LoadingButton from '@/components/LoadingButton.vue';
-import LoadingState from '@/components/LoadingState.vue';
-import IconButton from '@/components/IconButton.vue';
+import LoadingButton from '@/components/shared/LoadingButton.vue';
+import LoadingState from '@/components/shared/LoadingState.vue';
+import IconButton from '@/components/shared/IconButton.vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useDecksCache } from '@/cache/decks';
 import type { Deck, DeckCard } from '@/api/message';
 import { useDecksStore } from '@/stores/decks';
 import { useAlertsStore } from '@/stores/alerts';
 import DeckCardEditor from '@/components/deck/DeckCardEditor.vue';
-import ButtonGroup from '@/components/ButtonGroup.vue';
-import BackButton from '@/components/BackButton.vue';
+import ButtonGroup from '@/components/shared/ButtonGroup.vue';
+import BackButton from '@/components/shared/BackButton.vue';
 
 
 const maindeck = ref('');

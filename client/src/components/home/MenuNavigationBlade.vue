@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { logout } from '@/api';
-import Blade from '@/components/Blade.vue';
+import Blade from '@/components/shared/Blade.vue';
 import { CLIENT_VERSION } from '@/version';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';

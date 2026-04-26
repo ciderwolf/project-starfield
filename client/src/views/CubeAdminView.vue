@@ -6,19 +6,19 @@ import ColorCombinationChooser from '@/components/admin/ColorCombinationChooser.
 import HelpPopover from '@/components/admin/HelpPopover.vue';
 import StarRating from '@/components/admin/StarRating.vue';
 import CardPreview from '@/components/deck/CardPreview.vue';
-import EmptyState from '@/components/EmptyState.vue';
+import EmptyState from '@/components/shared/EmptyState.vue';
 import CardThumbnail from '@/components/game/modal/CardThumbnail.vue';
-import IconButton from '@/components/IconButton.vue';
-import LoadingButton from '@/components/LoadingButton.vue';
-import LoadingIconButton from '@/components/LoadingIconButton.vue';
-import LoadingState from '@/components/LoadingState.vue';
+import IconButton from '@/components/shared/IconButton.vue';
+import LoadingButton from '@/components/shared/LoadingButton.vue';
+import LoadingIconButton from '@/components/shared/LoadingIconButton.vue';
+import LoadingState from '@/components/shared/LoadingState.vue';
 import PairwiseComparison from '@/components/admin/PairwiseComparison.vue';
-import RichSelector from '@/components/RichSelector.vue';
+import RichSelector from '@/components/shared/RichSelector.vue';
 import { useCubesStore } from '@/stores/cubes';
 import { Tabs, Tab } from 'vue3-tabs-component';
 import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import BackButton from '@/components/BackButton.vue';
+import BackButton from '@/components/shared/BackButton.vue';
 
 const route = useRoute();
 const router = useRouter();

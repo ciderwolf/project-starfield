@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import LoadingState from '@/components/LoadingState.vue';
-import EmptyState from '@/components/EmptyState.vue';
-import LoadingButton from '@/components/LoadingButton.vue';
-import StyleButton from '@/components/StyleButton.vue';
-import Modal from '@/components/Modal.vue';
+import LoadingState from '@/components/shared/LoadingState.vue';
+import EmptyState from '@/components/shared/EmptyState.vue';
+import LoadingButton from '@/components/shared/LoadingButton.vue';
+import StyleButton from '@/components/shared/StyleButton.vue';
+import Modal from '@/components/shared/Modal.vue';
 import ItemCard from '@/components/home/ItemCard.vue';
 import ItemCardGrid from '@/components/home/ItemCardGrid.vue';
 import { useCubesCache } from '@/cache/cubes';
@@ -11,7 +11,7 @@ import { useCubesStore } from '@/stores/cubes';
 import { useDataStore } from '@/stores/data';
 import { importCubeFromCubeCobra } from '@/api/cube';
 import { computed, ref } from 'vue';
-import IconButton from '@/components/IconButton.vue';
+import IconButton from '@/components/shared/IconButton.vue';
 import MenuNavigationBlade from '@/components/home/MenuNavigationBlade.vue';
 import type { ComponentExposed } from 'vue-component-type-helpers';
 

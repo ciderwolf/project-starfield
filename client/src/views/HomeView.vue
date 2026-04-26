@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { createGame, createDraft } from '@/api';
-import Modal from '@/components/Modal.vue';
-import StyleButton from '@/components/StyleButton.vue';
+import Modal from '@/components/shared/Modal.vue';
+import StyleButton from '@/components/shared/StyleButton.vue';
 import GameListingRow from '@/components/home/GameListingRow.vue';
 import { useGameStore } from '@/stores/games';
 import { computed, ref } from 'vue';
@@ -14,8 +14,8 @@ import SetSelector from '@/components/home/SetSelector.vue';
 import type { DraftSet } from '@/api/draft';
 import MenuNavigationBlade from '@/components/home/MenuNavigationBlade.vue';
 import { type ComponentExposed } from 'vue-component-type-helpers';
-import IconButton from '@/components/IconButton.vue';
-import EmptyState from '@/components/EmptyState.vue';
+import IconButton from '@/components/shared/IconButton.vue';
+import EmptyState from '@/components/shared/EmptyState.vue';
 
 const showCreateGameModal = ref(false);
 const gameName = ref('');

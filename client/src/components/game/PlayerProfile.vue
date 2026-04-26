@@ -3,7 +3,7 @@ import { type PlayerAttributes, useBoardStore } from '@/stores/board';
 import { client } from '@/ws';
 import { ScreenPosition, ZONES } from '@/zones';
 import { computed, ref, type StyleValue } from 'vue';
-import ContextMenu from '../ContextMenu.vue';
+import ContextMenu from '@/components/shared/ContextMenu.vue';
 import { createPlayerContextMenu } from '@/context-menu';
 import { useNotificationsCache } from '@/cache/notifications';
 

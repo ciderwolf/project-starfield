@@ -3,7 +3,7 @@ import { ZONES, type ZoneConfig } from '@/zones';
 import { onMounted, onUnmounted, reactive, ref, computed, watch } from 'vue';
 import { useBoardStore } from '@/stores/board';
 import { useZoneStore } from '@/stores/zone';
-import ContextMenu from '@/components/ContextMenu.vue';
+import ContextMenu from '@/components/shared/ContextMenu.vue';
 import CardDispatch from '@/components/game/card/CardDispatch.vue';
 import { getZoneContextMenu, type ContextMenuDefinition } from '@/context-menu';
 import { useNotificationsCache } from '@/cache/notifications';
