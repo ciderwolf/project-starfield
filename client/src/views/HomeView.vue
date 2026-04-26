@@ -117,7 +117,8 @@ function showMenuBlade() {
 
 <style>
 @import url("@/assets/tabs.css");
-
+</style>
+<style scoped>
 .title {
   display: flex;
   gap: var(--space-xl);

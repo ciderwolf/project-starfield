@@ -1,14 +1,11 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import DeckPreview from '@/components/deck/DeckPreview.vue';
-import LoadingButton from '@/components/LoadingButton.vue';
 import LoadingState from '@/components/LoadingState.vue';
 import IconButton from '@/components/IconButton.vue';
 import { useRoute, useRouter } from 'vue-router';
 import type { Cube } from '@/api/message';
 import { useCubesCache } from '@/cache/cubes';
-import { syncFromCubeCobra } from '@/api/cube';
-import { useCubesStore } from '@/stores/cubes';
 import { useDataStore } from '@/stores/data';
 
 const cube = ref<Cube | null>(null);
@@ -18,7 +15,6 @@ const router = useRouter();
 
 const cubeId = route.params.id as string;
 const cubes = useCubesCache();
-const cubeStore = useCubesStore();
 const dataStore = useDataStore();
 
 const isMine = computed(() => cube.value?.ownerId === dataStore.userId);
@@ -29,17 +25,6 @@ onMounted(async () => {
     cube.value = cubeList;
   }
 });
-
-async function syncCubeClicked() {
-  const cubeResponse = await syncFromCubeCobra(cubeId);
-  cubes.put(cubeResponse.id, cubeResponse);
-  cube.value = cubeResponse;
-  cubeStore.cubes[cubeResponse.id] = {
-    id: cubeResponse.id,
-    name: cubeResponse.name,
-    thumbnailImage: cubeResponse.thumbnailImage,
-  };
-}
 
 function exitPage() {
   if (window.history.state?.back) {
@@ -56,7 +41,9 @@ function exitPage() {
     <div class="title" v-if="cube !== null">
       <IconButton @click="exitPage" icon="arrow_back" class="nav-button" />
       <h1>{{ cube.name }}</h1>
-      <loading-button v-if="isMine" :on-click="syncCubeClicked">Re-sync from Cube Cobra</loading-button>
+      <router-link :to="`/cubes/${cube.id}/admin`" v-if="isMine">
+        <IconButton icon="settings" class="nav-button" />
+      </router-link>
     </div>
     <deck-preview :include-sideboard="false" :deckData="{ maindeck: cube.cards, sideboard: [], ...cube }" />
   </div>
