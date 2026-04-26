@@ -1,11 +1,11 @@
 import { postJson, getJson, deleteJson, putJson } from ".";
 import type { Cube, DraftStrategy } from "./message";
 
-export async function fetchCube(id: string) {
+export async function fetchCube(id: string): Promise<Cube> {
   return await getJson(`cube/${id}`);
 }
 
-export async function submitCube(id: string, cards: Cube) {
+export async function submitCube(id: string, cards: Cube): Promise<Cube> {
   return await postJson(`cube/${id}`, cards);
 }
 

@@ -22,14 +22,22 @@ const displayValue = computed(() => {
   return roundToHalf(raw);
 });
 
-function setRating(value: number) {
+function valueFor(i: number, e: MouseEvent): number {
+  const target = e.currentTarget as HTMLElement;
+  const rect = target.getBoundingClientRect();
+  const isLeftHalf = e.clientX - rect.left < rect.width / 2;
+  return isLeftHalf ? i - 0.5 : i;
+}
+
+function setRating(i: number, e: MouseEvent) {
   if (props.readonly) return;
+  const value = valueFor(i, e);
   rating.value = rating.value === value ? 0 : value;
 }
 
-function onEnter(value: number) {
+function onMove(i: number, e: MouseEvent) {
   if (props.readonly) return;
-  hover.value = value;
+  hover.value = valueFor(i, e);
 }
 
 function onLeave() {
@@ -49,8 +57,8 @@ function starState(i: number): 'full' | 'half' | 'empty' {
     :aria-label="`Rating out of ${max}`">
     <button v-for="i in max" :key="i" type="button" class="star"
       :class="{ filled: starState(i) === 'full', half: starState(i) === 'half' }" :disabled="readonly"
-      :aria-label="`${i} star${i === 1 ? '' : 's'}`" :aria-checked="rating === i" role="radio" @click="setRating(i)"
-      @mouseenter="onEnter(i)">
+      :aria-label="`${i} star${i === 1 ? '' : 's'}`" :aria-checked="rating === i" role="radio"
+      @click="(e) => setRating(i, e)" @mousemove="(e) => onMove(i, e)">
       <span class="material-symbols-rounded">{{ starState(i) === 'half' ? 'star_half' : 'star' }}</span>
     </button>
   </div>

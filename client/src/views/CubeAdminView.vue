@@ -39,13 +39,15 @@ onMounted(async () => {
     }
 
     const strategy = await getDraftStrategy(cubeId);
-    draftStrategy.value = strategy;
-    cardRatings.value = strategy.cards.map((card) => ({ id: card.id, rating: card.synergy_score })).reduce((acc, { id, rating }) => {
-      acc[id] = rating;
-      return acc;
-    }, {} as Record<string, number>);
-    combinations.value = strategy.color_combinations;
-    fixingIds.value = strategy.mana_fixers;
+    if (strategy !== null) {
+      draftStrategy.value = strategy;
+      cardRatings.value = strategy.cards.map((card) => ({ id: card.id, rating: card.synergy_score })).reduce((acc, { id, rating }) => {
+        acc[id] = rating;
+        return acc;
+      }, {} as Record<string, number>);
+      combinations.value = strategy.color_combinations;
+      fixingIds.value = strategy.mana_fixers;
+    }
   }
 });
 
@@ -133,7 +135,7 @@ const filteredRatingCards = computed(() => {
       </div>
     </section>
     <h2 class="section-title">Set up draft strategy
-      <LoadingIconButton :on-click="saveDraftStrategy" icon="save" size="sm" />
+      <LoadingIconButton :on-click="saveDraftStrategy" icon="save" size="sm" v-if="draftStrategy" />
     </h2>
     <section class="panel">
       <h3 class="section-title">
